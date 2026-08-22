@@ -1,0 +1,587 @@
+.page {
+  /* Room for the sticky mobile bar so it never covers the last section. */
+  padding-bottom: 6rem;
+}
+
+.breadcrumb {
+  padding-block: var(--space-4) var(--space-2);
+}
+
+.breadcrumbList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.breadcrumbList a {
+  color: var(--color-text-secondary);
+}
+
+.goneNotice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--color-status-leased-fill);
+  color: var(--color-status-leased-text);
+  border: var(--rule-width) solid var(--color-status-leased-border);
+  border-radius: var(--radius-md);
+}
+
+.goneTitle {
+  font-size: var(--font-size-lg);
+}
+
+.goneBody {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.goneActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.gallerySlot {
+  padding-bottom: var(--space-5);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+.main {
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-cozy);
+  margin-bottom: var(--space-compact);
+}
+
+/* Sharp, and in the system's own families. The row this replaced used pill
+   chips in a purple and a green that appear nowhere else in the palette -
+   which is most of why it read as generic. */
+.factBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-cozy);
+  padding: var(--badge-padding-y) var(--badge-padding-x);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--badge-radius);
+  background-color: var(--color-bg-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--badge-font-weight);
+  color: var(--color-text-primary);
+}
+
+.factBadgeIcon {
+  width: 14px;
+  height: 14px;
+  color: var(--brand-text);
+}
+
+.locPin {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--color-text-secondary);
+}
+
+/* ---- Key facts -----------------------------------------------------------
+   A single divided row rather than a scatter of boxes: these five numbers are
+   read together, and five separate bordered chips make the eye stop five times
+   for one comparison.
+   ------------------------------------------------------------------------- */
+
+.quickSpecs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-moderate);
+  margin-top: var(--space-moderate);
+  padding: var(--space-compact) 0;
+  border-block: var(--rule-width) solid var(--color-border-default);
+}
+
+.spec {
+  display: flex;
+  align-items: center;
+  gap: var(--space-cozy);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.spec + .spec {
+  padding-inline-start: var(--space-moderate);
+  border-inline-start: var(--rule-width) solid var(--color-border-default);
+}
+
+.specIcon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--brand-text);
+}
+
+.specValue {
+  font-size: var(--header-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.subheading {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.body {
+  max-width: 68ch;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+.bodyMuted {
+  max-width: 68ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Qualification snapshot ----------------------------------------------
+   Built as the system's Card molecule rather than as a bordered box of prose:
+   a header, then hairline-separated rows carrying a label and its value, then a
+   footer note. Card elevation instead of a heavy stroke, because a 1px Teton
+   outline around a block this large reads as a table, and the page already has
+   real tables further down.
+   ------------------------------------------------------------------------- */
+
+.qualify {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-1);
+  overflow: hidden;
+}
+
+.qualifyLead {
+  margin: 0;
+  padding: var(--space-moderate);
+  background-color: var(--color-bg-tertiary);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--color-text-secondary);
+}
+
+.qualifyGrid {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+/* Each pair is one row of the card, divided by a hairline - the same rhythm the
+   cost breakdown and lease terms use, so the three read as one family. */
+.qualifyGrid > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+  padding: var(--space-compact) var(--space-moderate);
+}
+
+.qualifyGrid > div + div {
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.qualifyLabel {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.qualifyValue {
+  margin: 0;
+  font-size: var(--text-sm);
+  text-align: end;
+  color: var(--color-text-secondary);
+}
+
+.qualifyNote {
+  margin: 0;
+  padding: var(--space-compact) var(--space-moderate);
+  border-top: var(--rule-width) solid var(--color-border-default);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Detail rows --------------------------------------------------------- */
+
+.details {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  max-width: 68ch;
+}
+
+.detailRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.detailLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.detailValue {
+  margin: 0;
+  font-size: var(--font-size-base);
+  text-transform: capitalize;
+}
+
+.figure {
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-cozy);
+  min-height: 36px;
+  padding: var(--space-slim) var(--space-compact);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+/* The amenity glyph takes the brand colour so a long list of features scans as
+   a set of marks rather than as grey text with grey decoration. */
+.chip svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--brand-text);
+}
+
+/* ---- Action rail --------------------------------------------------------- */
+
+.rail {
+  display: none;
+}
+
+.railInner {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  border-top: 4px solid var(--brand);
+}
+
+.railPriceHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+}
+
+.railPrice {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.railPer {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+}
+
+
+
+.railSplit {
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--color-bg-tertiary);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-default);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.railActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+/* The reassurance block under the buttons.
+   It was set in a muted grey at 12px against a muted panel - legible in
+   theory, invisible in practice, which is what "faint" meant. Body-size text,
+   real contrast, and the icon carrying the colour instead of the words. */
+.railPerks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-compact);
+  margin-top: var(--space-moderate);
+  padding-top: var(--space-moderate);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.perkItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-cozy);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--color-text-secondary);
+}
+
+.perkItem strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.perkIcon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+  color: var(--brand-text);
+}
+
+.railContact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--color-bg-tertiary);
+  border-top: 1px solid var(--color-border-default);
+  text-align: center;
+}
+
+.contactLead {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.contactPhone {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-text);
+  text-decoration: none;
+}
+
+.contactPhone:hover {
+  text-decoration: underline;
+}
+
+/* ---- Similar ------------------------------------------------------------- */
+
+.similar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+}
+
+.similarGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+/* ---- Sticky mobile bar --------------------------------------------------- */
+
+.stickyBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  /* Keeps the bar clear of the iOS home indicator. */
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: var(--rule-width) solid var(--color-border-strong);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.stickyPrice {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+}
+
+.stickyPer {
+  font-family: var(--font-family-body);
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+}
+
+.stickyActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .header {
+    gap: var(--space-3);
+    padding-bottom: var(--space-6);
+  }
+
+  .sectionTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .detailRow {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: baseline;
+  }
+
+  .qualifyGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .similarGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .page {
+    padding-bottom: 0;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    gap: var(--space-6);
+  }
+
+  .rail {
+    display: block;
+  }
+
+  .railInner {
+    position: sticky;
+    top: var(--space-4);
+  }
+
+  .similarGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Desktop has the action rail; the sticky bar is mobile-only. */
+  .stickyBar {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 24rem;
+    gap: var(--space-8);
+  }
+}
+
+/* ---- Mobile ---------------------------------------------------------------
+   The key-fact row is a divided strip on desktop and a grid on a phone: five
+   items on one line at 375px wrap into a shape where the dividers separate the
+   wrong things.
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 639px) {
+  .quickSpecs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-compact);
+  }
+
+  .spec + .spec {
+    padding-inline-start: 0;
+    border-inline-start: none;
+  }
+
+  .title {
+    font-size: var(--display-sm);
+  }
+
+  /* Full-bleed gallery on a phone: a photograph inset by 16px on a 375px
+     screen loses a tenth of the only thing selling the house. */
+  .gallerySlot {
+    margin-inline: calc(var(--space-moderate) * -1);
+  }
+}

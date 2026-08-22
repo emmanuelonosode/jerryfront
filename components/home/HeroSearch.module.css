@@ -1,0 +1,185 @@
+/* -----------------------------------------------------------------------------
+   Hero Search Form - Ticketmaster High-Visibility Search Box
+   -------------------------------------------------------------------------- */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: var(--space-3);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  height: 3.125rem;
+  padding-inline: var(--space-3);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.fieldLocation .input {
+  padding-left: 2.375rem;
+}
+
+.input:focus {
+  background-color: var(--input-bg);
+  border-color: var(--brand);
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.input:hover:not(:focus) {
+  border-color: var(--color-border-interactive);
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.inputFigure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.submitWrap {
+  display: flex;
+}
+
+.submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 3.125rem;
+  padding-inline: var(--space-5);
+  background-color: var(--brand);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  cursor: pointer;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.submit:hover {
+  background-color: var(--brand-hover);
+}
+
+.submit:active {
+  background-color: var(--brand-active);
+}
+
+.searchIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Popular tags */
+.popularTagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+}
+
+.popularLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tagLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px var(--space-3);
+  background-color: var(--brand-tint);
+  border: 1px solid var(--brand-tint-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--brand-text-on-tint);
+  text-decoration: none;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.tagLink:hover {
+  background-color: var(--brand);
+  color: #FFFFFF;
+  border-color: var(--brand);
+}
+
+.note {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.note a {
+  color: var(--brand-text-on-tint);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+}
+
+/* ---- Desktop ------------------------------------------------------------- */
+
+@media (min-width: 640px) {
+  .search {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.3fr) auto;
+    gap: var(--space-3);
+    align-items: end;
+  }
+
+  .submit {
+    width: auto;
+    min-width: 11rem;
+  }
+}

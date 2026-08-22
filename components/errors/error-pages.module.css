@@ -1,0 +1,100 @@
+.page {
+  padding-block: var(--space-7) var(--space-9);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.lead {
+  max-width: 62ch;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.reassure {
+  max-width: 66ch;
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background-color: var(--color-status-available-fill);
+  color: var(--color-status-available-text);
+  border: var(--rule-width) solid var(--color-status-available-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.section {
+  margin-top: var(--space-7);
+}
+
+.sectionTitle {
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-xl);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 62ch;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.helpNote {
+  max-width: 62ch;
+  margin-top: var(--space-5);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.art {
+  width: 80px;
+  height: 80px;
+  margin-bottom: var(--space-moderate);
+}

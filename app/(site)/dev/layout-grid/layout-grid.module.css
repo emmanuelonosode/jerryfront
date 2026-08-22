@@ -1,0 +1,69 @@
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  margin-top: var(--space-3);
+  font-size: var(--font-size-3xl);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.lead {
+  max-width: 62ch;
+  margin-top: var(--space-3);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.heading {
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-xl);
+}
+
+.note {
+  max-width: 68ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cell {
+  padding: var(--space-3);
+  background-color: var(--color-bg-tertiary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.band {
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+  background-color: var(--color-bg-secondary);
+}
+
+.bandInner {
+  padding-block: var(--space-4);
+  border-left: 2px solid var(--color-border-strong);
+  padding-left: var(--space-3);
+}
+
+.bandLabel {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}

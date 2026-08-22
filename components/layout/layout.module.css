@@ -1,0 +1,113 @@
+/* -----------------------------------------------------------------------------
+   Layout primitives.
+   Gutters step 16 -> 24 -> 32. Every band on the site uses these so left edges
+   align down the full page.
+   -------------------------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.page {
+  max-width: var(--max-width-page);
+}
+
+.wide {
+  max-width: var(--max-width-wide);
+}
+
+.content {
+  max-width: var(--max-width-content);
+}
+
+/* `prose` as a container width still gets gutters; the reading measure itself
+   is capped by the inner column below. */
+.container.prose {
+  max-width: calc(var(--max-width-prose) + var(--space-8));
+}
+
+/* ---- Reading column ------------------------------------------------------ */
+
+.prose {
+  max-width: var(--max-width-prose);
+}
+
+.prose > * + * {
+  margin-top: var(--space-4);
+}
+
+.prose h2 {
+  margin-top: var(--space-6);
+  font-size: var(--font-size-xl);
+}
+
+.prose h3 {
+  margin-top: var(--space-5);
+  font-size: var(--font-size-lg);
+}
+
+.prose p,
+.prose li {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ---- Grid ---------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  gap: var(--grid-gutter);
+}
+
+.col {
+  /* minmax(0, …) on the tracks plus min-width 0 here is what stops a long
+     unbroken string - an address, a licence number in mono - from forcing the
+     whole grid wider than the viewport. */
+  min-width: 0;
+  grid-column: span var(--col-span) / span var(--col-span);
+}
+
+/* ---- Section rhythm ------------------------------------------------------ */
+
+.section {
+  padding-block: var(--space-6);
+}
+
+.divided {
+  border-top: var(--rule-width) solid var(--rule-color);
+}
+
+/* ---- Tablet -------------------------------------------------------------- */
+
+@media (min-width: 640px) {
+  .container {
+    padding-inline: var(--space-5);
+  }
+
+  .col {
+    grid-column: span var(--col-span-md) / span var(--col-span-md);
+  }
+
+  .section {
+    padding-block: var(--space-7);
+  }
+}
+
+/* ---- Desktop ------------------------------------------------------------- */
+
+@media (min-width: 960px) {
+  .container {
+    padding-inline: var(--space-6);
+  }
+
+  .col {
+    grid-column: span var(--col-span-lg) / span var(--col-span-lg);
+  }
+
+  .section {
+    padding-block: var(--space-8);
+  }
+}

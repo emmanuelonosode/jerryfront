@@ -1,0 +1,211 @@
+.main {
+  padding-block: var(--space-7) var(--space-9);
+}
+
+/* ---- Page header --------------------------------------------------------- */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  max-width: 20ch;
+  font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.lead {
+  max-width: 62ch;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Sections ------------------------------------------------------------ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+.section:last-of-type {
+  border-bottom: none;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-snug);
+}
+
+.sectionIntro {
+  max-width: 68ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+/* ---- FAQ ----------------------------------------------------------------- */
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.faqItem {
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+.faqSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--button-height);
+  padding-block: var(--space-3);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  list-style: none;
+}
+
+.faqSummary::-webkit-details-marker {
+  display: none;
+}
+
+.faqSummary::after {
+  content: '';
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform var(--duration-fast) var(--easing-default);
+}
+
+.faqItem[open] .faqSummary::after {
+  transform: rotate(225deg) translate(-2px, -2px);
+}
+
+.faqAnswer {
+  max-width: 68ch;
+  padding-bottom: var(--space-4);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.faqAnswer > * + * {
+  margin-top: var(--space-3);
+}
+
+/* ---- CTA band ------------------------------------------------------------ */
+
+.cta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-7);
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.ctaText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ctaTitle {
+  font-size: var(--font-size-lg);
+}
+
+.ctaBody {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* ---- Qualify sub-nav ----------------------------------------------------- */
+
+.subNav {
+  margin-top: var(--space-5);
+}
+
+.subNavList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.subNavLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--button-height);
+  padding-inline: var(--space-3);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.subNavLink:hover {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* Current page is marked by fill and weight as well as `aria-current`, never
+   by colour alone. */
+.subNavCurrent,
+.subNavCurrent:hover {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-color: var(--color-bg-inverse);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (min-width: 640px) {
+  .cta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding: var(--space-6);
+  }
+
+  .ctaActions {
+    flex: none;
+  }
+}

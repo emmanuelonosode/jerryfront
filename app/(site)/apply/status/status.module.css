@@ -1,0 +1,300 @@
+.page {
+  padding-block: var(--space-6) var(--space-9);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: clamp(var(--font-size-xl), 4vw, var(--font-size-3xl));
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.lead,
+.sectionLead {
+  max-width: 62ch;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.deadline {
+  width: fit-content;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-status-available-fill);
+  color: var(--color-status-available-text);
+  border: var(--rule-width) solid var(--color-status-available-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+}
+
+.sectionTitle {
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-xl);
+}
+
+/* ---- Stages -------------------------------------------------------------- */
+
+.stages {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.stageMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  color: var(--color-text-tertiary);
+}
+
+.stageIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* State is carried by the icon, the visually-hidden label, and the border
+   weight - not by colour alone. */
+.stage-done .stageMark {
+  background-color: var(--color-status-available-fill);
+  border-color: var(--color-status-available-border);
+  color: var(--color-status-available-text);
+}
+
+.stage-current .stageMark {
+  background-color: var(--color-bg-inverse);
+  border-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+}
+
+.stage-blocked .stageMark {
+  background-color: var(--color-status-soon-fill);
+  border-color: var(--color-status-soon-border);
+  color: var(--color-status-soon-text);
+}
+
+.stageBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stageLabel {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stage-waiting .stageLabel {
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-normal);
+}
+
+.stageDetail {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.stageAction {
+  width: fit-content;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--color-status-soon-fill);
+  color: var(--color-status-soon-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ---- Uploads ------------------------------------------------------------- */
+
+.uploads {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.uploadBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.uploadHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.uploadTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.docRequired,
+.docOptional {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.docRequired {
+  color: var(--color-status-soon-text);
+}
+
+.docOptional {
+  color: var(--color-text-tertiary);
+}
+
+.uploadWhy {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* 52px target - this gets tapped on a phone, usually one-handed. */
+.fileLabel {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--button-height-lg);
+  padding-inline: var(--space-5);
+  background-color: transparent;
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.fileLabel:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.uploadBlock:has(.fileInput:focus-visible) .fileLabel {
+  box-shadow: var(--focus-ring);
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.fileItem,
+.uploadError {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.fileIcon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+.fileName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  margin-left: auto;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.uploadError {
+  align-items: flex-start;
+  color: var(--color-status-error-text);
+  line-height: var(--line-height-normal);
+}
+
+.uploadFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+/* ---- Help ---------------------------------------------------------------- */
+
+.helpBlock {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.fraudNote {
+  max-width: 66ch;
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-status-soon-fill);
+  color: var(--color-status-soon-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}

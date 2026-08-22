@@ -1,0 +1,41 @@
+/* -----------------------------------------------------------------------------
+   Logotype.
+
+   The artwork is a stacked lockup on a square canvas carrying its own internal
+   padding, so the element is sized by HEIGHT and the width follows. Sizing by
+   width would make the visible logo depend on however much transparent margin
+   the export happens to include.
+   -------------------------------------------------------------------------- */
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.image {
+  display: block;
+  width: auto;
+  height: var(--logo-height);
+  object-fit: contain;
+}
+
+/* ---- Sizes ---------------------------------------------------------------
+   Sized so the smallest line in the stack — "REALTY GROUP" — stays readable.
+   Below about 44px it falls to a few pixels tall and stops being legible at
+   all, which is the constraint a stacked lockup carries into a chrome bar.
+   ------------------------------------------------------------------------- */
+
+.sm {
+  --logo-height: 44px;
+}
+
+.md {
+  --logo-height: 50px;
+}
+
+@media (min-width: 960px) {
+  .md {
+    --logo-height: 56px;
+  }
+}

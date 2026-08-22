@@ -1,0 +1,56 @@
+/* Status pill. Each tone is a family from the token set - `background` fill,
+   `muted` border, the accessible `-text` stop, and a dot in the same hue. */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-cozy);
+  padding: var(--badge-padding-y) var(--badge-padding-x);
+  border-radius: var(--badge-radius);
+  border: var(--rule-width) solid transparent;
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--badge-font-weight);
+  /* Statuses arrive as SCREAMING_SNAKE and are lowercased by the component;
+     this restores a capital without a second string in the markup. */
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: currentColor;
+}
+
+.neutral {
+  background-color: var(--color-status-leased-fill);
+  border-color: var(--color-status-leased-border);
+  color: var(--color-status-leased-text);
+}
+
+.info {
+  background-color: var(--color-status-pending-fill);
+  border-color: var(--color-status-pending-border);
+  color: var(--color-status-pending-text);
+}
+
+.progress {
+  background-color: var(--color-status-soon-fill);
+  border-color: var(--color-status-soon-border);
+  color: var(--color-status-soon-text);
+}
+
+.success {
+  background-color: var(--color-status-available-fill);
+  border-color: var(--color-status-available-border);
+  color: var(--color-status-available-text);
+}
+
+.danger {
+  background-color: var(--color-status-error-fill);
+  border-color: var(--color-status-error-border);
+  color: var(--color-status-error-text);
+}

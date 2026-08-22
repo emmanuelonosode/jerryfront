@@ -1,0 +1,86 @@
+.region {
+  position: fixed;
+  z-index: 80;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* The region spans the viewport so toasts stack predictably, but it must not
+     swallow clicks on the page beneath when empty. */
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: var(--rule-width) solid;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-overlay);
+  pointer-events: auto;
+}
+
+.icon {
+  flex: none;
+  margin-top: 0.1em;
+}
+
+.message {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+/* Visible word, not just a colour and a glyph. Someone who cannot distinguish
+   the hue still reads "Problem." */
+.prefix {
+  font-weight: var(--font-weight-semibold);
+}
+
+.dismiss {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -2px -4px 0 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+}
+
+.dismiss:hover {
+  background-color: rgb(0 0 0 / 0.06);
+}
+
+.success {
+  background-color: var(--color-status-success-fill);
+  color: var(--color-status-success-text);
+  border-color: var(--color-status-available-border);
+}
+
+.error {
+  background-color: var(--color-status-error-fill);
+  color: var(--color-status-error-text);
+  border-color: var(--color-status-error-border);
+}
+
+.info {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-default);
+}
+
+@media (min-width: 640px) {
+  .region {
+    left: auto;
+    right: var(--space-5);
+    bottom: var(--space-5);
+    width: min(26rem, calc(100vw - var(--space-8)));
+  }
+}

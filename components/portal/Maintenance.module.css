@@ -1,0 +1,63 @@
+/* Ticket history. Collapsible rather than a stack of open cards: a resident
+   with a dozen requests should be able to see all of them at once and open the
+   one they came for. */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-compact);
+}
+
+.details {
+  width: 100%;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+  /* 44px floor - the whole row is the disclosure target. */
+  min-height: var(--button-height);
+  padding: var(--space-compact) var(--space-moderate);
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.summary:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: calc(var(--focus-ring-gap) * -1);
+}
+
+.summaryMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ticketTitle {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.body {
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.description {
+  padding: var(--space-compact) var(--space-moderate);
+  font-size: var(--text-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+}

@@ -1,0 +1,113 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5) 0;
+}
+
+.headline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+}
+
+.body {
+  max-width: 62ch;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.blockTitle {
+  font-size: var(--font-size-lg);
+}
+
+.blockBody {
+  max-width: 60ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* The same card and the same grid as the results themselves.
+   These were `density="compact"` in a single flex column - that density is the
+   sidebar layout, image left and text in a narrow column beside it, so at the
+   full width of this panel each card stretched to fill the row and left most
+   of it empty. Someone who found nothing is being shown the nearest homes we
+   have; they should look like homes, not like a different component. */
+.alternatives {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .alternatives {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .alternatives {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.relaxLink {
+  /* 24px minimum target. These are standalone navigation links rather than
+     links inside a sentence, so the WCAG 2.5.8 inline exception does not apply. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Deliberately modest. The next actions below are the point of this component,
+   and an illustration that fills the viewport pushes them under the fold. */
+.art {
+  width: 88px;
+  height: 88px;
+  margin-bottom: var(--space-moderate);
+}

@@ -1,0 +1,169 @@
+.wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.toolbar {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.instructions {
+  display: none;
+}
+
+.zoomButtons {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.zoomButton {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  border: none;
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+
+.zoomButton + .zoomButton {
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.zoomButton:hover {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-accent-primary);
+}
+
+.map {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 0;
+}
+
+/* `flex: 1` here was `flex-basis: 0`, which wins over the height property on
+   the main axis. Inside this column wrapper that collapsed the map to 0px
+   whenever the parent had no definite height - which is every use that passes
+   a pixel height instead of '100%', i.e. the property detail page. The map
+   rendered as an empty box: TileLayer bails on a zero-size view, so not one
+   tile loaded, and the viewport fell back to MIN_ZOOM, hence "zoom 2.0" over
+   a blank rectangle. `auto` takes the basis from `height` again. */
+.map {
+  flex: 1 1 auto;
+}
+
+.pin,
+.cluster {
+  /* Above the basemap tiles. */
+  z-index: 1;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px minimum target, including for the small numeric cluster bubbles. */
+  min-width: var(--button-height);
+  min-height: var(--button-height);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  transition:
+    background-color var(--duration-fast) var(--easing-default),
+    border-color var(--duration-fast) var(--easing-default);
+}
+
+.pin {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--color-border-strong);
+}
+
+.pin:hover,
+.pinActive {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+}
+
+/* Selection is carried by fill, weight, and `aria-current` - not by colour
+   alone, which in a near-monochrome palette would be nearly invisible anyway. */
+.pinSelected {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-width: 2px;
+  outline: 2px solid var(--color-bg-primary);
+}
+
+.cluster {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border: 2px solid var(--color-bg-primary);
+  border-radius: var(--radius-full);
+}
+
+.cluster:hover {
+  background-color: var(--button-primary-bg-hover);
+}
+
+/* Markers sit on a busy grid; the two-layer ring needs to win against it, so
+   raise the focused marker above its neighbours. */
+.pin:focus-visible,
+.cluster:focus-visible {
+  z-index: 5;
+}
+
+.status {
+  min-height: 1.25rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 640px) {
+  .toolbar {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+
+  .zoomButtons {
+    flex: none;
+  }
+}

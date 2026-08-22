@@ -1,0 +1,42 @@
+.save {
+  /* Above the card's stretched-link overlay, so both targets stay real. */
+  position: absolute;
+  z-index: 2;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--button-height);
+  height: var(--button-height);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-default),
+    color var(--duration-fast) var(--easing-default);
+}
+
+.save:hover:not(:disabled) {
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Saved state is carried by the filled icon and aria-pressed, plus a fill
+   inversion - not by colour alone. */
+.saved,
+.saved:hover:not(:disabled) {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-color: var(--color-bg-inverse);
+}
+
+.save:disabled {
+  cursor: progress;
+}
+
+.icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}

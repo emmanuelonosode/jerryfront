@@ -1,0 +1,40 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.frame {
+  position: relative;
+  /* Reserved before the frame loads. A lazily-loaded iframe with no reserved
+     box is a guaranteed layout shift, and the CLS budget is 0.1. */
+  aspect-ratio: 16 / 10;
+  width: 100%;
+  overflow: hidden;
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-tertiary);
+}
+
+.frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.caption {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+}

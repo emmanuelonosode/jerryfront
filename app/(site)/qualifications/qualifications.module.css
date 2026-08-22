@@ -1,0 +1,122 @@
+.heroMedia {
+  position: relative;
+  width: 100%;
+  max-width: 68ch;
+  height: clamp(14rem, 28vw, 22rem);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-block: var(--space-4) var(--space-6);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-default);
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rowLabel {
+  width: 34%;
+  padding: var(--space-4) var(--space-4) var(--space-4) 0;
+  border-top: var(--rule-width) solid var(--color-border-default);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  vertical-align: top;
+  color: var(--color-text-primary);
+}
+
+.rowValue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-top: var(--rule-width) solid var(--color-border-default);
+  vertical-align: top;
+}
+
+.value {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.detail {
+  max-width: 56ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding-left: var(--space-5);
+  max-width: 68ch;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.steps strong {
+  color: var(--color-text-primary);
+}
+
+.documents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 68ch;
+}
+
+.documents li {
+  padding: var(--space-3) 0;
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.note {
+  max-width: 68ch;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-tertiary);
+  border-left: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+/* The label column collapses above the value on small screens rather than
+   forcing a horizontal scroll on a two-column table. */
+@media (max-width: 640px) {
+  .table,
+  .table tbody,
+  .table tr,
+  .rowLabel,
+  .rowValue {
+    display: block;
+    width: 100%;
+  }
+
+  .rowLabel {
+    padding-bottom: var(--space-2);
+  }
+
+  .rowValue {
+    border-top: none;
+    padding-top: 0;
+  }
+}

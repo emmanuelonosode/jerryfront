@@ -1,0 +1,473 @@
+/* ---- Mobile bar ---------------------------------------------------------- */
+
+.mobileBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+}
+
+/* Stays reachable down a 1,000-home list: on a phone the alternative is
+   scrolling back to the top to change one filter. */
+@media (max-width: 959px) {
+  .mobileBar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--color-bg-primary);
+    border-bottom: var(--rule-width) solid var(--color-border-default);
+  }
+}
+
+.mobileSearch {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-1);
+  padding-inline: var(--space-3);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  background: var(--color-bg-primary);
+}
+
+.mobileSearch:focus-within {
+  border-color: var(--color-border-interactive);
+}
+
+.mobileInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--button-height);
+  border: 0;
+  background: none;
+  color: var(--color-text-primary);
+  /* 16px minimum: iOS Safari zooms the whole page on focus below it, which
+     leaves the results column scrolled sideways with no way back. */
+  font-size: max(16px, var(--font-size-sm));
+}
+
+.mobileInput:focus {
+  outline: none;
+}
+
+.mobileGo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--button-radius);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.activeChips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+}
+
+.activeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 36px;
+  padding-inline: var(--space-3);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: 999px;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.activeChip:hover {
+  background: var(--color-bg-secondary);
+}
+
+.activeChip svg {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-secondary);
+}
+
+.clearAll {
+  border: 0;
+  background: none;
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-text-link);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.filterButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--button-height);
+  padding-inline: var(--space-4);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: 4px;
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-full);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+}
+
+.mobileCount,
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.bar {
+  display: none;
+}
+
+/* ---- The horizontal filter bar (desktop) --------------------------------- */
+
+.searchRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.searchField {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.searchInput {
+  width: 100%;
+  height: var(--button-height-lg);
+  padding-inline: var(--input-padding-x);
+  background-color: var(--input-bg);
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--input-border);
+  border-radius: var(--input-radius);
+  font-size: var(--font-size-base);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.searchInput:hover {
+  border-color: var(--color-border-strong);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-3);
+}
+
+/*
+  A pill that shows its own value.
+
+  The label stays visible rather than becoming a placeholder inside the
+  control. A filter bar's job is to answer "what is currently applied" at a
+  glance, and a pill reading "3+" with no word next to it answers nothing -
+  beds, baths and minimum stay are all plausible.
+*/
+.chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* Reset the fieldset used by the price pair. */
+  margin: 0;
+  padding: 0 var(--space-3);
+  min-height: var(--button-height);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+}
+
+.chip:hover {
+  border-color: var(--color-border-interactive);
+}
+
+.chipLabel {
+  /* float:none + padding:0 reset the legend's default box in the price pill. */
+  float: none;
+  padding: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.chipControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.chipDash {
+  color: var(--color-text-tertiary);
+}
+
+/* The pill is the visible control, so the select inside it carries no chrome
+   of its own - otherwise every filter reads as a box inside a box. */
+.chipSelect {
+  min-height: calc(var(--button-height) - 0.5rem);
+  padding-inline: var(--space-1);
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.chipSelect:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.chipDate,
+.chipState {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.chipState {
+  width: 4rem;
+}
+
+/* ---- Toggle pills -------------------------------------------------------- */
+
+.toggleChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--button-height);
+}
+
+/*
+  The checkbox is hidden but still focusable and still a checkbox - not
+  replaced by a div with a click handler. Screen readers announce it as
+  "checkbox, checked", the label is wired by wrapping, and the focus ring is
+  drawn on the pill via :has() below.
+*/
+.toggleInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.toggleBody {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--button-height);
+  padding-inline: var(--space-4);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.toggleChip:hover .toggleBody {
+  border-color: var(--color-border-interactive);
+}
+
+/* Checked state carries fill AND border weight, never colour alone. */
+.toggleChip:has(.toggleInput:checked) .toggleBody {
+  background-color: var(--color-bg-inverse);
+  border-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
+}
+
+.toggleChip:has(.toggleInput:focus-visible) .toggleBody {
+  outline: var(--focus-ring-width, 2px) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.clear {
+  min-height: var(--button-height);
+  padding-inline: var(--space-3);
+  background: none;
+  border: none;
+  color: var(--color-text-link);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.toggles {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+/* ---- Mobile drawer ------------------------------------------------------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-surface-overlay);
+}
+
+.drawer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 92dvh;
+  background-color: var(--color-bg-primary);
+  border-top: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-drawer);
+  animation: rise var(--duration-slow) var(--easing-out);
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(3%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    animation: none;
+  }
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+.drawerTitle {
+  font-size: var(--font-size-lg);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--button-height);
+  height: var(--button-height);
+  background: transparent;
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--button-radius);
+}
+
+.drawerForm {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.drawerFields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Pinned so the apply button is reachable one-handed without scrolling the
+   whole filter list. */
+.drawerActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-top: var(--rule-width) solid var(--color-border-default);
+  background-color: var(--color-bg-primary);
+}
+
+/* ---- Desktop ------------------------------------------------------------- */
+
+@media (min-width: 960px) {
+  /* The desktop bar shows every filter's current value inline, so the chips
+     would restate it. They exist for the width where the values are hidden
+     inside the drawer. */
+  .mobileBar,
+  .activeChips,
+  .overlay {
+    display: none;
+  }
+
+  .bar {
+    display: block;
+  }
+}

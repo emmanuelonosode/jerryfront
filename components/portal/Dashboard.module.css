@@ -1,0 +1,257 @@
+/* -----------------------------------------------------------------------------
+   Resident dashboard.
+
+   Cards follow the same molecule the marketing site uses: a header row, then
+   hairline-separated rows, then one action. The dashboard's job is to answer
+   three questions on arrival - where is my application, what do I owe, and did
+   anyone look at my maintenance ticket - so those are the three cards, in that
+   order, and nothing else competes with them above the fold.
+   -------------------------------------------------------------------------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-normal);
+  max-width: var(--max-width-wide);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+}
+
+.greeting {
+  font-size: var(--display-sm);
+  line-height: var(--lh-display);
+  font-weight: var(--font-weight-semibold);
+}
+
+.lead {
+  margin-top: var(--space-slim);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.date {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Cards --------------------------------------------------------------- */
+
+.card,
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-compact);
+  padding: var(--space-moderate);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-1);
+}
+
+.empty {
+  align-items: flex-start;
+}
+
+.emptyArt {
+  width: 72px;
+  height: 72px;
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+}
+
+.cardTitle {
+  font-size: var(--header-sm);
+  line-height: var(--lh-header-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.cardAction {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--button-height);
+  margin-top: var(--space-cozy);
+  padding-inline: var(--space-moderate);
+  border-radius: var(--button-radius);
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  transition: background-color var(--duration-fast);
+}
+
+.cardAction:hover {
+  background-color: var(--button-primary-bg-hover);
+  color: var(--button-primary-text);
+  text-decoration: none;
+}
+
+/* ---- Application --------------------------------------------------------- */
+
+.propertyRow {
+  display: flex;
+  gap: var(--space-compact);
+  padding-top: var(--space-compact);
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.propertyPhoto,
+.propertyPhotoEmpty {
+  flex: none;
+  width: 160px;
+  height: 90px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background-color: var(--color-bg-tertiary);
+}
+
+.propertyText {
+  min-width: 0;
+}
+
+.propertyAddress {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.propertySpecs {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.agentRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+  padding-top: var(--space-compact);
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+  font-size: var(--text-sm);
+}
+
+.rowLabel {
+  font-weight: var(--font-weight-semibold);
+}
+
+.rowValue {
+  color: var(--color-text-secondary);
+}
+
+.breakdown {
+  padding-top: var(--space-compact);
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.breakdownTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.breakdownList {
+  margin: var(--space-cozy) 0 0;
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-moderate);
+  padding-block: var(--space-cozy);
+  font-size: var(--text-sm);
+}
+
+.breakdownRow + .breakdownRow {
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.breakdownRow dd {
+  margin: 0;
+}
+
+.breakdownTotal {
+  font-weight: var(--font-weight-semibold);
+  border-top-color: var(--color-border-strong);
+}
+
+.figure {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Widgets ------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-moderate);
+}
+
+.amount {
+  font-size: var(--display-sm);
+  line-height: 1.1;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticketList {
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+  padding-block: var(--space-cozy);
+}
+
+.ticket + .ticket {
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.ticketTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ticketMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-cozy);
+}
+
+.muted {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  padding: var(--space-compact);
+  background-color: var(--color-status-error-fill);
+  border: var(--rule-width) solid var(--color-status-error-border);
+  border-radius: var(--radius-md);
+  color: var(--color-status-error-text);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

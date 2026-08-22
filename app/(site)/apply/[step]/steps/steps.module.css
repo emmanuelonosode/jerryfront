@@ -1,0 +1,469 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.explainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-left: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  max-width: 62ch;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+.explainerNote {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.formError {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-status-error-fill);
+  color: var(--color-status-error-text);
+  border: var(--rule-width) solid var(--color-status-error-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.sourceRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+@media (min-width: 640px) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sourceRow {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.5fr);
+    align-items: start;
+  }
+}
+
+/* ---- History --------------------------------------------------------------*/
+
+.triple,
+.tripleTight {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.addressBlock,
+.petBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.blockLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.optional {
+  font-weight: var(--font-weight-normal);
+  text-transform: none;
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-tertiary);
+}
+
+/* The eviction question, given its own weight on the page. Someone hesitating
+   over it should find the reassurance in the same glance as the question. */
+.sensitiveBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+/* ---- Review ---------------------------------------------------------------*/
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.reviewRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.reviewLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.reviewValue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.reviewNote {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.editLink {
+  align-self: flex-start;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.blockerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  padding-left: var(--space-4);
+  list-style: disc;
+}
+
+.disclosures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.disclosuresTitle {
+  font-size: var(--font-size-lg);
+}
+
+.feeCallout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--color-bg-primary);
+  border-left: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+.disclosureList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.disclosureList li {
+  padding-left: var(--space-4);
+  position: relative;
+}
+
+.disclosureList li::before {
+  content: '-';
+  position: absolute;
+  left: 0;
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (min-width: 640px) {
+  .triple {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+
+  .tripleTight {
+    grid-template-columns: 2fr 1fr 2fr;
+  }
+
+  .reviewRow {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: baseline;
+  }
+}
+
+/* ---- Payment --------------------------------------------------------------*/
+
+.sampleBanner {
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+}
+
+/* Deliberately prominent. This is the paragraph an applicant measures a later
+   fraudulent message against, so it must be impossible to scroll past. */
+.fraudNotice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background-color: var(--color-status-soon-fill);
+  color: var(--color-status-soon-text);
+  border: 2px solid var(--color-status-soon-border);
+  border-radius: var(--radius-md);
+}
+
+.fraudHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fraudIcon {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.fraudTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.fraudList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 66ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.fraudList li {
+  position: relative;
+  padding-left: var(--space-4);
+}
+
+.fraudList li::before {
+  content: '-';
+  position: absolute;
+  left: 0;
+}
+
+.referenceBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.referenceLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.referenceValue {
+  font-size: var(--font-size-2xl);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.methodList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.methodBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.methodDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: var(--space-6);
+  font-size: var(--font-size-sm);
+}
+
+.methodDetailLabel {
+  display: inline;
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.methodDetailLabel::after {
+  content: ' ';
+}
+
+.methodDetails dd {
+  display: inline;
+  margin: 0;
+}
+
+.methodDetailValue {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+}
+
+.irreversibleNote {
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-status-error-fill);
+  color: var(--color-status-error-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+/* ---- Confirmation ---------------------------------------------------------*/
+
+.confirmVerified,
+.confirmPending {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 2px solid;
+  border-radius: var(--radius-md);
+}
+
+.confirmVerified {
+  background-color: var(--color-status-available-fill);
+  color: var(--color-status-available-text);
+  border-color: var(--color-status-available-border);
+}
+
+.confirmPending {
+  background-color: var(--color-status-soon-fill);
+  color: var(--color-status-soon-text);
+  border-color: var(--color-status-soon-border);
+}
+
+.confirmHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.confirmIcon {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.confirmTitle {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-snug);
+}
+
+.confirmBody {
+  max-width: 64ch;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+}
+
+.nextList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding-left: var(--space-5);
+  max-width: 66ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.nextList strong {
+  color: var(--color-text-primary);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* The account offer on the confirmation step. Set apart from the surrounding
+   explanatory copy so it reads as an action, not another paragraph. */
+.confirmBlock {
+  margin-top: var(--space-normal);
+  padding: var(--space-moderate);
+  background-color: var(--color-bg-tertiary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}

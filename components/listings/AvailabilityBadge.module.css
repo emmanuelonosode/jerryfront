@@ -1,0 +1,57 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--badge-padding-y) var(--badge-padding-x);
+  border: var(--rule-width) solid;
+  border-radius: var(--badge-radius);
+  font-weight: var(--badge-font-weight);
+  letter-spacing: var(--badge-letter-spacing);
+  white-space: nowrap;
+}
+
+.md {
+  font-size: var(--font-size-xs);
+}
+
+.sm {
+  font-size: 0.6875rem;
+  padding: 1px var(--space-2);
+}
+
+.icon {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.date {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  text-transform: none;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.available {
+  background-color: var(--color-status-available-fill);
+  color: var(--color-status-available-text);
+  border-color: var(--color-status-available-border);
+}
+
+.soon {
+  background-color: var(--color-status-soon-fill);
+  color: var(--color-status-soon-text);
+  border-color: var(--color-status-soon-border);
+}
+
+.pending {
+  background-color: var(--color-status-pending-fill);
+  color: var(--color-status-pending-text);
+  border-color: var(--color-status-pending-border);
+}
+
+.leased {
+  background-color: var(--color-status-leased-fill);
+  color: var(--color-status-leased-text);
+  border-color: var(--color-status-leased-border);
+}

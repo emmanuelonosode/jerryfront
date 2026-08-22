@@ -1,0 +1,220 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.viewToggle {
+  display: inline-flex;
+  align-self: flex-start;
+  margin: var(--space-3) var(--space-4);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  overflow: hidden;
+  background-color: var(--color-bg-surface);
+  z-index: 10;
+}
+
+.toggleButton {
+  min-height: var(--button-height);
+  padding-inline: var(--space-5);
+  background: transparent;
+  color: var(--color-text-primary);
+  border: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  cursor: pointer;
+}
+
+.toggleButton + .toggleButton {
+  border-left: var(--rule-width) solid var(--color-border-strong);
+}
+
+.toggleButton:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Selection carried by fill and weight as well as aria-pressed. */
+.toggleActive,
+.toggleActive:hover {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+}
+
+.panes {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.selected {
+  position: absolute;
+  bottom: var(--space-4);
+  left: var(--space-4);
+  right: var(--space-4);
+  max-width: 380px;
+  z-index: 15;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.paginationWrap {
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ---- Mobile: one pane at a time ------------------------------------------ */
+
+.panes[data-view='list'] .mapPane {
+  display: none;
+}
+
+.panes[data-view='map'] .listPane {
+  display: none;
+}
+
+.panes[data-view='map'] .mapPane {
+  display: block;
+  height: calc(100dvh - 120px);
+}
+
+.listPane {
+  padding: var(--space-3) var(--space-4) var(--space-8);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---- Desktop: 50% Locked Map Left / 50% Scrollable Property Cards Right ------------- */
+
+@media (min-width: 960px) {
+  .wrap {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .viewToggle {
+    display: none;
+  }
+
+  .panes,
+  .panes[data-view='list'],
+  .panes[data-view='map'] {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .panes[data-view='list'] .mapPane,
+  .panes[data-view='map'] .listPane {
+    display: block;
+  }
+
+  /*
+    The left map takes full length (100% of height) and NEVER scrolls out of view.
+  */
+  .mapPane {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    border-right: 1px solid var(--color-border-default);
+    background-color: var(--color-bg-tertiary);
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .mapSticky {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /*
+    The right pane takes 50% of the screen and is the ONLY section that scrolls.
+    It has its own independent vertical scrollbar just like invitationhomes.com.
+  */
+  .listPane {
+    height: 100%;
+    width: 100%;
+    min-width: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-4) var(--space-6) var(--space-8) var(--space-6);
+  }
+
+  .listHead {
+    margin-bottom: var(--space-4);
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+
+  .listFooter {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+}
+
+/* ---- Load-more ------------------------------------------------------------
+   The sentinel doubles as the manual control, so the thing the observer
+   watches and the thing a reader clicks are the same element and cannot drift
+   apart.
+   ------------------------------------------------------------------------- */
+
+.more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-6);
+}
+
+.moreButton {
+  min-height: var(--button-height);
+  padding-inline: var(--space-6);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.moreButton:hover:not(:disabled) {
+  background: var(--color-bg-secondary);
+}
+
+.moreButton:disabled {
+  cursor: default;
+  color: var(--color-text-secondary);
+}
+
+.moreError {
+  font-size: var(--font-size-sm);
+  color: var(--color-status-error-text, var(--color-text-primary));
+}

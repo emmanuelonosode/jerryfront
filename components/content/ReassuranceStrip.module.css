@@ -1,0 +1,75 @@
+.strip {
+  border-block: var(--rule-width) solid var(--color-border-strong);
+  background-color: var(--color-bg-secondary);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.item {
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  height: 100%;
+  padding: var(--space-4);
+  text-decoration: none;
+}
+
+.link:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.label {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.detail {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.compact .link {
+  padding: var(--space-3) var(--space-4);
+}
+
+.compact .label {
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 640px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .item {
+    border-bottom: none;
+    border-right: var(--rule-width) solid var(--color-border-subtle);
+  }
+
+  .item:last-child {
+    border-right: none;
+  }
+}
+
+/* Four claims fit on one row only once there is room for them; below that they
+   pair up rather than squeezing to four unreadable columns. */
+@media (min-width: 960px) {
+  .list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

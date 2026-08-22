@@ -1,0 +1,60 @@
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'label  button'
+    'value  button';
+  align-items: center;
+  gap: 2px var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: var(--rule-width) solid var(--color-border-subtle, var(--color-border-default));
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.label {
+  grid-area: label;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Tabular figures and a monospace stack: an account number is read digit by
+   digit against a banking app, and proportional glyphs make that harder than
+   it needs to be. `anywhere` so a long wallet address wraps instead of
+   pushing the copy button off a phone screen. */
+.value {
+  grid-area: value;
+  font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.button {
+  grid-area: button;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--color-bg-secondary);
+}
+
+.button svg {
+  width: 16px;
+  height: 16px;
+}

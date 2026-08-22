@@ -1,0 +1,65 @@
+/* The site is light-only by design: `color-scheme: light`, and no dark
+   palette in app/tokens.css. Dark-mode overrides used to live here and
+   flipped this component on OS preference alone, with no dark tokens
+   behind them - which is how the footer ended up white text on a white
+   background. Removed rather than left dormant. */
+/* -----------------------------------------------------------------------------
+   Duotone illustration layers.
+
+   Layers are addressed by `data-layer` rather than by class, for two reasons:
+   CSS-module scoping would rename a class inside the SVG and break the match,
+   and CSS rules beat SVG presentation attributes - so a `fill="none"` written
+   on the element would lose to a `fill` set here. Shapes that are meant to be
+   stroked therefore live on their own layer instead of relying on that
+   attribute.
+
+   Colours come from custom properties so a caller can retune the whole set for
+   a surface - the illustrations on the Sierra footer or a Pacific band need a
+   different pair of tones, and that is a one-line override rather than a second
+   copy of the artwork.
+   -------------------------------------------------------------------------- */
+
+.illustration {
+  --illo-back: var(--pacific-muted);
+  --illo-front: var(--pacific-base);
+  --illo-accent: var(--malibu-base);
+  --illo-on-solid: var(--white);
+
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.illustration [data-layer='back'] {
+  fill: var(--illo-back);
+}
+
+.illustration [data-layer='front'] {
+  fill: var(--illo-front);
+}
+
+.illustration [data-layer='accent'] {
+  fill: var(--illo-accent);
+}
+
+.illustration [data-layer='frontStroke'] {
+  fill: none;
+  stroke: var(--illo-front);
+}
+
+/* Filled marks knocked into a solid shape - the thumbnail and text rows inside
+   the highlighted listing row. */
+.illustration [data-layer='onFrontFill'] {
+  fill: var(--illo-on-solid);
+}
+
+/* Marks that sit on top of a solid shape - the tick inside the accent disc,
+   the clock hands inside the brand disc. */
+.illustration [data-layer='onAccent'],
+.illustration [data-layer='onFront'] {
+  fill: none;
+  stroke: var(--illo-on-solid);
+}
+
+/* On a dark surface the pale mass would disappear, so the pair inverts:
+   translucent white behind, solid white in front. */

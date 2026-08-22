@@ -1,0 +1,201 @@
+.page {
+  padding-block: var(--space-6) var(--space-9);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.lead {
+  max-width: 62ch;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-block: var(--space-6);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--button-height);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+}
+
+.toggle input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-bg-inverse);
+}
+
+.toggle:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+.formError {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-status-error-fill);
+  color: var(--color-status-error-text);
+  border: var(--rule-width) solid var(--color-status-error-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.actionNote {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-block: var(--space-6);
+  padding: var(--space-5);
+  background-color: var(--color-status-available-fill);
+  color: var(--color-status-available-text);
+  border: 2px solid var(--color-status-available-border);
+  border-radius: var(--radius-md);
+}
+
+.successHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.successIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.successTitle {
+  font-size: var(--font-size-xl);
+}
+
+.successBody,
+.successNote {
+  max-width: 62ch;
+  line-height: var(--line-height-relaxed);
+}
+
+.successNote {
+  font-size: var(--font-size-sm);
+}
+
+.stubNote {
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-xs);
+}
+
+.assurance {
+  padding-top: var(--space-5);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.assuranceTitle {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-3);
+}
+
+.assuranceList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 66ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.assuranceList li {
+  position: relative;
+  padding-left: var(--space-4);
+}
+
+.assuranceList li::before {
+  content: '-';
+  position: absolute;
+  left: 0;
+}
+
+@media (min-width: 640px) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

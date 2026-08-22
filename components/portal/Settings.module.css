@@ -1,0 +1,18 @@
+/* A single reveal toggle for all three password fields rather than one per
+   field: they are filled in sequence, and three separate eye buttons is three
+   chances to reveal the wrong one. */
+.reveal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-cozy);
+  min-height: var(--button-height);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.reveal input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand);
+}

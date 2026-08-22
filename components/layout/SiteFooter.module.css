@@ -1,0 +1,370 @@
+/* The site is light-only by design: `color-scheme: light`, and no dark
+   palette in app/tokens.css. Dark-mode overrides used to live here and
+   flipped this component on OS preference alone, with no dark tokens
+   behind them - which is how the footer ended up white text on a white
+   background. Removed rather than left dormant. */
+/* -----------------------------------------------------------------------------
+   Site footer.
+   In light mode the one large ink field in the design; in dark mode a stepped
+   surface rather than an inversion. Rules divide it either way.
+   -------------------------------------------------------------------------- */
+
+/* Footer-scoped variables rather than the global inverse tokens.
+   `bg-inverse` means "ink" in light mode but flips to near-white in dark - so
+   using it directly dropped a bright paper slab at the foot of a dark page.
+   A large surface should not invert with the theme; it should stay dark and
+   differentiate by a step instead. */
+.footer {
+  --footer-bg: var(--color-bg-inverse);
+  --footer-text: var(--color-text-inverse);
+  --footer-rule: rgb(255 255 255 / 0.16);
+  --footer-rule-soft: rgb(255 255 255 / 0.12);
+
+  background-color: var(--footer-bg);
+  color: var(--footer-text);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.inner {
+  padding-block: var(--space-7) var(--space-6);
+}
+
+/* ---- Newsletter Row ------------------------------------------------------ */
+
+.newsletterRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-6);
+  border-bottom: var(--rule-width) solid var(--footer-rule);
+}
+
+.newsletterInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.newsletterTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--footer-text);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.newsletterLead {
+  font-size: var(--font-size-sm);
+  color: var(--chrome-text-muted);
+  max-width: 60ch;
+}
+
+.newsletterForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 28rem;
+}
+
+/* Full-basis so it takes its own row above the input and button, which stay
+   side by side. */
+.newsletterLabel {
+  flex: 0 0 100%;
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--chrome-text);
+}
+
+.newsletterInput {
+  flex: 1;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--footer-rule);
+  border-radius: var(--input-radius);
+  color: #FFFFFF;
+  font-size: var(--font-size-sm);
+  outline: none;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.newsletterInput:focus {
+  background-color: rgb(255 255 255 / 0.14);
+  border-color: var(--brand-on-dark);
+  outline: var(--focus-ring-width) solid var(--brand-on-dark);
+  outline-offset: -2px;
+}
+
+.newsletterInput::placeholder {
+  color: var(--chrome-text-muted);
+}
+
+.newsletterButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding-inline: var(--space-4);
+  background-color: var(--brand);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--button-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.newsletterButton:hover {
+  background-color: var(--brand-hover);
+}
+
+@media (min-width: 640px) {
+  .newsletterRow {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* ---- Link columns -------------------------------------------------------- */
+
+.nav {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.columnTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  /* Deliberately not full-strength: these are signposts, and the links they
+     sit above are the thing to read. */
+  opacity: 0.65;
+}
+
+.columnList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.columnLink {
+  font-size: var(--font-size-sm);
+  color: var(--footer-text);
+  text-decoration: none;
+}
+
+.columnLink:hover {
+  color: var(--footer-text);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* ---- Company and licensing ----------------------------------------------- */
+
+.company {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  margin-top: var(--space-7);
+  padding-top: var(--space-6);
+  border-top: var(--rule-width) solid var(--footer-rule);
+}
+
+.companyBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.address {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-style: normal;
+  line-height: var(--line-height-normal);
+}
+
+.address a {
+  color: var(--footer-text);
+  width: fit-content;
+}
+
+.figure,
+.figureLink {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.figureLink {
+  color: var(--footer-text);
+}
+
+/* A stack, not a two-column row: the row had the state on the left and the
+   number on the right and nowhere to put the broker's name, which is the half
+   that makes the number checkable against a state register. */
+.licence {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: var(--space-2);
+  border-bottom: var(--rule-width) solid var(--footer-rule-soft);
+  font-size: var(--font-size-sm);
+}
+
+.licenceList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .licenceList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .licenceList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.licencePending {
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Fair housing and copyright ------------------------------------------ */
+
+.legal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-7);
+  padding-top: var(--space-6);
+  border-top: var(--rule-width) solid var(--footer-rule);
+}
+
+.eho {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 62ch;
+}
+
+.ehoText {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.ehoNote {
+  font-size: var(--font-size-xs);
+}
+
+.ehoStatement {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-relaxed);
+  opacity: 0.75;
+}
+
+.legalBottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.authorityLogos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  align-items: center;
+}
+
+.authorityLogo {
+  width: auto;
+  height: 40px;
+  object-fit: contain;
+}
+
+.authorityLogoWide {
+  width: auto;
+  height: 28px;
+  object-fit: contain;
+}
+
+.copyright {
+  font-size: var(--font-size-xs);
+  opacity: 0.75;
+}
+
+/* ---- Tablet -------------------------------------------------------------- */
+
+@media (min-width: 640px) {
+  .inner {
+    padding-block: var(--space-8) var(--space-6);
+  }
+
+  .nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7) var(--space-5);
+  }
+
+  .company {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .legal {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+  
+  .legalBottom {
+    align-items: flex-end;
+  }
+}
+
+/* ---- Desktop ------------------------------------------------------------- */
+
+@media (min-width: 960px) {
+  .nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ---- Licensing ------------------------------------------------------------
+   One block per state: the state, the named broker, the number. Laid out as a
+   stack rather than the old two-column row, which had nowhere to put a name.
+   -------------------------------------------------------------------------- */
+
+.licenceState {
+  font-weight: var(--font-weight-semibold);
+}
+
+.licenceBroker,
+.licenceExtra {
+  color: var(--chrome-text-muted);
+}
+
+.licenceExtra {
+  font-size: var(--font-size-xs);
+}

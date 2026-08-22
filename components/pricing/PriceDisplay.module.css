@@ -1,0 +1,194 @@
+/* -----------------------------------------------------------------------------
+   Price display.
+   Every figure runs through IBM Plex Mono, so columns of money align by
+   construction rather than by an opt-in font feature.
+   -------------------------------------------------------------------------- */
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.per,
+.cardPer,
+.headlinePer {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+}
+
+/* Mono figures sit tight against a following word; the qualifier needs air. */
+.per {
+  margin-left: var(--space-1);
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Card ---------------------------------------------------------------- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.cardTotal {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.cardPer {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+}
+
+/* The competitive comparison, made legible rather than hidden. */
+.cardSplit {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Breakdown ----------------------------------------------------------- */
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.headline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.headlineTotal {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+.headlinePer {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.headlineNote {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Disclosure ---------------------------------------------------------- */
+
+.details {
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* 44px target, and the marker is styled rather than left as the browser
+     default triangle. */
+  min-height: var(--button-height);
+  padding-block: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary::after {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform var(--duration-fast) var(--easing-default);
+}
+
+.details[open] .summary::after {
+  transform: rotate(225deg) translate(-2px, -2px);
+}
+
+.tableWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-block: var(--space-3) var(--space-4);
+}
+
+/* ---- Tables -------------------------------------------------------------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rowLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4) var(--space-3) 0;
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  text-align: left;
+  color: var(--color-text-primary);
+}
+
+.reason {
+  max-width: 52ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.rowAmount {
+  padding: var(--space-3) 0;
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+  font-size: var(--font-size-base);
+  text-align: right;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.totalRow .rowLabel,
+.totalRow .rowAmount {
+  border-bottom: none;
+  border-top: 2px solid var(--color-border-strong);
+  font-weight: var(--font-weight-bold);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.groupTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}

@@ -1,0 +1,32 @@
+{
+  "name": "skelton-scaffold",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "node --test \"lib/**/*.test.ts\"",
+    "verify": "npm run lint && tsc --noEmit && npm test",
+    "audit:fair-housing": "node scripts/fair-housing-audit.mjs",
+    "launch-gate": "node scripts/launch-gate.mjs",
+    "verify:browser": "bash scripts/suites/run-all.sh",
+    "audit:flex-text": "node scripts/flex-text-audit.mjs"
+  },
+  "dependencies": {
+    "next": "16.3.1",
+    "nodemailer": "^9.0.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/nodemailer": "^8.0.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "typescript": "^5"
+  }
+}

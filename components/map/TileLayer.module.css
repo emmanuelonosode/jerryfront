@@ -1,0 +1,58 @@
+/* The site is light-only by design: `color-scheme: light`, and no dark
+   palette in app/tokens.css. Dark-mode overrides used to live here and
+   flipped this component on OS preference alone, with no dark tokens
+   behind them - which is how the footer ended up white text on a white
+   background. Removed rather than left dormant. */
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Scaled from the top-left so tile positions stay in the same coordinate
+     space as the markers, which are positioned from the same origin. */
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.tile {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+  /* A tile that has not loaded shows the surface beneath rather than a broken
+     image icon. */
+  background-color: var(--color-bg-tertiary);
+}
+
+.attribution {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 3px 8px;
+  /* 13px, the type floor. The first version used 11px, which is below it and
+     also failed contrast at 3.27:1 - attribution is a licence requirement, so
+     it has to be genuinely readable rather than technically present. */
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  color: var(--color-text-primary);
+  /* Fully opaque. A translucent backing means the contrast ratio depends on
+     whichever tile happens to be underneath, which is not a ratio anyone can
+     verify. */
+  background-color: var(--color-bg-secondary);
+  border-top-left-radius: var(--radius-sm);
+}
+
+/*
+ * Dark mode.
+ *
+ * OpenStreetMap's standard tiles have no dark style, so on a dark page the map
+ * is otherwise a glaring white rectangle. A filter is a compromise, not a
+ * solution: it is applied gently (dim and slightly desaturate) rather than
+ * inverted, because inverting a map turns green parks blue and red roads cyan,
+ * which is worse than a bright panel.
+ *
+ * THE REAL FIX IS A DARK TILE STYLE FROM THE PROVIDER. Set
+ * NEXT_PUBLIC_MAP_TILE_URL to one and remove this block - hence the opt-out
+ * below rather than baking the filter in.
+ */
+
+

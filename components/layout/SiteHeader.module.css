@@ -1,0 +1,319 @@
+/* -----------------------------------------------------------------------------
+   Site header - the documented global header.
+
+   A solid Pacific bar carrying the logotype, a search field, the nav and the
+   account actions. The system draws this in brand colour rather than in black,
+   and the search sits inside the bar rather than under it - which is what makes
+   it read as Ticketmaster rather than as a generic dark navbar.
+
+   The field inside the bar is translucent white rather than a solid fill, so it
+   reads as a recess in the bar instead of a white box sitting on top of it. It
+   opens to a solid white field on focus, at which point it is a real input and
+   should look like the ones on the rest of the site.
+   -------------------------------------------------------------------------- */
+
+.header {
+  --header-bg: var(--chrome);
+  --header-text: var(--chrome-text);
+  --header-muted: var(--chrome-text-muted);
+  --header-rule: var(--chrome-rule);
+
+  background-color: var(--header-bg);
+  color: var(--header-text);
+  border-top: var(--accent-bar-width) solid var(--accent-bar-color);
+}
+
+/* ---- Utility bar (desktop only) ------------------------------------------ */
+
+.utilityBar {
+  display: none;
+  border-bottom: var(--rule-width) solid var(--header-rule);
+}
+
+.utilityInner {
+  padding-block: var(--space-cozy);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.utilityList {
+  display: flex;
+  gap: var(--space-normal);
+}
+
+.utilityLink {
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--header-muted);
+  text-decoration: none;
+}
+
+.utilityLink:hover {
+  color: var(--header-text);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* ---- Main bar ------------------------------------------------------------ */
+
+.mainBar {
+  border-bottom: var(--rule-width) solid var(--header-rule);
+}
+
+.mainInner {
+  padding-block: var(--space-compact);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-moderate);
+}
+
+.wordmark {
+  text-decoration: none;
+  flex: none;
+}
+
+.wordmark:hover {
+  text-decoration: none;
+  opacity: 0.92;
+}
+
+/* ---- Search -------------------------------------------------------------- */
+
+.search {
+  position: relative;
+  display: none;
+  flex: 1 1 auto;
+  max-width: 26rem;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: var(--space-compact);
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  color: var(--header-text);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 40px;
+  padding-inline: calc(var(--space-compact) + 20px + var(--space-cozy)) var(--space-compact);
+  background-color: var(--chrome-field);
+  border: var(--rule-width) solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--header-text);
+  font-size: var(--text-sm);
+}
+
+.searchInput::placeholder {
+  color: var(--header-muted);
+}
+
+.searchInput:hover {
+  background-color: var(--chrome-field-hover);
+}
+
+/* Solid white on focus: once it is being typed into it is an ordinary field,
+   and translucent white over blue does not give typed text enough contrast. */
+.searchInput:focus {
+  background-color: var(--white);
+  color: var(--sierra);
+  outline: var(--focus-ring-width) solid var(--white);
+  outline-offset: 1px;
+}
+
+.searchInput:focus::placeholder {
+  color: var(--cascade-text);
+}
+
+.searchInput:focus + .searchIcon,
+.search:focus-within .searchIcon {
+  color: var(--cascade-text);
+}
+
+/* Clear the UA's search decorations so the field matches the system's. */
+.searchInput::-webkit-search-decoration,
+.searchInput::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.desktopNav {
+  display: none;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-cozy);
+}
+
+/* Inverted on purpose: a Pacific-filled button on a Pacific bar has no edge,
+   so the one action in the chrome is a white plate with a Pacific label. */
+.applyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding-inline: var(--space-moderate);
+  background-color: var(--white);
+  color: var(--pacific-dark);
+  border: 1px solid transparent;
+  border-radius: var(--button-radius);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+
+.applyButton:hover {
+  background-color: var(--pacific-background);
+  color: var(--pacific-dark);
+  text-decoration: none;
+}
+
+.applyButton:active {
+  background-color: var(--pacific-muted);
+}
+
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--button-height);
+  height: var(--button-height);
+  background-color: transparent;
+  color: var(--header-text);
+  border: var(--rule-width) solid var(--header-rule);
+  border-radius: var(--button-radius);
+  transition: background-color var(--duration-fast);
+}
+
+.menuButton:hover {
+  border-color: var(--header-text);
+  background-color: rgb(255 255 255 / 0.14);
+}
+
+/* ---- Desktop dropdowns --------------------------------------------------- */
+
+.disclosure {
+  position: relative;
+}
+
+.navLink,
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-slim);
+  padding: var(--space-cozy);
+  background: none;
+  border: none;
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--header-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover,
+.navButton:hover {
+  color: var(--header-text);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: 2px;
+}
+
+.chevron,
+.chevronOpen {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--duration-fast) var(--easing-default);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--space-cozy));
+  left: calc(var(--space-cozy) * -1);
+  z-index: 40;
+  min-width: 20rem;
+  padding: var(--space-cozy);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-3);
+}
+
+.panelList {
+  display: flex;
+  flex-direction: column;
+}
+
+.panelLink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-compact);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+
+.panelLink:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.panelLinkLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.panelLinkDescription {
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Tablet: the search earns its place before the nav does. ------------- */
+
+@media (min-width: 640px) {
+  .search {
+    display: block;
+  }
+}
+
+/* ---- Desktop ------------------------------------------------------------- */
+
+@media (min-width: 960px) {
+  .utilityBar {
+    display: block;
+  }
+
+  .mainInner {
+    gap: var(--space-normal);
+  }
+
+  .desktopNav {
+    display: block;
+  }
+
+  .navList {
+    display: flex;
+    align-items: center;
+    gap: var(--space-cozy);
+  }
+
+  .menuButton {
+    display: none;
+  }
+}

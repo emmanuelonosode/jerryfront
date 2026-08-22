@@ -1,0 +1,303 @@
+.mainSearch {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.filterBar {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  padding-block: var(--space-3);
+  background-color: var(--color-bg-primary);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.filterBarInner {
+  width: 100%;
+  padding-inline: var(--space-4);
+  margin-inline: auto;
+}
+
+@media (min-width: 960px) {
+  .mainSearch {
+    height: calc(100dvh - 65px);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .filterBar {
+    position: relative;
+    top: auto;
+    flex: none;
+  }
+
+  .filterBarInner {
+    padding-inline: var(--space-6);
+  }
+
+  .splitWrapper {
+    flex: 1 1 auto;
+    height: calc(100% - 62px);
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
+.splitWrapper {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyWrap {
+  padding-block: var(--space-6) var(--space-8);
+}
+
+/* WITH NO RESULTS THERE IS NO MAP, SO THERE IS NOTHING TO PIN.
+   The desktop layout is a fixed-height app shell - `height: 100dvh - 65px`
+   with `overflow: hidden` - so the two panes can scroll independently beside
+   the map. The empty state has no second pane, and inheriting that shell put
+   its content in a viewport-height scroller with the real page footer below
+   it: two scrollbars, and the closest-match cards cut off mid-card. */
+.mainEmpty {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.resultsBottomInfo {
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+}
+
+.header {
+  padding-block: var(--space-6) var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.title {
+  font-size: clamp(var(--font-size-2xl), 4vw, var(--font-size-3xl));
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.lead {
+  max-width: 62ch;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+/* Sits at the top of the results column, inside the split. */
+.resultsHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+.count {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.sortForm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sortLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.sortSelect {
+  min-height: var(--button-height);
+  padding-inline: var(--space-3);
+  background-color: var(--input-bg);
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--input-border);
+  border-radius: var(--input-radius);
+  font-size: var(--font-size-sm);
+}
+
+.sortSubmit {
+  min-height: var(--button-height);
+  padding-inline: var(--space-3);
+  background: transparent;
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--button-radius);
+  font-size: var(--font-size-sm);
+}
+
+.sortSubmit:hover {
+  border-color: var(--color-border-strong);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.pageLink,
+.pageDisabled {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--button-height);
+  padding-inline: var(--space-4);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  color: var(--color-text-primary);
+}
+
+.pageDisabled {
+  opacity: 0.4;
+  border-color: var(--color-border-default);
+}
+
+.pageList {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pageNumber,
+.pageCurrent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* A 44px hit target: these sit close together and get thumbed on a phone. */
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: var(--space-2);
+  border-radius: var(--button-radius);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  color: var(--color-text-primary);
+}
+
+.pageNumber:hover {
+  background: var(--color-bg-secondary);
+}
+
+.pageCurrent {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+
+.pageGap {
+  padding-inline: var(--space-1);
+  color: var(--color-text-secondary);
+}
+
+.pageStatus {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* The page counter restates what the numbered list already shows; on a phone
+   the numbers are the useful half, so the sentence goes rather than wrapping. */
+@media (max-width: 639px) {
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pageStatus {
+    order: 3;
+    width: 100%;
+    text-align: center;
+  }
+
+  .pageList {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.strip {
+  margin-top: var(--space-5);
+}
+
+.footerCta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-7);
+}
+
+.footerTitle {
+  font-size: var(--font-size-lg);
+}
+
+.footerBody {
+  max-width: 62ch;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  /* One column now: the filters moved to the bar above, and SearchResults
+     owns the map/results split beneath. */
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding-block: var(--space-5) var(--space-8);
+  }
+
+  .footerCta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

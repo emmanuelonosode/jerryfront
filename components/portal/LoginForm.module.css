@@ -1,0 +1,85 @@
+/* -----------------------------------------------------------------------------
+   Resident sign-in.
+
+   A single centred card on the Ridge ground. No sidebar and no portal nav -
+   offering navigation to someone who is not signed in yet just produces a row
+   of links that all bounce back here.
+   -------------------------------------------------------------------------- */
+
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-normal) var(--space-moderate);
+  background-color: var(--color-bg-tertiary);
+}
+
+.card {
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--space-normal);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-2);
+}
+
+.brand {
+  display: inline-flex;
+  margin-bottom: var(--space-normal);
+  text-decoration: none;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.title {
+  font-size: var(--header-lg);
+  line-height: var(--lh-header-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.lead {
+  margin-top: var(--space-cozy);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--color-text-secondary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-moderate);
+  margin-top: var(--space-normal);
+}
+
+/* Both messages use the status families rather than bare colour, so they read
+   as the same objects the rest of the product uses for error and warning. */
+.error,
+.notice {
+  margin-top: var(--space-moderate);
+  padding: var(--space-compact);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+}
+
+.error {
+  background-color: var(--color-status-error-fill);
+  border: var(--rule-width) solid var(--color-status-error-border);
+  color: var(--color-status-error-text);
+}
+
+.notice {
+  background-color: var(--color-status-soon-fill);
+  border: var(--rule-width) solid var(--color-status-soon-border);
+  color: var(--color-status-soon-text);
+}
+
+.help {
+  margin-top: var(--space-moderate);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}

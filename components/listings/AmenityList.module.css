@@ -1,0 +1,49 @@
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.groupTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.note {
+  margin: calc(var(--space-3) * -1) 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Two columns from 480px and three from 900px. A single long column of
+   one-word amenities wastes most of the width and makes the section look
+   longer than it is. */
+@media (min-width: 640px) { .list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* 24px minimum row height so the list stays scannable rather than cramped,
+     and so a touch target is never smaller than the text it sits beside. */
+  min-height: 24px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-secondary);
+}

@@ -1,0 +1,58 @@
+/* -----------------------------------------------------------------------------
+   Awaiting-content marker.
+
+   Still loud - that is the whole point, and the reasoning is in Pending.tsx -
+   but loud as a designed object rather than as a raw highlighted string. It now
+   uses the system's Malibu warning family the same way every other status mark
+   on the site uses its family: `background` fill, `muted` border, `-text` label,
+   and a dot in the `dark` stop. That makes it read as "this slot is waiting for
+   the business", which is what it means, instead of as a rendering fault.
+
+   The tag is the load-bearing part. "To confirm" set as a small solid label,
+   with the awaited thing beside it, is what distinguishes this from an ordinary
+   amber badge at a glance - and it survives greyscale, where the amber alone
+   would not.
+   -------------------------------------------------------------------------- */
+
+.pending {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-cozy);
+  padding: 3px var(--space-cozy);
+  background-color: var(--malibu-background);
+  color: var(--malibu-text);
+  border: var(--rule-width) solid var(--malibu-muted);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--font-weight-normal);
+  /* Long labels wrap inside the marker rather than pushing the row wide. */
+  text-wrap: pretty;
+}
+
+.tag {
+  flex: none;
+  align-self: center;
+  padding: 1px var(--space-slim);
+  border-radius: var(--radius-sm);
+  /* malibu-dark carries a white label at only 3.32:1; the text stop
+     reaches 5.93:1 and is the same hue. */
+  background-color: var(--malibu-text);
+  color: var(--white);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.what {
+  min-width: 0;
+}
+
+.block {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: var(--space-cozy) var(--space-compact);
+}

@@ -1,0 +1,779 @@
+/**
+ * MIRROR OF app/tokens.css - do not edit this copy.
+ *
+ * The shipped token file is app/tokens.css. This exists so the design
+ * artifacts in .design/ stay readable on their own, and it is a copy rather
+ * than the source because two editable copies of a palette diverge.
+ *
+ * validate-contrast.py reads app/tokens.css directly for the same reason.
+ *
+ * Regenerated 2026-08-19, when the palette was rebuilt on the Ticketmaster
+ * Atomic Design System (john-le.com/ticketmaster-design-system).
+ */
+
+/**
+ * DESIGN TOKENS - TICKETMASTER ATOMIC DESIGN SYSTEM
+ *
+ * Implements the documented system (john-le.com/ticketmaster-design-system):
+ * named colours, a six-stop tint/shade ramp, a named spacing scale, four
+ * shadow levels, and a 4/8/12-column grid.
+ *
+ * Values were read off the published system boards rather than guessed -
+ * including by sampling the component artwork pixel by pixel, which settled one
+ * thing worth recording: the palette board names the blue swatch **Pacific
+ * #009CDE**, but every actual component on the boards - the global header, the
+ * primary button, "Add to Cart" - is **#026CDF**. The components win, because
+ * they are what the system looks like in use. The board's Pacific is kept below
+ * as a palette accent. Contrast agrees with that choice: #009CDE carries a
+ * white label at only 3.08:1, where #026CDF reaches 4.98:1.
+ *
+ * THE TINT/SHADE RAMP is the spine of the system. Every hue has six stops from
+ * one rule, and interaction states are drawn from them rather than hand-picked:
+ *
+ *     dark = 25% black   base   light = 25% white
+ *     dull = 50% white   muted = 75% white   background = 87.5% white
+ *
+ *     hover    -> light    (this system LIGHTENS on hover; the current live
+ *                           site darkens. The documented system is authority.)
+ *     pressed  -> dark
+ *     disabled -> muted
+ *     tinted surface -> background
+ *
+ * WHERE ACCESSIBILITY OVERRIDES THE BOARD. The 2018 system predates WCAG 2.1
+ * and some of its own combinations fail. Rather than ship them or silently
+ * re-hue the brand, each family carries an explicit `-text` stop chosen to
+ * clear 4.5:1 both on white and on its own background tint, while `base` stays
+ * exactly as published for fills and non-text marks:
+ *
+ *     yosemite base #19AB20 carries a white label at 3.05:1 -> fill #138018
+ *     malibu   dark #BF8026 reads 3.05:1 on its own tint    -> text #8A5A00
+ *
+ * Averta is Ticketmaster's licensed typeface and cannot ship. Figtree stands in
+ * for it (same geometric skeleton); Outfit sets the wordmark. Both load via
+ * next/font in app/layout.tsx.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ===========================================================================
+     ATOMS - NAMED COLOUR. The only place raw hex belongs.
+     =========================================================================== */
+
+  /* --- Pacific: the interactive blue. Header, primary action, links. ------- */
+  --pacific-dark: #0251A7;
+  --pacific-base: #026CDF;
+  --pacific-light: #4191E7;
+  --pacific-dull: #80B6EF;
+  --pacific-muted: #C0DAF7;
+  --pacific-background: #DFEDFB;
+
+  /* The palette board's own Pacific swatch, kept as an accent. Never used for
+     text or for a control carrying a white label - it reads at 3.08:1. */
+  --pacific-accent: #009CDE;
+
+  /* --- Catalina: magenta. Promotional and editorial accent. --------------- */
+  --catalina-dark: #9C0053;
+  --catalina-base: #D0006F;
+  --catalina-light: #DC4093;
+  --catalina-muted: #F3BFDB;
+  --catalina-background: #F9DFED;
+
+  /* --- Yosemite: green. The transactional family. ------------------------- */
+  --yosemite-dark: #138018;
+  --yosemite-base: #19AB20;
+  --yosemite-light: #52C058;
+  --yosemite-muted: #C6EAC7;
+  --yosemite-background: #E2F4E3;
+  --yosemite-text: #117016;
+
+  /* --- Malibu: amber. Warning and pending. -------------------------------- */
+  --malibu-dark: #BF8026;
+  --malibu-base: #FFAA33;
+  --malibu-light: #FFBF66;
+  --malibu-muted: #FFEACC;
+  --malibu-background: #FFF4E6;
+  --malibu-text: #8A5A00;
+
+  /* --- Helen: red. Error and destructive. --------------------------------- */
+  --helen-dark: #A32C2C;
+  --helen-base: #D93A3A;
+  --helen-light: #E26B6B;
+  --helen-muted: #F6CECE;
+  --helen-background: #FAE6E6;
+  --helen-text: #A32C2C;
+
+  /* --- Neutrals, by the system's names. ----------------------------------- */
+  --sierra: #262626;
+  --cascade: #727272;
+  --appalachian: #999999;
+
+  /* Two more accessibility stops, same pattern as yosemite/malibu above.
+     Cascade reads 4.45:1 on Ridge and Appalachian 2.85:1 on white - both just
+     under bar - so text and control strokes use these, and the published atoms
+     stay untouched for everything else. */
+  --cascade-text: #6A6A6A;
+  --appalachian-ui: #909090;
+  --teton: #B4B4B4;
+  --rocky: #EBEBEB;
+  --ridge: #F6F6F6;
+  --white: #FFFFFF;
+
+  /* Legacy numeric aliases, so existing rules keep resolving. */
+  --color-base-900: #0D0D0D;
+  --color-base-800: var(--sierra);
+  --color-base-700: var(--cascade-text);
+  --color-base-500: var(--appalachian);
+  --color-base-400: var(--teton);
+  --color-base-300: var(--teton);
+  --color-base-250: #D6D6D6;
+  --color-base-200: var(--rocky);
+  --color-base-100: var(--ridge);
+  --color-base-0: var(--white);
+
+  /* ===========================================================================
+     SEMANTIC - LIGHT
+     =========================================================================== */
+
+  --brand: var(--pacific-base);
+  --brand-hover: var(--pacific-light);
+  --brand-active: var(--pacific-dark);
+  --brand-on-dark: var(--pacific-dull);
+  --brand-text: var(--pacific-base);
+  /* Pacific `base` on Pacific `background` is 4.19:1 - fine as a boundary,
+     short of the bar as a label. Anything setting brand-coloured text ON a
+     brand tint (badges, step numbers, pills) uses this instead. */
+  --brand-text-on-tint: var(--pacific-dark);
+  --brand-tint: var(--pacific-background);
+  --brand-tint-strong: var(--pacific-muted);
+
+  /* Chrome. The documented global header is a solid Pacific bar, not black. */
+  --chrome: var(--pacific-base);
+  --chrome-raised: var(--pacific-dark);
+  --chrome-text: var(--white);
+  /* #C0DAF7 reads 3.47:1 on Pacific; utility links need 4.5:1. */
+  --chrome-text-muted: #F0F7FE;
+  --chrome-rule: rgb(255 255 255 / 0.24);
+  --chrome-field: rgb(255 255 255 / 0.16);
+  --chrome-field-hover: rgb(255 255 255 / 0.24);
+
+  /* The footer stays Sierra. Two full-bleed Pacific bands would frame the page
+     in brand colour and leave the content between them looking incidental. */
+  --footer-chrome: var(--sierra);
+  --footer-chrome-text: var(--white);
+  --footer-chrome-muted: var(--teton);
+  --footer-chrome-rule: rgb(255 255 255 / 0.2);
+
+  /* --- Surfaces. White ground, per the system. ---------------------------- */
+  --color-bg-primary: var(--white);
+  --color-bg-secondary: var(--white);
+  --color-bg-tertiary: var(--ridge);
+  --color-bg-inverse: var(--sierra);
+
+  /* --- Text --------------------------------------------------------------- */
+  --color-text-primary: var(--sierra);
+  --color-text-secondary: var(--cascade-text);
+  --color-text-tertiary: var(--cascade-text);
+  --color-text-disabled: var(--appalachian);
+  --color-text-inverse: var(--white);
+
+  --color-text-link: var(--pacific-base);
+  --color-text-link-hover: var(--pacific-dark);
+
+  /* --- Borders ------------------------------------------------------------ */
+  --color-border-subtle: var(--rocky);
+  --color-border-default: var(--rocky);
+  --color-border-strong: var(--teton);
+  --color-border-interactive: var(--appalachian-ui);
+
+  --rule-width: 1px;
+  --rule-color: var(--rocky);
+  --rule-color-strong: var(--teton);
+
+  --accent: var(--pacific-base);
+  --accent-hover: var(--pacific-light);
+  --accent-text: var(--pacific-base);
+  --accent-bright: var(--pacific-light);
+  --accent-tint: var(--pacific-background);
+
+  --accent-bar-width: 4px;
+  --accent-bar-color: var(--pacific-dark);
+
+  --color-focus: var(--pacific-base);
+
+  /* ---------------------------------------------------------------------------
+     STATUS - each family draws from its own ramp: `background` fill, `muted`
+     border, `-text` stop for the label, and a dot that clears 3:1 on the fill.
+     ------------------------------------------------------------------------- */
+  --color-status-available-fill: var(--yosemite-background);
+  --color-status-available-text: var(--yosemite-text);
+  --color-status-available-border: var(--yosemite-muted);
+  --color-status-available-dot: var(--yosemite-text);
+
+  --color-status-soon-fill: var(--malibu-background);
+  --color-status-soon-text: var(--malibu-text);
+  --color-status-soon-border: var(--malibu-muted);
+  --color-status-soon-dot: var(--malibu-dark);
+
+  --color-status-pending-fill: var(--pacific-background);
+  --color-status-pending-text: var(--pacific-dark);
+  --color-status-pending-border: var(--pacific-muted);
+  --color-status-pending-dot: var(--pacific-dark);
+
+  --color-status-leased-fill: var(--ridge);
+  --color-status-leased-text: var(--cascade-text);
+  --color-status-leased-border: var(--teton);
+  --color-status-leased-dot: #878787;
+
+  --color-status-error-fill: var(--helen-background);
+  --color-status-error-text: var(--helen-text);
+  --color-status-error-border: var(--helen-muted);
+  --color-status-error-dot: var(--helen-base);
+
+  --color-status-success-fill: var(--yosemite-background);
+  --color-status-success-text: var(--yosemite-text);
+  --color-status-warning-fill: var(--malibu-background);
+  --color-status-warning-text: var(--malibu-text);
+
+  --color-surface-overlay: rgb(38 38 38 / 0.7);
+
+  /* ===========================================================================
+     TYPOGRAPHY
+     The system's scale is component-scale - headers top out at 24px. Page-level
+     display sizes are an extension, named separately so it stays obvious which
+     steps are the system's and which are ours.
+     =========================================================================== */
+  --font-family-body: 'Averta', var(--font-figtree), helvetica, arial, sans-serif;
+  --font-family-display: var(--font-family-body);
+  --font-family-wordmark: var(--font-outfit), var(--font-family-body);
+  --font-family-figure: var(--font-family-body);
+  --font-family-mono: var(--font-family-body);
+
+  /* Documented steps */
+  --header-lg: 24px;
+  --header-md: 20px;
+  --header-sm: 16px;
+  --text-body: 16px;
+  --text-sm: 14px;
+  --text-xs: 12px;
+
+  /* Display extension - heroes and section openers. */
+  --display-sm: 28px;
+  --display-md: 36px;
+  --display-lg: 44px;
+
+  --lh-header-lg: 30px;
+  --lh-header-md: 26px;
+  --lh-header-sm: 22px;
+  --lh-body: 24px;
+  --lh-sm: 20px;
+  --lh-xs: 18px;
+  --lh-display: 1.1;
+
+  /* Semantic aliases, so existing rules keep working. */
+  --font-size-xs: var(--text-xs);
+  --font-size-sm: var(--text-sm);
+  --font-size-base: var(--text-body);
+  --font-size-md: var(--header-sm);
+  --font-size-lg: var(--header-md);
+  --font-size-xl: var(--header-lg);
+  --font-size-2xl: var(--display-sm);
+  --font-size-3xl: var(--display-md);
+  --font-size-4xl: var(--display-lg);
+  --font-size-5xl: var(--display-lg);
+  --font-size-6xl: var(--display-lg);
+
+  /* The system ships Regular, Semibold and Regular Italic. Nothing else. */
+  --font-weight-light: 400;
+  --font-weight-normal: 400;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 600;
+
+  --line-height-tight: 1.15;
+  --line-height-snug: 1.25;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.6;
+
+  --letter-spacing-tight: 0;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+  --letter-spacing-wider: 0.04em;
+
+  /* ===========================================================================
+     SPACING - the system's named scale
+     =========================================================================== */
+  --space-slim: 4px;
+  --space-cozy: 8px;
+  --space-compact: 12px;
+  --space-moderate: 16px;
+  --space-normal: 24px;
+  --space-expansive: 32px;
+  --space-spacious: 48px;
+  --space-giant: 64px;
+  --space-colossal: 96px;
+
+  --space-0: 0;
+  --space-05: 2px;
+  --space-1: var(--space-slim);
+  --space-2: var(--space-cozy);
+  --space-3: var(--space-compact);
+  --space-4: var(--space-moderate);
+  --space-5: var(--space-normal);
+  --space-6: var(--space-expansive);
+  --space-7: var(--space-spacious);
+  --space-8: var(--space-giant);
+  --space-9: var(--space-colossal);
+  --space-10: var(--space-colossal);
+
+  /* ===========================================================================
+     LAYOUT - 4 / 8 / 12 columns
+     =========================================================================== */
+  --max-width-prose: 68ch;
+  --max-width-content: 1000px;
+  --max-width-wide: 1120px;
+  --max-width-page: 1280px;
+
+  --grid-columns: 4;
+  --grid-gutter: var(--space-moderate);
+  --grid-margin: var(--space-moderate);
+
+  /* Radii. The system's controls are near-square. */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
+  --radius-full: 9999px;
+
+  /* ---- Elevation - the system's four levels ------------------------------ */
+  --shadow-level-1: 0 1px 2px rgb(38 38 38 / 0.16);
+  --shadow-level-2: 0 2px 4px rgb(38 38 38 / 0.16);
+  --shadow-level-3: 0 4px 8px rgb(38 38 38 / 0.18);
+  --shadow-level-4: 0 8px 16px rgb(38 38 38 / 0.2);
+
+  --shadow-card: var(--shadow-level-1);
+  --shadow-card-hover: var(--shadow-level-3);
+  --shadow-raised: var(--shadow-level-2);
+  --shadow-dropdown: var(--shadow-level-3);
+  --shadow-overlay: var(--shadow-level-4);
+  --shadow-modal: var(--shadow-level-4);
+  --shadow-drawer: 0 -8px 16px rgb(38 38 38 / 0.2);
+
+  /* ---- Focus ------------------------------------------------------------- */
+  --focus-ring-width: 2px;
+  --focus-ring-gap: 2px;
+  --focus-ring: 0 0 0 var(--focus-ring-gap) var(--color-bg-secondary),
+                0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--color-focus);
+
+  /* ---- Motion ------------------------------------------------------------ */
+  --duration-instant: 50ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+
+  --easing-default: cubic-bezier(0.2, 0, 0, 1);
+  --easing-in: cubic-bezier(0.4, 0, 1, 1);
+  --easing-out: ease-out;
+
+  /* ---- Breakpoints - mobile 320-639 / tablet 640-959 / desktop 960+ ------- */
+  --breakpoint-sm: 375px;
+  --breakpoint-md: 640px;
+  --breakpoint-lg: 960px;
+  --breakpoint-xl: 1120px;
+  --breakpoint-2xl: 1280px;
+
+  /* ===========================================================================
+     COMPONENT TOKENS
+     =========================================================================== */
+
+  --button-height: 44px;
+  --button-height-lg: 44px;
+  --button-padding-x: var(--space-moderate);
+  --button-padding-y: var(--space-cozy);
+  --button-radius: var(--radius-md);
+  --button-font-size: var(--text-body);
+  --button-font-weight: 600;
+
+  /* Primary - filled Pacific, shifted one stop down the ramp.
+     The system says hover lightens, and it lightens by 25% white. Applied to
+     `base`, that lands on #4191E7, which carries a white label at 3.27:1 - the
+     documented rule breaks its own button. Lightening less is worse: the most
+     #026CDF can lift and still clear 4.5:1 is about 5%, which nobody can see.
+     Resting one stop lower keeps BOTH the rule and the ramp: hover genuinely
+     lightens (7.67:1 -> 4.98:1 is a clear jump), every stop is a published
+     Pacific value, and every state carries its label. */
+  --button-primary-bg: var(--pacific-dark);
+  --button-primary-text: var(--white);
+  --button-primary-bg-hover: var(--pacific-base);
+  --button-primary-bg-active: #01397A;
+  --button-primary-bg-disabled: var(--pacific-muted);
+  --button-primary-text-disabled: var(--white);
+
+  /* Secondary - white fill, Pacific stroke and label. */
+  --button-secondary-bg: transparent;
+  --button-secondary-text: var(--pacific-base);
+  --button-secondary-border: var(--pacific-base);
+  --button-secondary-bg-hover: transparent;
+  --button-secondary-text-hover: var(--pacific-light);
+
+  /* Transactional - the commit action. Yosemite, at the stop that carries a
+     white label. */
+  --button-transactional-bg: var(--yosemite-dark);
+  --button-transactional-bg-hover: var(--yosemite-base);
+  --button-transactional-bg-active: #0C5410;
+  --button-transactional-bg-disabled: var(--yosemite-muted);
+
+  --button-tertiary-border: var(--teton);
+  --button-tertiary-text: var(--sierra);
+  --button-tertiary-bg-hover: var(--sierra);
+
+  /* Inputs - label above, Appalachian stroke, Pacific when active. */
+  --input-height: 44px;
+  --input-radius: var(--radius-md);
+  --input-padding-x: var(--space-moderate);
+  --input-bg: var(--white);
+  --input-border: var(--appalachian-ui);
+  --input-border-hover: var(--pacific-base);
+  --input-border-error: var(--helen-base);
+  --input-placeholder: var(--cascade);
+  --input-disabled-bg: var(--ridge);
+  --input-disabled-border: var(--teton);
+
+  --badge-radius: var(--radius-sm);
+  --badge-padding-x: var(--space-cozy);
+  --badge-padding-y: 2px;
+  --badge-font-weight: 600;
+  --badge-letter-spacing: var(--letter-spacing-normal);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --grid-columns: 8;
+    --grid-gutter: var(--space-normal);
+    --grid-margin: var(--space-normal);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --grid-columns: 12;
+    --display-sm: 32px;
+    --display-md: 44px;
+    --display-lg: 54px;
+  }
+}
+
+/* Base element resets */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: var(--text-body);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: underline;
+  transition: color var(--duration-fast) var(--easing-out);
+}
+
+a:hover {
+  color: var(--color-text-link-hover);
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-gap);
+}
+
+/* =============================================================================
+   COLOUR - DARK THEME
+
+   The system documents no dark mode. This is an extension, built on Sierra and
+   on the same ramp rule, so it reads as the same system with the lights off.
+   Pacific lifts to its `dull` stop, because `base` is unreadable on Sierra.
+
+   Declared once as --dk-* on :root, then mapped by two thin blocks - the
+   explicit toggle and the system preference. Plain CSS cannot share a block
+   between a selector and a media query, and repeating one-line mappings is
+   safer than repeating sixty literal colours. validate-contrast.py enforces
+   that the two blocks stay identical.
+   ============================================================================= */
+
+:root {
+  --dk-brand-text: #80B6EF;
+  --dk-brand-tint: #10233D;
+  --dk-brand-tint-strong: #1B3A63;
+
+  --dk-chrome: #0D0D0D;
+  --dk-chrome-raised: #000000;
+
+  --dk-bg-primary: #1A1A1A;
+  --dk-bg-secondary: #242424;
+  --dk-bg-tertiary: #2E2E2E;
+
+  --dk-text-primary: #FFFFFF;
+  --dk-text-secondary: #D4D4D4;
+  --dk-text-tertiary: #B4B4B4;
+  --dk-text-disabled: #8A8A8A;
+
+  --dk-border-subtle: #2E2E2E;
+  --dk-border-default: #3A3A3A;
+  --dk-border-strong: #545454;
+  --dk-border-interactive: #757575;
+
+  --dk-status-available-fill: #0A2A0D;
+  --dk-status-available-text: #6FD074;
+  --dk-status-available-border: #14501A;
+
+  --dk-status-soon-fill: #2E2103;
+  --dk-status-soon-text: #FFC65C;
+  --dk-status-soon-border: #5C4308;
+
+  --dk-status-leased-fill: #2E2E2E;
+  --dk-status-leased-text: #B4B4B4;
+  --dk-status-leased-border: #545454;
+
+  --dk-status-error-fill: #2E0F0F;
+  --dk-status-error-text: #F09292;
+  --dk-status-error-border: #5C1D1D;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --brand-text: var(--dk-brand-text);
+  --brand-on-dark: var(--dk-brand-text);
+  --brand-text-on-tint: var(--dk-brand-text);
+  --brand-tint: var(--dk-brand-tint);
+  --brand-tint-strong: var(--dk-brand-tint-strong);
+
+  --chrome: var(--dk-chrome);
+  --chrome-raised: var(--dk-chrome-raised);
+  --chrome-text-muted: var(--dk-text-tertiary);
+  --footer-chrome: var(--dk-chrome);
+  --footer-chrome-muted: var(--dk-text-tertiary);
+
+  --color-bg-primary: var(--dk-bg-primary);
+  --color-bg-secondary: var(--dk-bg-secondary);
+  --color-bg-tertiary: var(--dk-bg-tertiary);
+  --color-bg-inverse: #FFFFFF;
+
+  --color-text-primary: var(--dk-text-primary);
+  --color-text-secondary: var(--dk-text-secondary);
+  --color-text-tertiary: var(--dk-text-tertiary);
+  --color-text-disabled: var(--dk-text-disabled);
+  --color-text-inverse: var(--sierra);
+
+  --color-text-link: var(--dk-brand-text);
+  --color-text-link-hover: #A9CDF5;
+
+  --color-border-subtle: var(--dk-border-subtle);
+  --color-border-default: var(--dk-border-default);
+  --color-border-strong: var(--dk-border-strong);
+  --color-border-interactive: var(--dk-border-interactive);
+
+  --color-focus: var(--dk-brand-text);
+  --accent-bar-color: var(--dk-brand-text);
+
+  --color-status-available-fill: var(--dk-status-available-fill);
+  --color-status-available-text: var(--dk-status-available-text);
+  --color-status-available-border: var(--dk-status-available-border);
+  --color-status-available-dot: var(--dk-status-available-text);
+
+  --color-status-soon-fill: var(--dk-status-soon-fill);
+  --color-status-soon-text: var(--dk-status-soon-text);
+  --color-status-soon-border: var(--dk-status-soon-border);
+  --color-status-soon-dot: var(--dk-status-soon-text);
+
+  --color-status-pending-fill: var(--dk-brand-tint);
+  --color-status-pending-text: var(--dk-brand-text);
+  --color-status-pending-border: var(--dk-brand-tint-strong);
+  --color-status-pending-dot: var(--dk-brand-text);
+
+  --color-status-leased-fill: var(--dk-status-leased-fill);
+  --color-status-leased-text: var(--dk-status-leased-text);
+  --color-status-leased-border: var(--dk-status-leased-border);
+  --color-status-leased-dot: var(--dk-status-leased-text);
+
+  --color-status-error-fill: var(--dk-status-error-fill);
+  --color-status-error-text: var(--dk-status-error-text);
+  --color-status-error-border: var(--dk-status-error-border);
+  --color-status-error-dot: var(--dk-status-error-text);
+
+  --color-status-success-fill: var(--dk-status-available-fill);
+  --color-status-success-text: var(--dk-status-available-text);
+  --color-status-warning-fill: var(--dk-status-soon-fill);
+  --color-status-warning-text: var(--dk-status-soon-text);
+
+  --color-surface-overlay: rgb(0 0 0 / 0.8);
+
+  --button-primary-bg: #166BE0;
+  --button-primary-bg-hover: #1F72E4;
+  --button-primary-bg-active: var(--pacific-base);
+  --button-primary-bg-disabled: var(--dk-bg-tertiary);
+  --button-primary-text-disabled: var(--dk-text-disabled);
+  --button-secondary-text: var(--dk-brand-text);
+  --button-secondary-border: var(--dk-brand-text);
+  --button-secondary-text-hover: #A9CDF5;
+  --button-transactional-bg: #1B9622;
+  --button-transactional-bg-hover: #38B03F;
+  --button-tertiary-border: var(--dk-border-strong);
+  --button-tertiary-text: var(--dk-text-primary);
+  --button-tertiary-bg-hover: #FFFFFF;
+
+  --input-bg: var(--dk-bg-secondary);
+  --input-border: var(--dk-border-interactive);
+  --input-border-hover: var(--dk-brand-text);
+  --input-placeholder: var(--dk-text-tertiary);
+  --input-disabled-bg: var(--dk-bg-tertiary);
+  --input-disabled-border: var(--dk-border-default);
+
+  --rule-color: var(--dk-border-default);
+  --rule-color-strong: var(--dk-border-strong);
+
+  --shadow-level-1: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-level-2: 0 2px 4px rgb(0 0 0 / 0.55);
+  --shadow-level-3: 0 4px 8px rgb(0 0 0 / 0.6);
+  --shadow-level-4: 0 8px 16px rgb(0 0 0 / 0.65);
+  --shadow-drawer: 0 -8px 16px rgb(0 0 0 / 0.65);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --brand-text: var(--dk-brand-text);
+    --brand-on-dark: var(--dk-brand-text);
+    --brand-text-on-tint: var(--dk-brand-text);
+    --brand-tint: var(--dk-brand-tint);
+    --brand-tint-strong: var(--dk-brand-tint-strong);
+
+    --chrome: var(--dk-chrome);
+    --chrome-raised: var(--dk-chrome-raised);
+    --chrome-text-muted: var(--dk-text-tertiary);
+    --footer-chrome: var(--dk-chrome);
+    --footer-chrome-muted: var(--dk-text-tertiary);
+
+    --color-bg-primary: var(--dk-bg-primary);
+    --color-bg-secondary: var(--dk-bg-secondary);
+    --color-bg-tertiary: var(--dk-bg-tertiary);
+    --color-bg-inverse: #FFFFFF;
+
+    --color-text-primary: var(--dk-text-primary);
+    --color-text-secondary: var(--dk-text-secondary);
+    --color-text-tertiary: var(--dk-text-tertiary);
+    --color-text-disabled: var(--dk-text-disabled);
+    --color-text-inverse: var(--sierra);
+
+    --color-text-link: var(--dk-brand-text);
+    --color-text-link-hover: #A9CDF5;
+
+    --color-border-subtle: var(--dk-border-subtle);
+    --color-border-default: var(--dk-border-default);
+    --color-border-strong: var(--dk-border-strong);
+    --color-border-interactive: var(--dk-border-interactive);
+
+    --color-focus: var(--dk-brand-text);
+    --accent-bar-color: var(--dk-brand-text);
+
+    --color-status-available-fill: var(--dk-status-available-fill);
+    --color-status-available-text: var(--dk-status-available-text);
+    --color-status-available-border: var(--dk-status-available-border);
+    --color-status-available-dot: var(--dk-status-available-text);
+
+    --color-status-soon-fill: var(--dk-status-soon-fill);
+    --color-status-soon-text: var(--dk-status-soon-text);
+    --color-status-soon-border: var(--dk-status-soon-border);
+    --color-status-soon-dot: var(--dk-status-soon-text);
+
+    --color-status-pending-fill: var(--dk-brand-tint);
+    --color-status-pending-text: var(--dk-brand-text);
+    --color-status-pending-border: var(--dk-brand-tint-strong);
+    --color-status-pending-dot: var(--dk-brand-text);
+
+    --color-status-leased-fill: var(--dk-status-leased-fill);
+    --color-status-leased-text: var(--dk-status-leased-text);
+    --color-status-leased-border: var(--dk-status-leased-border);
+    --color-status-leased-dot: var(--dk-status-leased-text);
+
+    --color-status-error-fill: var(--dk-status-error-fill);
+    --color-status-error-text: var(--dk-status-error-text);
+    --color-status-error-border: var(--dk-status-error-border);
+    --color-status-error-dot: var(--dk-status-error-text);
+
+    --color-status-success-fill: var(--dk-status-available-fill);
+    --color-status-success-text: var(--dk-status-available-text);
+    --color-status-warning-fill: var(--dk-status-soon-fill);
+    --color-status-warning-text: var(--dk-status-soon-text);
+
+    --color-surface-overlay: rgb(0 0 0 / 0.8);
+
+    --button-primary-bg: #166BE0;
+    --button-primary-bg-hover: #1F72E4;
+    --button-primary-bg-active: var(--pacific-base);
+    --button-primary-bg-disabled: var(--dk-bg-tertiary);
+    --button-primary-text-disabled: var(--dk-text-disabled);
+    --button-secondary-text: var(--dk-brand-text);
+    --button-secondary-border: var(--dk-brand-text);
+    --button-secondary-text-hover: #A9CDF5;
+    --button-transactional-bg: #1B9622;
+    --button-transactional-bg-hover: #38B03F;
+    --button-tertiary-border: var(--dk-border-strong);
+    --button-tertiary-text: var(--dk-text-primary);
+    --button-tertiary-bg-hover: #FFFFFF;
+
+    --input-bg: var(--dk-bg-secondary);
+    --input-border: var(--dk-border-interactive);
+    --input-border-hover: var(--dk-brand-text);
+    --input-placeholder: var(--dk-text-tertiary);
+    --input-disabled-bg: var(--dk-bg-tertiary);
+    --input-disabled-border: var(--dk-border-default);
+
+    --rule-color: var(--dk-border-default);
+    --rule-color-strong: var(--dk-border-strong);
+
+    --shadow-level-1: 0 1px 2px rgb(0 0 0 / 0.5);
+    --shadow-level-2: 0 2px 4px rgb(0 0 0 / 0.55);
+    --shadow-level-3: 0 4px 8px rgb(0 0 0 / 0.6);
+    --shadow-level-4: 0 8px 16px rgb(0 0 0 / 0.65);
+    --shadow-drawer: 0 -8px 16px rgb(0 0 0 / 0.65);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0.01ms;
+    --duration-fast: 0.01ms;
+    --duration-normal: 0.01ms;
+    --duration-slow: 0.01ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

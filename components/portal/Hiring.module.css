@@ -1,0 +1,91 @@
+.filters {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-compact);
+  align-items: end;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-cozy);
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background-color: var(--color-surface-overlay);
+}
+
+/* Full-height sheet from the trailing edge - on mobile it takes the whole
+   width, because a 400px drawer on a 375px screen is a modal pretending. */
+.drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 28rem);
+  background-color: var(--color-bg-secondary);
+  border-inline-start: var(--rule-width) solid var(--color-border-default);
+  box-shadow: var(--shadow-level-4);
+}
+
+.drawerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+  padding: var(--space-compact) var(--space-moderate);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+  background-color: var(--color-bg-tertiary);
+}
+
+.close {
+  min-height: var(--button-height);
+  padding-inline: var(--space-compact);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.prose {
+  padding: var(--space-compact) var(--space-moderate);
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+  font-size: var(--text-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+}
+
+.qa {
+  margin-top: var(--space-cozy);
+}
+
+.qa dd {
+  margin: 2px 0 0;
+}
+
+@media (min-width: 640px) {
+  .filters {
+    grid-template-columns: 2fr 1fr auto;
+  }
+}

@@ -1,0 +1,145 @@
+.details {
+  display: flex;
+  flex-direction: column;
+  max-width: 70ch;
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.value {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.address {
+  display: flex;
+  flex-direction: column;
+  font-style: normal;
+  line-height: var(--line-height-normal);
+}
+
+.licences {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  max-width: 68ch;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-status-soon-fill);
+  color: var(--color-status-soon-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+@media (min-width: 640px) {
+  .row {
+    display: grid;
+    grid-template-columns: 12rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--space-5);
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 68ch;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.formActions {
+  margin-top: var(--space-2);
+}
+
+.formError {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-status-off-fill);
+  color: var(--color-status-off-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.success {
+  max-width: 68ch;
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.successHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-status-available-text);
+}
+
+.successIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.successTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.successBody {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+
+
+/* Three numbers stack rather than run together on one line. */
+.value {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-start;
+}
+
+.hours {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

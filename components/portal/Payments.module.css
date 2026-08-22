@@ -1,0 +1,120 @@
+/* Payments. The rails are manual, so most of this page is about making the
+   details unambiguous and the verification gap honest. */
+
+.methods {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-cozy);
+  padding: var(--space-moderate);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+.method,
+.methodActive {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: var(--button-height);
+  padding: var(--space-cozy) var(--space-compact);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--duration-fast), background-color var(--duration-fast);
+}
+
+.method:hover {
+  border-color: var(--brand);
+}
+
+/* Selected carries a tint AND a doubled stroke, so the choice is not signalled
+   by colour alone. */
+.methodActive {
+  border-color: var(--brand);
+  border-width: 2px;
+  padding: calc(var(--space-cozy) - 1px) calc(var(--space-compact) - 1px);
+  background-color: var(--brand-tint);
+}
+
+.methodName {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.warning {
+  margin: var(--space-moderate) var(--space-moderate) 0;
+  padding: var(--space-compact);
+  background-color: var(--color-status-soon-fill);
+  border: var(--rule-width) solid var(--color-status-soon-border);
+  border-radius: var(--radius-md);
+  color: var(--color-status-soon-text);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+}
+
+.details {
+  margin-top: var(--space-moderate);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.detailValue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-cozy);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.copy {
+  min-height: 28px;
+  padding-inline: var(--space-cozy);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.copy:hover {
+  border-color: var(--brand);
+  color: var(--brand-text);
+}
+
+.invoiceMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.invoiceEnd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-cozy);
+}
+
+.pdf {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--button-height);
+  padding-inline: var(--space-compact);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.rejected {
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--color-status-error-text);
+}
+
+@media (min-width: 640px) {
+  .methods {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

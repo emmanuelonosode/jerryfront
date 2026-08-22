@@ -1,0 +1,252 @@
+.page {
+  padding-block: var(--space-6) var(--space-9);
+}
+
+.header,
+.articleHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  max-width: 24ch;
+  font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.lead {
+  max-width: 62ch;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Filters ------------------------------------------------------------- */
+
+.filters {
+  padding-block: var(--space-5) var(--space-4);
+}
+
+.filterList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--button-height);
+  padding-inline: var(--space-4);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.filter:hover {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* Current filter marked by fill and weight as well as aria-current. */
+.filterActive,
+.filterActive:hover {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-color: var(--color-bg-inverse);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ---- Cards --------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+}
+
+.cardMeta {
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-secondary);
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-snug);
+}
+
+.cardLink {
+  color: var(--color-text-primary);
+}
+
+.cardSummary {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.showingAll {
+  /* 24px minimum target. These are standalone navigation links rather than
+     links inside a sentence, so the WCAG 2.5.8 inline exception does not apply. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-top: var(--space-5);
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Article ------------------------------------------------------------- */
+
+.breadcrumb {
+  padding-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.articleTitle {
+  font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-3xl));
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.articleUpdated {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Lead paragraphs slightly larger - the standard editorial signal that this is
+   the part to read if you only read one part. */
+.introPara {
+  font-size: var(--font-size-md);
+}
+
+.guideList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+  list-style: disc;
+}
+
+.disclaimer {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-left: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.related {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.relatedTitle {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-3);
+}
+
+.relatedList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.relatedList li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.relatedSummary {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.cta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-7);
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.ctaTitle {
+  font-size: var(--font-size-lg);
+}
+
+.ctaBody {
+  max-width: 60ch;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

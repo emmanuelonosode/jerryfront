@@ -1,0 +1,233 @@
+/* -----------------------------------------------------------------------------
+   Shared portal page furniture.
+
+   Every portal page is the same shape - a title, an optional filter row, then a
+   stack of cards built from the system's Card molecule. Keeping that shape in
+   one file rather than re-declaring it per page is what stops the five screens
+   drifting into five slightly different products.
+   -------------------------------------------------------------------------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-normal);
+  max-width: var(--max-width-wide);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-compact);
+}
+
+.title {
+  font-size: var(--display-sm);
+  line-height: var(--lh-display);
+  font-weight: var(--font-weight-semibold);
+}
+
+.lead {
+  margin-top: var(--space-slim);
+  max-width: 62ch;
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Cards --------------------------------------------------------------- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-1);
+  overflow: hidden;
+}
+
+.cardPad {
+  padding: var(--space-moderate);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+  padding: var(--space-compact) var(--space-moderate);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+  background-color: var(--color-bg-tertiary);
+}
+
+.cardTitle {
+  font-size: var(--header-sm);
+  line-height: var(--lh-header-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Hairline-separated rows - the same rhythm the marketing site's cost
+   breakdown and lease terms use. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-cozy);
+  padding: var(--space-compact) var(--space-moderate);
+}
+
+.row + .row {
+  border-top: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.rowLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.rowValue {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-align: end;
+}
+
+.figure {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Metric tiles -------------------------------------------------------- */
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-moderate);
+}
+
+.metric {
+  padding: var(--space-moderate);
+  background-color: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-1);
+}
+
+.metricLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.metricValue {
+  margin-top: var(--space-slim);
+  font-size: var(--header-lg);
+  line-height: var(--lh-header-lg);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Filter tabs --------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-cozy);
+}
+
+.tab,
+.tabActive {
+  min-height: 36px;
+  padding-inline: var(--space-compact);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--duration-fast), color var(--duration-fast);
+}
+
+.tab {
+  color: var(--color-text-secondary);
+}
+
+.tab:hover {
+  border-color: var(--brand);
+  color: var(--color-text-primary);
+}
+
+.tabActive {
+  background-color: var(--brand);
+  border-color: var(--brand);
+  color: #FFFFFF;
+}
+
+/* ---- States -------------------------------------------------------------- */
+
+.muted {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-compact);
+  padding: var(--space-normal) var(--space-moderate);
+}
+
+.emptyArt {
+  width: 72px;
+  height: 72px;
+}
+
+.error {
+  padding: var(--space-compact);
+  background-color: var(--color-status-error-fill);
+  border: var(--rule-width) solid var(--color-status-error-border);
+  border-radius: var(--radius-md);
+  color: var(--color-status-error-text);
+  font-size: var(--text-sm);
+}
+
+.success {
+  padding: var(--space-compact);
+  background-color: var(--color-status-available-fill);
+  border: var(--rule-width) solid var(--color-status-available-border);
+  border-radius: var(--radius-md);
+  color: var(--color-status-available-text);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-cozy);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-moderate);
+  padding: var(--space-moderate);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-moderate);
+}
+
+@media (min-width: 640px) {
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .formGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

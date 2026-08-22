@@ -1,0 +1,776 @@
+/* -----------------------------------------------------------------------------
+   Home page sections - Ticketmaster High-Impact Visual Hierarchy
+   -------------------------------------------------------------------------- */
+
+/* ---- 1. Stat Band -------------------------------------------------------- */
+
+.statBand {
+  background-color: var(--chrome-raised);
+  color: var(--chrome-text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+  margin: 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--chrome-text-muted);
+}
+
+.statFigure {
+  font-family: var(--font-family-display);
+  font-size: clamp(var(--font-size-xl), 3.5vw, var(--font-size-3xl));
+  font-weight: var(--font-weight-bold);
+  line-height: 1.1;
+  color: #FFFFFF;
+}
+
+@media (min-width: 640px) {
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+    padding-block: var(--space-6);
+  }
+}
+
+/* ---- 2. Category Quick-Pill Filter Bar ----------------------------------- */
+
+.categoryPillsSection {
+  padding-block: var(--space-5) var(--space-2);
+}
+
+.pillsScroll {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: none;
+}
+
+.pillsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.categoryPill {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.categoryPill:hover {
+  border-color: var(--brand);
+  color: var(--brand-text);
+}
+
+.categoryPillActive {
+  background-color: var(--brand);
+  border-color: var(--brand);
+  color: #FFFFFF;
+}
+
+.categoryPillActive:hover {
+  background-color: var(--brand-hover);
+  color: #FFFFFF;
+}
+
+/* ---- Main Sections ------------------------------------------------------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-block: var(--space-7);
+  border-top: 1px solid var(--color-border-default);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionEyebrow {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--brand-text);
+  margin-bottom: var(--space-1);
+}
+
+.sectionTitle {
+  font-size: clamp(var(--font-size-2xl), 3vw, var(--font-size-3xl));
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-text);
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--easing-default);
+}
+
+.sectionLink:hover {
+  color: var(--brand-hover);
+  transform: translateX(2px);
+}
+
+.sectionLead {
+  max-width: 66ch;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---- 4. Spotlight Banners Grid (Ticketmaster Promo Cards) ---------------- */
+
+.spotlightGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .spotlightGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.spotlightCard {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--duration-slow) var(--easing-default), border-color var(--duration-fast), transform var(--duration-fast);
+}
+
+.spotlightCard:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.spotlightMedia {
+  position: relative;
+  width: 100%;
+  height: 11rem;
+  overflow: hidden;
+  background-color: var(--color-bg-tertiary);
+}
+
+.spotlightImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--easing-default);
+}
+
+.spotlightCard:hover .spotlightImage {
+  transform: scale(1.04);
+}
+
+.spotlightContent {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  flex: 1;
+}
+
+.spotlightCardAccent {
+  background-color: var(--chrome);
+  color: #FFFFFF;
+  border-color: var(--chrome-rule);
+}
+
+.spotlightCardAccent .spotlightTitle {
+  color: #FFFFFF;
+}
+
+.spotlightCardAccent .spotlightBody {
+  color: var(--chrome-text-muted);
+}
+
+.spotlightCardAccent .spotlightLink {
+  color: #FFFFFF;
+}
+
+.spotlightBadge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-3);
+  background-color: var(--brand-tint);
+  color: var(--brand-text);
+  border: 1px solid var(--brand-tint-strong);
+}
+
+.spotlightCardAccent .spotlightBadge {
+  background-color: rgb(255 255 255 / 0.15);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.spotlightBadge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px var(--space-3);
+  background-color: var(--brand-tint);
+  border: 1px solid var(--brand-tint-strong);
+  color: var(--brand-text-on-tint);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-normal);
+  border-radius: var(--badge-radius);
+  margin-bottom: var(--space-3);
+}
+
+.spotlightTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  margin-bottom: var(--space-2);
+}
+
+.spotlightBody {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  flex: 1;
+}
+
+.spotlightLink {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-text);
+  text-decoration: none;
+}
+
+.spotlightLink:hover {
+  text-decoration: underline;
+}
+
+/* ---- 5. Numbered Steps (How It Works) ------------------------------------ */
+
+.steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.step:hover {
+  border-color: var(--brand);
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.stepNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: var(--brand-tint);
+  color: var(--brand-text-on-tint);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-md);
+}
+
+.stepTime {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-tertiary);
+}
+
+/* Sized to the step card rather than to the illustration's own grid, and pinned
+   to the start so four cards of differing text length still line their artwork
+   up along one baseline. */
+.stepArt {
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-compact);
+}
+
+.stepTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  margin-bottom: var(--space-2);
+}
+
+.stepBody {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+/* ---- 6. Criteria Grid ---------------------------------------------------- */
+
+.criteriaGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .criteriaGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .criteriaGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.criterionCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.criterionLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.criterionValue {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-text);
+}
+
+/* ---- 7. Popular Markets (Ticketmaster Cities Style) ----------------------- */
+
+.markets {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .markets {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .markets {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.marketItem {
+  min-width: 0;
+}
+
+.market {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 11rem;
+  /* The tile's own ground, not just the media layer's. The photo sits in an
+     absolutely-positioned child, so without this the label's nearest painted
+     background is the white page - white-on-white if an image ever fails. */
+  background-color: var(--chrome);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--duration-slow) var(--easing-default), border-color var(--duration-fast);
+}
+
+.market:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.marketMedia {
+  position: absolute;
+  inset: 0;
+  background-color: var(--chrome);
+}
+
+.marketPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.marketScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(18 18 18 / 0.9) 0%, rgb(18 18 18 / 0.2) 60%);
+}
+
+.marketBody {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.marketName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: #FFFFFF;
+  line-height: var(--line-height-snug);
+}
+
+.marketCount {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--chrome-text-muted);
+}
+
+/* ---- 8. Team & People ---------------------------------------------------- */
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .teamGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.personCard {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--duration-fast), box-shadow var(--duration-fast), border-color var(--duration-fast);
+}
+
+.personCard:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--brand);
+}
+
+.personAvatarWrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #E2E8F0;
+  overflow: hidden;
+}
+
+.personAvatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform var(--duration-normal);
+}
+
+.personCard:hover .personAvatar {
+  transform: scale(1.04);
+}
+
+.personBody {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.personName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.personRole {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--brand-text);
+  margin: 0;
+}
+
+.personMarkets {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* ---- 9. Guides Grid ------------------------------------------------------ */
+
+.guidesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .guidesGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.guideCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-5);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.guideCard:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.guideMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-3);
+}
+
+.guideTag {
+  display: inline-flex;
+  padding: 2px var(--space-2);
+  background-color: var(--brand-tint);
+  color: var(--brand-text-on-tint);
+  font-weight: var(--font-weight-bold);
+  border-radius: var(--radius-sm);
+}
+
+.guideTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  margin-bottom: var(--space-2);
+}
+
+.guideTitle a {
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.guideTitle a:hover {
+  color: var(--brand-text);
+}
+
+.guideSummary {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  flex: 1;
+}
+
+.guideReadMore {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-text);
+  text-decoration: none;
+}
+
+/* ---- 10. High Impact Bottom CTA ------------------------------------------ */
+
+.finalCta {
+  margin-block: var(--space-8);
+  padding: 0;
+  background: linear-gradient(135deg, var(--brand) 0%, #153766 100%);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  color: #FFFFFF;
+  display: grid;
+  grid-template-columns: 1fr;
+  box-shadow: 0 16px 36px -10px rgba(2, 108, 223, 0.3);
+}
+
+@media (min-width: 768px) {
+  .finalCta {
+    grid-template-columns: 1.2fr 1fr;
+    align-items: stretch;
+  }
+}
+
+.finalCtaContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .finalCtaContent {
+    padding: var(--space-8);
+  }
+}
+
+.finalEyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  /* Was #93C5FD, which is 2.76:1 against the light end of the .finalCta
+     gradient (#026CDF) at 12px - it needs 4.5. The automated pass could not
+     see it: the checker reads `background-color`, and this band's background
+     is a gradient, so it compared against the white page instead. */
+  color: #F0F7FE;
+}
+
+.finalTitle {
+  font-size: clamp(var(--font-size-2xl), 3vw, var(--font-size-3xl));
+  line-height: var(--lh-display);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  color: #FFFFFF;
+}
+
+.finalBody {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  /* #E2E8F0 measured 4.04:1 on the same gradient; body copy needs 4.5. */
+  color: #F0F7FE;
+}
+
+.finalCtaActions {
+  margin-top: var(--space-3);
+}
+
+.finalCtaMedia {
+  position: relative;
+  min-height: 14rem;
+  overflow: hidden;
+}
+
+.finalCtaImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -1,0 +1,27 @@
+.nav {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+  border-top: var(--rule-width) solid var(--color-border-default);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--button-height);
+  padding-inline: var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 640px) {
+  .nav {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-4);
+  }
+}
