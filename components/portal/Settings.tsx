@@ -216,7 +216,7 @@ export function Settings() {
             label="New password"
             name="newPassword"
             required
-            hint="At least 12 characters. A short phrase you will remember beats a scrambled word."
+            hint="At least 8 characters. A short phrase you will remember beats a scrambled word."
           >
             {(props) => (
               <input
