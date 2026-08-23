@@ -39,13 +39,13 @@ export function PriceCardDisplay({ pricing }: { pricing: Pricing }) {
         <Amount>{total}</Amount>
         <span className={styles.cardPer}>/mo total</span>
       </p>
-      {b.requiredFeesMaxCents > 0 ? (
+      {/* {b.requiredFeesMaxCents > 0 ? (
         <p className={styles.cardSplit}>
           <Amount>{formatUsd(b.baseRentCents)}</Amount> rent + <Amount>{fees}</Amount> required fees
         </p>
       ) : (
         <p className={styles.cardSplit}>No required monthly fees</p>
-      )}
+      )} */}
     </div>
   );
 }

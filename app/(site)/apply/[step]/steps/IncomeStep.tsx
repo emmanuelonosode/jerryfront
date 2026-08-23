@@ -92,7 +92,15 @@ export function IncomeStep({ draft, errors }: { draft: ApplicationDraft; errors:
         <Field name="employerName" label="Employer name" note="If you have one">
           {(p) => <TextInput {...p} name="employerName" defaultValue={draft.employerName ?? ''} />}
         </Field>
-        <Field name="employerPhone" label="Employer phone" note="Optional">
+        <Field name="jobTitle" label="Job Title" note="Optional">
+          {(p) => <TextInput {...p} name="jobTitle" defaultValue={draft.jobTitle ?? ''} />}
+        </Field>
+      </div>
+      <div className={styles.pair}>
+        <Field name="employerAddress" label="Employer address" note="Optional">
+          {(p) => <TextInput {...p} name="employerAddress" defaultValue={draft.employerAddress ?? ''} />}
+        </Field>
+        <Field name="employerPhone" label="Supervisor phone" note="Optional">
           {(p) => <TextInput {...p} type="tel" name="employerPhone" defaultValue={draft.employerPhone ?? ''} />}
         </Field>
       </div>

@@ -45,18 +45,39 @@ export type ApplicationDraft = {
 
   // details
   firstName: string | null;
+  middleName: string | null;
   lastName: string | null;
   email: string | null;
   phone: string | null;
   dateOfBirth: string | null;
+  maritalStatus: string | null;
+  mothersMaidenName: string | null;
+  
+  // address
   currentAddress: string | null;
+  currentCity: string | null;
+  currentState: string | null;
+  currentZip: string | null;
+  currentResidenceMonths: number | null;
+
+  // background
+  ssn: string | null;
+  driversLicense: string | null;
+  driversLicenseState: string | null;
 
   // income
   incomeSources: IncomeSource[];
   employerName: string | null;
+  employerAddress: string | null;
+  jobTitle: string | null;
   employerPhone: string | null;
 
   // history
+  previousAddress: string | null;
+  previousCity: string | null;
+  previousState: string | null;
+  previousZip: string | null;
+  previousResidenceMonths: number | null;
   priorAddresses: PriorAddress[];
   hasPriorEviction: boolean | null;
   priorEvictionNote: string | null;
@@ -102,20 +123,48 @@ export function emptyDraft(id: string, listingSlug: string | null, now: Date): A
   return {
     id,
     listingSlug,
+
+    // details
     firstName: null,
+    middleName: null,
     lastName: null,
     email: null,
     phone: null,
     dateOfBirth: null,
+    maritalStatus: null,
+    mothersMaidenName: null,
+
+    // address
     currentAddress: null,
+    currentCity: null,
+    currentState: null,
+    currentZip: null,
+    currentResidenceMonths: null,
+
+    // background
+    ssn: null,
+    driversLicense: null,
+    driversLicenseState: null,
+
+    // income
     incomeSources: [],
     employerName: null,
+    employerAddress: null,
+    jobTitle: null,
     employerPhone: null,
+
+    // history
+    previousAddress: null,
+    previousCity: null,
+    previousState: null,
+    previousZip: null,
+    previousResidenceMonths: null,
     priorAddresses: [],
     hasPriorEviction: null,
     priorEvictionNote: null,
     occupants: [],
     pets: [],
+
     disclosuresAcceptedAt: null,
     paymentMethod: null,
     paymentReportedAt: null,

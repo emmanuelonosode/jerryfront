@@ -33,7 +33,6 @@
   object-fit: cover;
   object-position: 50% 55%;
   display: block;
-  filter: brightness(0.85);
 }
 
 .scrim {
@@ -41,9 +40,10 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgb(38 38 38 / 0.82) 0%,
-    rgb(38 38 38 / 0.62) 40%,
-    rgb(38 38 38 / 0.95) 100%
+    rgb(0 0 0 / 0.5) 0%,
+    rgb(0 0 0 / 0.2) 30%,
+    rgb(0 0 0 / 0.2) 60%,
+    rgb(0 0 0 / 0.7) 100%
   );
 }
 
@@ -87,6 +87,7 @@
   font-weight: var(--font-weight-extrabold);
   color: #FFFFFF;
   text-wrap: balance;
+  text-shadow: 0 2px 10px rgb(0 0 0 / 0.5);
 }
 
 .lead {
@@ -94,7 +95,8 @@
   margin-top: var(--space-3);
   font-size: var(--text-body);
   line-height: var(--lh-body);
-  color: var(--chrome-text-muted);
+  color: #F9FAFB;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.5);
 }
 
 /* ---- The search card ----------------------------------------------------- */

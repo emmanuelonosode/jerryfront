@@ -79,6 +79,31 @@
 
 .submitWrap {
   display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.browseAll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.125rem;
+  padding-inline: var(--space-5);
+  background-color: var(--chrome-surface);
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.browseAll:hover {
+  background-color: var(--brand-tint);
 }
 
 .submit {

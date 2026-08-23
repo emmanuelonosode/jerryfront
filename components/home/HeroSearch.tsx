@@ -101,22 +101,15 @@ export function HeroSearch() {
         <div className={styles.submitWrap}>
           <button className={styles.submit} type="submit">
             <SearchIcon className={styles.searchIcon} />
-            <span>Search Homes</span>
+            <span>Search</span>
           </button>
+          <Link href="/homes-for-rent" className={styles.browseAll}>
+            Browse All
+          </Link>
         </div>
       </form>
 
-      {/* Popular Quick-Search Tags */}
-      <div className={styles.popularTagsRow}>
-        <span className={styles.popularLabel}>Popular:</span>
-        <div className={styles.tagsList}>
-          {POPULAR_TAGS.map((tag) => (
-            <Link key={tag.label} href={tag.href} className={styles.tagLink}>
-              {tag.label}
-            </Link>
-          ))}
-        </div>
-      </div>
+    
 
       <p className={styles.note}>
         <strong>Transparent Pricing:</strong> Every price listed is the total monthly cost - base rent plus required fees.{' '}

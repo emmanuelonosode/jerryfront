@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { PriceCardDisplay, PriceInline } from '@/components/pricing/PriceDisplay';
+import { ButtonLink } from '@/components/ui/Button';
 import { AvailabilityBadge } from './AvailabilityBadge';
 import { SaveButton } from './SaveButton';
 import { CARD_SIZES } from '@/lib/images/pipeline';
@@ -101,9 +102,7 @@ export function PropertyCard({
             availableFrom={listing.availableFrom}
             size={density === 'compact' ? 'sm' : 'md'}
           />
-          {listing.voucherAccepted ? (
-            <span className={styles.voucher}>Vouchers accepted</span>
-          ) : null}
+        
         </div>
 
         <Heading className={styles.title}>
@@ -128,6 +127,17 @@ export function PropertyCard({
             <PriceCardDisplay pricing={listing.pricing} />
           )}
         </div>
+
+        {density !== 'compact' && (
+          <div className={styles.actions}>
+            <ButtonLink href={`${href}#tour`} variant="secondary" size="md" className={styles.actionButton}>
+              Book Tour
+            </ButtonLink>
+            <ButtonLink href={`${href}#apply`} variant="primary" size="md" className={styles.actionButton}>
+              Apply Now
+            </ButtonLink>
+          </div>
+        )}
       </div>
     </article>
   );

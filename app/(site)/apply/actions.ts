@@ -92,11 +92,28 @@ export async function applyStepUpdate(
 
   if (step === 'details') {
     changes.firstName = readString(formData, 'firstName');
+    changes.middleName = readString(formData, 'middleName');
     changes.lastName = readString(formData, 'lastName');
     changes.email = readString(formData, 'email');
     changes.phone = readString(formData, 'phone');
     changes.dateOfBirth = readString(formData, 'dateOfBirth');
+    changes.maritalStatus = readString(formData, 'maritalStatus');
+    changes.mothersMaidenName = readString(formData, 'mothersMaidenName');
+    changes.ssn = readString(formData, 'ssn');
+    changes.driversLicense = readString(formData, 'driversLicense');
+    changes.driversLicenseState = readString(formData, 'driversLicenseState');
     changes.currentAddress = readString(formData, 'currentAddress');
+    changes.currentCity = readString(formData, 'currentCity');
+    changes.currentState = readString(formData, 'currentState');
+    changes.currentZip = readString(formData, 'currentZip');
+    const curMonths = readString(formData, 'currentResidenceMonths');
+    changes.currentResidenceMonths = curMonths ? parseInt(curMonths, 10) : null;
+    changes.previousAddress = readString(formData, 'previousAddress');
+    changes.previousCity = readString(formData, 'previousCity');
+    changes.previousState = readString(formData, 'previousState');
+    changes.previousZip = readString(formData, 'previousZip');
+    const prevMonths = readString(formData, 'previousResidenceMonths');
+    changes.previousResidenceMonths = prevMonths ? parseInt(prevMonths, 10) : null;
   }
 
   if (step === 'income') {
@@ -111,6 +128,8 @@ export async function applyStepUpdate(
       }))
       .filter((source) => (source.monthlyCents ?? 0) > 0);
     changes.employerName = readString(formData, 'employerName');
+    changes.employerAddress = readString(formData, 'employerAddress');
+    changes.jobTitle = readString(formData, 'jobTitle');
     changes.employerPhone = readString(formData, 'employerPhone');
   }
 

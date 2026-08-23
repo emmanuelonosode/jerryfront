@@ -1,5 +1,5 @@
 import { Field } from '@/components/ui/Field';
-import { TextInput } from '@/components/ui/Controls';
+import { TextInput, Select } from '@/components/ui/Controls';
 import { StepNav } from '@/components/apply/StepNav';
 import type { ApplicationDraft, FieldError } from '@/lib/apply/draft';
 import styles from './steps.module.css';
@@ -27,9 +27,29 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
             <TextInput {...p} name="firstName" autoComplete="given-name" defaultValue={draft.firstName ?? ''} />
           )}
         </Field>
+        <Field name="middleName" label="Middle name" note="Optional">
+          {(p) => (
+            <TextInput {...p} name="middleName" autoComplete="additional-name" defaultValue={draft.middleName ?? ''} />
+          )}
+        </Field>
+      </div>
+
+      <div className={styles.pair}>
         <Field name="lastName" label="Last name" required error={errorFor(errors, 'lastName')}>
           {(p) => (
             <TextInput {...p} name="lastName" autoComplete="family-name" defaultValue={draft.lastName ?? ''} />
+          )}
+        </Field>
+        <Field name="maritalStatus" label="Marital Status" note="Optional">
+          {(p) => (
+            <Select {...p} name="maritalStatus" defaultValue={draft.maritalStatus ?? ''}>
+              <option value="" disabled>Select status...</option>
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Widowed">Widowed</option>
+              <option value="Separated">Separated</option>
+            </Select>
           )}
         </Field>
       </div>
@@ -67,11 +87,82 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
         )}
       </Field>
 
-      <Field name="currentAddress" label="Current address" note="Optional here - we ask properly on the next page but one">
+      <Field name="mothersMaidenName" label="Mother's Maiden Name" note="Required for identity verification" required>
         {(p) => (
-          <TextInput {...p} name="currentAddress" autoComplete="street-address" defaultValue={draft.currentAddress ?? ''} />
+          <TextInput {...p} name="mothersMaidenName" defaultValue={draft.mothersMaidenName ?? ''} />
         )}
       </Field>
+
+      <div className={styles.pair}>
+        <Field name="ssn" label="Social Security Number" required hint="Stored securely using field-level encryption.">
+          {(p) => (
+            <TextInput {...p} name="ssn" placeholder="XXX-XX-XXXX" defaultValue={draft.ssn ?? ''} />
+          )}
+        </Field>
+      </div>
+
+      <div className={styles.pair}>
+        <Field name="driversLicense" label="Driver's License / State ID" required>
+          {(p) => (
+            <TextInput {...p} name="driversLicense" defaultValue={draft.driversLicense ?? ''} />
+          )}
+        </Field>
+        <Field name="driversLicenseState" label="Issuing State" required>
+          {(p) => (
+            <TextInput {...p} name="driversLicenseState" maxLength={2} defaultValue={draft.driversLicenseState ?? ''} />
+          )}
+        </Field>
+      </div>
+
+      <fieldset className={styles.fieldset}>
+        <legend className={styles.legend}>Current Address</legend>
+        <Field name="currentAddress" label="Street address" required>
+          {(p) => (
+            <TextInput {...p} name="currentAddress" autoComplete="street-address" defaultValue={draft.currentAddress ?? ''} />
+          )}
+        </Field>
+        <div className={styles.pair}>
+          <Field name="currentCity" label="City" required>
+            {(p) => <TextInput {...p} name="currentCity" defaultValue={draft.currentCity ?? ''} />}
+          </Field>
+          <Field name="currentState" label="State" required>
+            {(p) => <TextInput {...p} name="currentState" maxLength={2} defaultValue={draft.currentState ?? ''} />}
+          </Field>
+        </div>
+        <div className={styles.pair}>
+          <Field name="currentZip" label="Zip Code" required>
+            {(p) => <TextInput {...p} name="currentZip" defaultValue={draft.currentZip ?? ''} />}
+          </Field>
+          <Field name="currentResidenceMonths" label="Months lived here" required>
+            {(p) => <TextInput {...p} figure name="currentResidenceMonths" inputMode="numeric" defaultValue={draft.currentResidenceMonths ?? ''} />}
+          </Field>
+        </div>
+      </fieldset>
+
+      <fieldset className={styles.fieldset}>
+        <legend className={styles.legend}>Previous Address</legend>
+        <Field name="previousAddress" label="Street address" note="Optional">
+          {(p) => (
+            <TextInput {...p} name="previousAddress" defaultValue={draft.previousAddress ?? ''} />
+          )}
+        </Field>
+        <div className={styles.pair}>
+          <Field name="previousCity" label="City">
+            {(p) => <TextInput {...p} name="previousCity" defaultValue={draft.previousCity ?? ''} />}
+          </Field>
+          <Field name="previousState" label="State">
+            {(p) => <TextInput {...p} name="previousState" maxLength={2} defaultValue={draft.previousState ?? ''} />}
+          </Field>
+        </div>
+        <div className={styles.pair}>
+          <Field name="previousZip" label="Zip Code">
+            {(p) => <TextInput {...p} name="previousZip" defaultValue={draft.previousZip ?? ''} />}
+          </Field>
+          <Field name="previousResidenceMonths" label="Months lived here">
+            {(p) => <TextInput {...p} figure name="previousResidenceMonths" inputMode="numeric" defaultValue={draft.previousResidenceMonths ?? ''} />}
+          </Field>
+        </div>
+      </fieldset>
 
       <StepNav step="details" />
     </form>

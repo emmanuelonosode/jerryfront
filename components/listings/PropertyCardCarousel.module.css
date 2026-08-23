@@ -44,20 +44,8 @@
   justify-content: space-between;
   padding: 0 var(--space-2);
   pointer-events: none; /* Let clicks pass through if they don't hit the buttons */
-  opacity: 0;
-  transition: opacity var(--duration-fast);
+  opacity: 1; /* Always show arrows */
   z-index: 2; /* Sit above the stretched link */
-}
-
-/* Show arrows when hovering anywhere on the carousel, or on touch devices */
-.carousel:hover .controls {
-  opacity: 1;
-}
-
-@media (hover: none) {
-  .controls {
-    display: none; /* On touch, swipe is natural, arrows take up space */
-  }
 }
 
 .arrow {
