@@ -1,6 +1,7 @@
 import { Field } from '@/components/ui/Field';
-import { ChoiceGroup, Radio, TextInput, Textarea } from '@/components/ui/Controls';
+import { ChoiceGroup, Radio, TextInput, Textarea, Select } from '@/components/ui/Controls';
 import { StepNav } from '@/components/apply/StepNav';
+import { US_STATES } from '@/lib/states';
 import type { ApplicationDraft, FieldError } from '@/lib/apply/draft';
 import styles from './steps.module.css';
 
@@ -67,7 +68,10 @@ export function HistoryStep({ draft, errors }: { draft: ApplicationDraft; errors
                 </Field>
                 <Field name="addressState" idSuffix={i} label="State">
                   {(p) => (
-                    <TextInput {...p} name="addressState" maxLength={2} defaultValue={address?.state ?? ''} />
+                    <Select {...p} name="addressState" defaultValue={address?.state ?? ''}>
+                      <option value="">Select state...</option>
+                      {US_STATES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                    </Select>
                   )}
                 </Field>
                 <Field name="addressFrom" idSuffix={i} label="From (year)">

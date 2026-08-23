@@ -1,5 +1,6 @@
 import { Field } from '@/components/ui/Field';
 import { TextInput, Select } from '@/components/ui/Controls';
+import { US_STATES } from '@/lib/states';
 import { StepNav } from '@/components/apply/StepNav';
 import type { ApplicationDraft, FieldError } from '@/lib/apply/draft';
 import styles from './steps.module.css';
@@ -83,7 +84,7 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
         error={errorFor(errors, 'dateOfBirth')}
       >
         {(p) => (
-          <TextInput {...p} figure type="date" name="dateOfBirth" autoComplete="bday" defaultValue={draft.dateOfBirth ?? ''} />
+          <TextInput {...p} figure type="date" name="dateOfBirth" autoComplete="bday" max="2006-12-31" defaultValue={draft.dateOfBirth ?? ''} />
         )}
       </Field>
 
@@ -109,7 +110,10 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
         </Field>
         <Field name="driversLicenseState" label="Issuing State" required>
           {(p) => (
-            <TextInput {...p} name="driversLicenseState" maxLength={2} defaultValue={draft.driversLicenseState ?? ''} />
+            <Select {...p} name="driversLicenseState" defaultValue={draft.driversLicenseState ?? ''}>
+              <option value="" disabled>Select state...</option>
+              {US_STATES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </Select>
           )}
         </Field>
       </div>
@@ -126,15 +130,30 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
             {(p) => <TextInput {...p} name="currentCity" defaultValue={draft.currentCity ?? ''} />}
           </Field>
           <Field name="currentState" label="State" required>
-            {(p) => <TextInput {...p} name="currentState" maxLength={2} defaultValue={draft.currentState ?? ''} />}
+            {(p) => (
+              <Select {...p} name="currentState" defaultValue={draft.currentState ?? ''}>
+                <option value="" disabled>Select state...</option>
+                {US_STATES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </Select>
+            )}
           </Field>
         </div>
         <div className={styles.pair}>
           <Field name="currentZip" label="Zip Code" required>
             {(p) => <TextInput {...p} name="currentZip" defaultValue={draft.currentZip ?? ''} />}
           </Field>
-          <Field name="currentResidenceMonths" label="Months lived here" required>
-            {(p) => <TextInput {...p} figure name="currentResidenceMonths" inputMode="numeric" defaultValue={draft.currentResidenceMonths ?? ''} />}
+          <Field name="currentResidenceMonths" label="Time lived here" required>
+            {(p) => (
+              <Select {...p} name="currentResidenceMonths" defaultValue={draft.currentResidenceMonths ?? ''}>
+                <option value="" disabled>Select time...</option>
+                <option value="6">Less than a year</option>
+                <option value="12">1 year</option>
+                <option value="24">2 years</option>
+                <option value="36">3 years</option>
+                <option value="48">4 years</option>
+                <option value="60">5+ years</option>
+              </Select>
+            )}
           </Field>
         </div>
       </fieldset>
@@ -151,15 +170,30 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
             {(p) => <TextInput {...p} name="previousCity" defaultValue={draft.previousCity ?? ''} />}
           </Field>
           <Field name="previousState" label="State">
-            {(p) => <TextInput {...p} name="previousState" maxLength={2} defaultValue={draft.previousState ?? ''} />}
+            {(p) => (
+              <Select {...p} name="previousState" defaultValue={draft.previousState ?? ''}>
+                <option value="">Select state...</option>
+                {US_STATES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </Select>
+            )}
           </Field>
         </div>
         <div className={styles.pair}>
           <Field name="previousZip" label="Zip Code">
             {(p) => <TextInput {...p} name="previousZip" defaultValue={draft.previousZip ?? ''} />}
           </Field>
-          <Field name="previousResidenceMonths" label="Months lived here">
-            {(p) => <TextInput {...p} figure name="previousResidenceMonths" inputMode="numeric" defaultValue={draft.previousResidenceMonths ?? ''} />}
+          <Field name="previousResidenceMonths" label="Time lived here">
+            {(p) => (
+              <Select {...p} name="previousResidenceMonths" defaultValue={draft.previousResidenceMonths ?? ''}>
+                <option value="">Select time...</option>
+                <option value="6">Less than a year</option>
+                <option value="12">1 year</option>
+                <option value="24">2 years</option>
+                <option value="36">3 years</option>
+                <option value="48">4 years</option>
+                <option value="60">5+ years</option>
+              </Select>
+            )}
           </Field>
         </div>
       </fieldset>
