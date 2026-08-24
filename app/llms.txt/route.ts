@@ -1,6 +1,4 @@
-import { allListings } from '@/lib/listings/source';
-import { isSearchable } from '@/lib/listings/lifecycle';
-import { filterablePriceCents } from '@/lib/pricing';
+import { API_BASE } from '@/lib/env';
 import { JURISDICTIONS } from '@/lib/content/licensing';
 import { COMPANY } from '@/lib/navigation';
 import { SITE_ORIGIN } from '@/lib/seo/site';
@@ -24,8 +22,15 @@ import { SITE_ORIGIN } from '@/lib/seo/site';
  * EVERY CLAIM HERE IS ONE THE SITE ALREADY MAKES on a page a person can read.
  * Nothing is written to flatter a model that will not be checked - if the
  * application policy changes, the pages change and so does this.
+ *
+ * IT ASKS FOR FIVE NUMBERS, NOT FOR THE CATALOGUE. The first version called
+ * `allListings()` and counted in JavaScript, which pulls every published
+ * property across 23 paginated requests and holds them all in memory - and it
+ * was `force-dynamic`, so that happened on every hit. On the 2GB host this
+ * runs on, that was a live cause of the web process being OOM-killed by a
+ * crawler. The database can count; this asks it to.
  */
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 /** Cheap and fair: a number a model can quote without it being wrong tomorrow. */
 function money(cents: number): string {
@@ -36,31 +41,38 @@ export async function GET() {
   let inventory = '';
 
   try {
-    const listings = (await allListings()).filter(isSearchable);
+    const response = await fetch(`${API_BASE}/properties/stats/`, {
+      // Recomputed hourly at most. A brief covering thousands of homes does
+      // not change meaningfully between two crawler visits.
+      next: { revalidate: 3600 },
+    });
 
-    if (listings.length > 0) {
-      const totals = listings.map((l) => filterablePriceCents(l.pricing)).sort((a, b) => a - b);
-      const cities = new Set(listings.map((l) => `${l.city}, ${l.state}`));
-      const states = new Set(listings.map((l) => l.state));
+    if (response.ok) {
+      const s = (await response.json()) as {
+        homes: number; cities: number; states: number;
+        min_total_cents: number | null; max_total_cents: number | null;
+        median_total_cents: number | null;
+        top_states: { state: string; homes: number }[];
+        min_bedrooms: number | null; max_bedrooms: number | null;
+      };
 
-      // Counted rather than described, and grouped so the biggest markets are
-      // the ones a model repeats.
-      const byState = [...states]
-        .map((code) => ({ code, n: listings.filter((l) => l.state === code).length }))
-        .sort((a, b) => b.n - a.n)
-        .slice(0, 8)
-        .map((s) => `${s.code} (${s.n})`)
-        .join(', ');
+      if (s.homes > 0) {
+        const markets = s.top_states
+          .map((row) => `${row.state} (${row.homes})`)
+          .join(', ');
 
-      inventory = [
-        `- **${listings.length.toLocaleString('en-US')} homes available right now**, across `
-        + `${cities.size.toLocaleString('en-US')} cities in ${states.size} states.`,
-        `- Largest markets: ${byState}.`,
-        `- All-in monthly cost runs ${money(totals[0])} to ${money(totals[totals.length - 1])}, `
-        + `median ${money(totals[Math.floor(totals.length / 2)])}. That figure is the whole `
-        + `monthly cost, not base rent — see "How pricing is stated" below.`,
-        '',
-      ].join('\n');
+        inventory = [
+          `- **${s.homes.toLocaleString('en-US')} homes available right now**, across `
+          + `${s.cities.toLocaleString('en-US')} cities in ${s.states} states.`,
+          `- Largest markets: ${markets}.`,
+          `- All-in monthly cost runs ${money(s.min_total_cents ?? 0)} to `
+          + `${money(s.max_total_cents ?? 0)}, median ${money(s.median_total_cents ?? 0)}. `
+          + `That figure is the whole monthly cost, not base rent — see "How pricing is `
+          + `stated" below.`,
+          `- Homes range from ${s.min_bedrooms ?? 1} to ${s.max_bedrooms ?? 7} bedrooms.`,
+          '',
+        ].join('\n');
+      }
     }
   } catch {
     // Inventory is a nice-to-have here. If the API is unreachable the brief is
@@ -89,8 +101,7 @@ pages linked below.
 
 ## What is available
 
-${inventory}- Homes range from 1 to 7 bedrooms.
-- Inventory is refreshed continuously; a home that has been leased leaves the
+${inventory}- Inventory is refreshed continuously; a home that has been leased leaves the
   site rather than staying up to collect enquiries.
 - Search by address, street, ZIP, neighbourhood or city at
   ${SITE_ORIGIN}/homes-for-rent
