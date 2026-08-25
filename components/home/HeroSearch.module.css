@@ -6,6 +6,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  /* The query context for the form below. It has to be the parent - an element
+     cannot respond to its own width. */
+  container-type: inline-size;
 }
 
 .search {
@@ -193,9 +196,16 @@
   text-decoration: underline;
 }
 
-/* ---- Desktop ------------------------------------------------------------- */
+/* ---- Wider ---------------------------------------------------------------
+   A CONTAINER QUERY, NOT A VIEWPORT ONE. This form went to four columns at a
+   640px *viewport*, which was right while it spanned the hero. It now sits in
+   a card in the hero's right-hand column, roughly 430px wide on a 1440px
+   screen - so the viewport said "four columns" and the labels collided into
+   each other. Asking the form how much room it actually has fixes it here and
+   anywhere else it is ever placed.
+   -------------------------------------------------------------------------- */
 
-@media (min-width: 640px) {
+@container (min-width: 34rem) {
   .search {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.3fr) auto;

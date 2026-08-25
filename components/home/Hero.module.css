@@ -38,13 +38,18 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgb(0 0 0 / 0.5) 0%,
-    rgb(0 0 0 / 0.2) 30%,
-    rgb(0 0 0 / 0.2) 60%,
-    rgb(0 0 0 / 0.7) 100%
-  );
+  /* Weighted to the left, where the type sits, rather than flat across the
+     whole frame. A uniform veil buys contrast by making the photograph dull -
+     and the photograph is the reason anyone stops. */
+  background:
+    linear-gradient(
+      to right,
+      rgb(10 14 20 / 0.82) 0%,
+      rgb(10 14 20 / 0.62) 38%,
+      rgb(10 14 20 / 0.18) 68%,
+      rgb(10 14 20 / 0.05) 100%
+    ),
+    linear-gradient(to bottom, rgb(10 14 20 / 0.35) 0%, rgb(10 14 20 / 0) 40%);
 }
 
 /* ---- Content ------------------------------------------------------------- */
@@ -52,14 +57,27 @@
 .inner {
   position: relative;
   z-index: 1;
-  padding-block: var(--space-8);
+  padding-block: var(--space-6);
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
 }
 
 .copy {
-  max-width: 48rem;
+  max-width: 40rem;
+}
+
+/* The half of the headline that carries the promise. Pacific would vanish
+   against the photograph, so the emphasis is a rule beneath the words rather
+   than a colour change - the system uses rules as structure everywhere else.
+
+   `clone` so a wrapped headline gets a rule under each line. Without it the
+   inset shadow is drawn once across the whole inline box and the underline
+   appears under some lines and not others. */
+.emphasis {
+  box-shadow: inset 0 -0.12em 0 var(--brand);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* Sharp, not a pill - the reference has no pill-shaped marks. */
@@ -81,7 +99,10 @@
 
 .heading {
   font-family: var(--font-family-display);
-  font-size: var(--display-lg);
+  /* One step down on a phone. At display-lg the headline ran to three lines
+     and pushed the search - the thing the hero exists for - most of a screen
+     down. It steps up at 960px with every other heading on the page. */
+  font-size: var(--display-md);
   line-height: var(--lh-display);
   letter-spacing: var(--letter-spacing-normal);
   font-weight: var(--font-weight-extrabold);
@@ -91,7 +112,7 @@
 }
 
 .lead {
-  max-width: 54ch;
+  max-width: 46ch;
   margin-top: var(--space-3);
   font-size: var(--text-body);
   line-height: var(--lh-body);
@@ -111,13 +132,31 @@
 /* ---- Desktop ------------------------------------------------------------- */
 
 @media (min-width: 960px) {
+  .heading {
+    font-size: var(--display-lg);
+  }
+
+  /* CAPPED, NOT FILLED. `74vh` plus content ran to 853px in a 900px viewport,
+     which put the next section at 983px - past the fold, so the page looked
+     like it ended here. 64vh leaves the following section's top edge showing,
+     and `max-height` stops a tall desktop monitor reintroducing the problem. */
   .hero {
-    min-height: clamp(34rem, 74vh, 44rem);
+    min-height: clamp(30rem, 64vh, 38rem);
+    max-height: 44rem;
   }
 
   .inner {
-    padding-block: var(--space-9) var(--space-8);
+    padding-block: var(--space-8);
     justify-content: center;
+  }
+
+  /* Two columns: type left, search right, sitting over the quiet side of the
+     photograph. Stacking them is what made this tall in the first place. */
+  .inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(22rem, 0.95fr);
+    align-items: center;
+    gap: var(--space-7);
   }
 
   .card {

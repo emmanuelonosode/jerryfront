@@ -1,5 +1,6 @@
 import { Container } from '@/components/layout/Container';
 import { HeroSearch } from './HeroSearch';
+import { HeroSlideshow } from './HeroSlideshow';
 import styles from './Hero.module.css';
 
 /**
@@ -10,22 +11,14 @@ import styles from './Hero.module.css';
  * overlaps the bottom edge of the photograph, which puts it at the optical
  * centre and makes it the thing a first-time visitor reaches for.
  *
- * WHY A REAL LISTING PHOTOGRAPH AND NOT A HERO ASSET. Section 4 rules out
- * stock photography, and the whole position of this site is being the real
- * one. A commissioned lifestyle shot is the single most replaceable thing on a
- * page like this and the audience is primed to discount it. So the backdrop is
- * an actual home in the actual portfolio, pulled from inventory at request
- * time - which means it cannot depict a home the company does not have.
+ * IT IS DELIBERATELY SHORT. This was 853px tall in a 900px viewport, so the
+ * section beneath it began at 983px and nothing below the hero existed until
+ * you scrolled. A visitor who cannot see that the page continues often does
+ * not look. It now runs to about 64vh on desktop, which leaves the next
+ * section's top edge visible - that sliver is the whole reason anyone scrolls.
  *
- * It is chosen deterministically rather than at random: a hero that changes on
- * every render makes the LCP image uncacheable and gives two people comparing
- * notes two different sites. `heroBackdrop` picks by a fixed rule instead.
- *
- * WHY THE PHOTOGRAPH IS aria-hidden AND NOT LABELLED. It is a mood, not
- * information - everything it conveys is stated in the text on top of it, and
- * the home it shows is not the subject of this page. A screen reader
- * announcing "single-storey house with a driveway" here adds nothing and
- * delays reaching the search field.
+ * The height comes off the section, not out of the content: the headline, the
+ * lead and the search card are all still here, set tighter.
  */
 
 export async function Hero() {
@@ -34,17 +27,9 @@ export async function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="hero-heading">
       <div className={styles.frame}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          className={styles.photo}
-          src="/house_exterior_stone.jpg"
-          alt="Exterior of a beautiful stone house"
-          aria-hidden="true"
-          fetchPriority="high"
-          decoding="async"
-        />
+        <HeroSlideshow />
         {/* The scrim is a real element rather than a background-image gradient
-            so it can sit between the photo and the text in the stacking order
+            so it can sit between the photos and the text in the stacking order
             without the text inheriting any of its opacity. */}
         <div className={styles.scrim} aria-hidden="true" />
       </div>
@@ -53,12 +38,12 @@ export async function Hero() {
         <div className={styles.copy}>
           <p className={styles.eyebrow}>Single-family homes for rent</p>
           <h1 id="hero-heading" className={styles.heading}>
-            Find a home you like. Apply. Talk to a real agent.
+            Affordable homes,{' '}
+            <span className={styles.emphasis}>ready to move into.</span>
           </h1>
           <p className={styles.lead}>
-            Every price on this site is the total monthly cost, with every fee
-            included. See a home you want? Book a tour or apply - one of our
-            agents picks it up from there.
+            Every price here is the full monthly cost, every fee included. Anyone
+            can apply.
           </p>
         </div>
 

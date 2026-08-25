@@ -1,0 +1,112 @@
+/* -----------------------------------------------------------------------------
+   Hero photographs.
+
+   Two frames stacked in one grid cell, crossfading. Stacked rather than
+   translated: a slide transition on a full-bleed image is expensive to
+   composite and draws the eye away from the headline, which is the opposite of
+   what the hero is for.
+   -------------------------------------------------------------------------- */
+
+.frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  /* Slow enough to read as a dissolve rather than a cut. Only opacity and
+     only on the compositor, so it costs nothing on a low-powered device. */
+  transition: opacity 1200ms ease-in-out;
+  will-change: opacity;
+}
+
+.slide[data-active='true'] {
+  opacity: 1;
+}
+
+.photo {
+  object-fit: cover;
+}
+
+/* The crop moves with the viewport shape.
+   On a phone the frame is tall and narrow, so `cover` scales to fill the
+   height and the default crop lands on the roofline - which cut the couple,
+   the whole reason that photograph is here, out of frame entirely. Each slide
+   carries a wide-viewport position inline; this is the portrait one. */
+@media (max-width: 639px) {
+  .slide:first-child .photo {
+    object-position: 46% 78% !important;
+  }
+
+  .slide:last-child .photo {
+    object-position: 50% 72% !important;
+  }
+}
+
+/* ---- Frame selector ------------------------------------------------------ */
+
+.dots {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 2;
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* A 44px touch target with a 2px rule drawn inside it: the mark stays thin and
+   Swiss while the thing a thumb has to hit stays the size a thumb needs. */
+.dot {
+  appearance: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.dot::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 2px;
+  background: rgb(255 255 255 / 0.45);
+  transition: background-color 200ms ease, transform 200ms ease;
+}
+
+.dot:hover::after {
+  background: rgb(255 255 255 / 0.75);
+}
+
+.dot[data-active='true']::after {
+  background: #FFFFFF;
+  transform: scaleY(2);
+}
+
+.dot:focus-visible {
+  outline: var(--focus-ring-width) solid #FFFFFF;
+  outline-offset: -6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    transition: none;
+  }
+
+  .dot::after {
+    transition: none;
+  }
+}
+
+@media (min-width: 960px) {
+  .dots {
+    right: var(--space-6);
+    bottom: var(--space-5);
+  }
+}
