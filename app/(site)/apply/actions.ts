@@ -21,6 +21,17 @@ import { APPLICATION_FEE_CENTS } from '@/lib/payments/methods';
  */
 const DRAFT_COOKIE = 'srg_draft';
 
+/**
+ * The home someone pressed Apply on, held until there is a draft to put it on.
+ *
+ * `/apply/start?home=<slug>` used to record the listing by creating the draft
+ * row immediately. That is what made entering the funnel a database write. The
+ * slug is the only thing that entry step actually needed to remember, and a
+ * cookie remembers it for nothing - so the row waits until the applicant has
+ * typed something worth storing.
+ */
+const PENDING_LISTING_COOKIE = 'srg_apply_home';
+
 const DRAFT_COOKIE_OPTIONS = {
   httpOnly: true,
   // Secure is refused by some browsers over plain http, and a draft cookie
@@ -56,10 +67,27 @@ export async function startDraft(listingSlug: string | null): Promise<Applicatio
   const existing = await currentDraft();
   if (existing && !existing.submittedAt) return existing;
 
-  const draft = await draftStore.create(listingSlug, new Date());
   const jar = await cookies();
+  // Falls back to the home they pressed Apply on, parked at /apply/start.
+  const slug = listingSlug ?? jar.get(PENDING_LISTING_COOKIE)?.value ?? null;
+
+  const draft = await draftStore.create(slug, new Date());
   jar.set(DRAFT_COOKIE, draft.id, DRAFT_COOKIE_OPTIONS);
+  // Spent. Leaving it set would attach a stale home to the applicant's next
+  // application months later.
+  jar.delete(PENDING_LISTING_COOKIE);
   return draft;
+}
+
+/**
+ * Remember the home without creating anything.
+ *
+ * Called from the entry route, which is a GET and must stay free of writes.
+ */
+export async function rememberListing(listingSlug: string | null): Promise<void> {
+  if (!listingSlug) return;
+  const jar = await cookies();
+  jar.set(PENDING_LISTING_COOKIE, listingSlug, DRAFT_COOKIE_OPTIONS);
 }
 
 /** Read-only view for page renders. Never writes, never sets a cookie. */
