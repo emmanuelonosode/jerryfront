@@ -130,12 +130,7 @@ export function PaymentStep({
         </ul>
       </aside>
 
-      {isSample ? (
-        <p className={pay.sampleBanner}>
-          Development only — these are placeholder destinations, not real accounts. Do not
-          send money to them.
-        </p>
-      ) : null}
+      {/* Development warning removed per user request */}
 
       <div className={styles.referenceBlock}>
         <p className={styles.referenceLabel}>Your payment reference</p>

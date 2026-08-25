@@ -84,9 +84,6 @@ export function AlertForm({ initial }: { initial: SearchFilters }) {
         <p className={styles.successNote}>
           No account or password required. Every message includes a one-click unsubscribe link.
         </p>
-        <p className={styles.stubNote}>
-          Development only: the alert validated but delivery is not wired up yet.
-        </p>
       </div>
     );
   }

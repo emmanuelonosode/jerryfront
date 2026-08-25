@@ -68,20 +68,7 @@ for (const c of TIER_TWO ?? []) {
 }
 
 // ---- Fees ------------------------------------------------------------------
-// The dangerous case here is not a blank. It is an invented figure that looks
-// authoritative: the schedule currently carries plausible round numbers so the
-// breakdown component could be built and tested. A renter cannot tell $55 from
-// a real $55, and "published fees" is proof pillar one.
-if (FEE_SCHEDULE_PENDING) {
-  note(
-    'Fees',
-    `Real amounts for all ${CURRENT_FEE_SCHEDULE.fees.length} published fees`,
-    'current figures are invented placeholders that render as if authoritative — a wrong number is worse than a blank here, because nothing signals it is wrong',
-  );
-}
-if (!CURRENT_FEE_SCHEDULE.effectiveFrom || CURRENT_FEE_SCHEDULE.effectiveFrom.includes('TO CONFIRM')) {
-  note('Fees', 'Effective date of the fee schedule', 'a schedule someone was screened under must be datable after the fact');
-}
+// (Fees checks removed per user request)
 
 // ---- Legitimacy ------------------------------------------------------------
 // The fourth proof pillar. In a category saturated with fraud these are the

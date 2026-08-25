@@ -59,7 +59,6 @@ export const PRIMARY_NAV: NavItem[] = [
       },
     ],
   },
-  { label: 'Fees', href: '/fees' },
   { label: 'How it works', href: '/how-it-works' },
   {
     label: 'About',
@@ -90,7 +89,6 @@ export const FOOTER_NAV: NavGroup[] = [
   {
     label: 'Renting with us',
     links: [
-      { label: 'Fees', href: '/fees' },
       { label: 'How it works', href: '/how-it-works' },
       { label: 'Request a tour', href: '/schedule-tour' },
     ],

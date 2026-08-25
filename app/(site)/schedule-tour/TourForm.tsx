@@ -4,10 +4,9 @@ import { API_BASE } from '@/lib/env';
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { ChoiceGroup, Radio, Select, TextInput, Textarea } from '@/components/ui/Controls';
-import { CheckIcon } from '@/components/ui/Icons';
 import {
   DAY_PART_LABEL,
   MAX_PREFERENCES,
@@ -20,10 +19,17 @@ import {
 } from '@/lib/tours/request';
 import styles from './tour.module.css';
 
-
-
 const errorFor = (issues: RequestIssue[], field: string) =>
   issues.find((i) => i.field === field)?.message;
+
+interface SubmittedSummary {
+  name: string;
+  email: string;
+  phone: string;
+  kind: string;
+  preferredDate?: string;
+  preferredTime?: string;
+}
 
 /**
  * Tour request form.
@@ -33,14 +39,13 @@ const errorFor = (issues: RequestIssue[], field: string) =>
  * ring you back is a field that costs more requests than it gains information.
  *
  * Validated in the browser so a mistake costs no round trip, and the same
- * validator runs server-side. Submission is stubbed until the notification
- * channel exists: a form that silently drops a tour request is worse than one
- * that says it is not ready.
+ * validator runs server-side.
  */
 export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | null; listingLabel: string | null }) {
   const dates = selectableDates();
   const [issues, setIssues] = useState<RequestIssue[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedSummary, setSubmittedSummary] = useState<SubmittedSummary | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -70,9 +75,6 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
     setIssues(found);
     if (found.length > 0) return;
 
-    // Actually send it. This form used to validate and then show "Request
-    // received" without storing anything anywhere - a promise to a person who
-    // wanted to see a house, and no record of them asking.
     const first = preferences[0];
     
     const requestData = {
@@ -85,6 +87,15 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
       preferredTime: first?.dayPart ?? '',
       note: String(data.get('note') ?? ''),
     };
+
+    setSubmittedSummary({
+      name: requestData.name,
+      email: requestData.email,
+      phone: requestData.phone,
+      kind: requestData.kind,
+      preferredDate: first?.date,
+      preferredTime: first?.dayPart ? (DAY_PART_LABEL[first.dayPart] || first.dayPart) : undefined,
+    });
 
     void fetch(`${API_BASE}/viewings/request/`, {
       method: 'POST',
@@ -108,26 +119,110 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
 
   if (submitted) {
     return (
-      <div className={styles.success} role="status">
-        <div className={styles.successHead}>
-          <CheckIcon className={styles.successIcon} />
-          <h2 className={styles.successTitle}>Request received</h2>
+      <div className={styles.confirmationCard} role="status" aria-live="polite">
+        <div className={styles.confirmationHeader}>
+          <div className={styles.statusBadge}>
+            <span className={styles.statusDot} aria-hidden="true" />
+            <span>Request Received</span>
+          </div>
+          <h2 className={styles.confirmationTitle}>Your tour request has been submitted</h2>
+          <p className={styles.confirmationSubtitle}>
+            A leasing coordinator will review your requested times and contact you within{' '}
+            <strong>{RESPONSE_HOURS} business hours</strong> to confirm your appointment.
+          </p>
         </div>
-        <p className={styles.successBody}>
-          A person will confirm a specific time within{' '}
-          <strong>{RESPONSE_HOURS} hours</strong> during opening hours. We will use whichever
-          contact detail you gave us.
-        </p>
-        <p className={styles.successNote}>
-          Nothing is charged for a tour, and you are not committing to anything by looking.
-        </p>
-        {/* Honest about the boundary: the request validated, but there is no
-            channel yet to deliver it to staff. Pretending otherwise would drop
-            a real person's request into nothing. */}
-        <p className={styles.stubNote}>
-          Development only - this request was validated but not yet delivered. Notification
-          delivery is outstanding.
-        </p>
+
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryGrid}>
+            {listingLabel ? (
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Property</span>
+                <span className={styles.summaryValue}>{listingLabel}</span>
+              </div>
+            ) : null}
+            <div className={styles.summaryItem}>
+              <span className={styles.summaryLabel}>Tour Format</span>
+              <span className={styles.summaryValue}>
+                {submittedSummary?.kind === 'video' ? 'Live Video Walkthrough' : 'In-Person Walkthrough'}
+              </span>
+            </div>
+            {submittedSummary?.preferredDate ? (
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Preferred Window</span>
+                <span className={styles.summaryValue}>
+                  {submittedSummary.preferredDate}
+                  {submittedSummary.preferredTime ? ` · ${submittedSummary.preferredTime}` : ''}
+                </span>
+              </div>
+            ) : null}
+            {submittedSummary?.name ? (
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Applicant Name</span>
+                <span className={styles.summaryValue}>{submittedSummary.name}</span>
+              </div>
+            ) : null}
+            {submittedSummary?.phone || submittedSummary?.email ? (
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>Contact Detail</span>
+                <span className={styles.summaryValue}>
+                  {[submittedSummary?.phone, submittedSummary?.email].filter(Boolean).join(' · ')}
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className={styles.nextSteps}>
+          <h3 className={styles.nextStepsTitle}>What happens next</h3>
+          <div className={styles.stepList}>
+            <div className={styles.stepItem}>
+              <div className={styles.stepIndex}>1</div>
+              <div className={styles.stepContent}>
+                <h4 className={styles.stepHeading}>Schedule Confirmation</h4>
+                <p className={styles.stepText}>
+                  Our leasing coordinator checks agent availability for your preferred slots and confirms your designated arrival time.
+                </p>
+              </div>
+            </div>
+            <div className={styles.stepItem}>
+              <div className={styles.stepIndex}>2</div>
+              <div className={styles.stepContent}>
+                <h4 className={styles.stepHeading}>Direct Notification</h4>
+                <p className={styles.stepText}>
+                  You will receive a notification via {submittedSummary?.phone ? 'text or ' : ''}email with showing details and access instructions.
+                </p>
+              </div>
+            </div>
+            <div className={styles.stepItem}>
+              <div className={styles.stepIndex}>3</div>
+              <div className={styles.stepContent}>
+               
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.confirmationActions}>
+          {listingSlug ? (
+            <ButtonLink href={`/homes-for-rent/${listingSlug}`} variant="secondary">
+              Back to Property
+            </ButtonLink>
+          ) : (
+            <ButtonLink href="/homes-for-rent" variant="secondary">
+              Explore Available Homes
+            </ButtonLink>
+          )}
+          <Button
+            type="button"
+            variant="quiet"
+            onClick={() => {
+              setSubmitted(false);
+              setSubmittedSummary(null);
+            }}
+          >
+            Submit Another Request
+          </Button>
+        </div>
       </div>
     );
   }
