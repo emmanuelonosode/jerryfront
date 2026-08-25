@@ -31,6 +31,7 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  staticPageGenerationTimeout: 300,
 
   async headers() {
     return [

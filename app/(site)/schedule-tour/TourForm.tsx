@@ -326,9 +326,6 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
         <Button type="submit" size="lg">
           Request a tour
         </Button>
-        <p className={styles.actionNote}>
-          <Link href="/fees">Every fee we charge is published</Link>.
-        </p>
       </div>
     </form>
   );
