@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { startDraft } from '../actions';
+import { redirectTo } from '@/lib/http/redirect';
 import { resumeStep } from '@/lib/apply/draft';
 
 /**
@@ -43,9 +44,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const destination = new URL(`/apply/${resumeStep(draft)}`, request.url);
-  destination.searchParams.set('started', '1');
-  const response = NextResponse.redirect(destination, 303);
+  // Relative, not `new URL(..., request.url)` - see lib/http/redirect.ts.
+  // That form sent every applicant to https://localhost:3000 and was the
+  // reason pressing Apply produced a browser connection error.
+  const response = redirectTo(`/apply/${resumeStep(draft)}?started=1`, 303);
   response.headers.set('Cache-Control', 'no-store, private');
   return response;
 }

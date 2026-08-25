@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
+import { redirectTo } from '@/lib/http/redirect';
 import { sendAlert } from '@/lib/mailer';
 import { applyStepUpdate, currentDraft, startDraft } from '../../actions';
 import { draftStore } from '@/lib/apply/store';
@@ -25,7 +26,7 @@ import { isStepSlug, nextStep } from '@/lib/apply/steps';
 export async function POST(request: NextRequest, { params }: { params: Promise<{ step: string }> }) {
   const { step } = await params;
   if (!isStepSlug(step)) {
-    return NextResponse.redirect(new URL('/apply', request.url), 303);
+    return redirectTo('/apply', 303);
   }
 
   const formData = await request.formData();
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const target = invalid ? step : (nextStep(step) ?? step);
 
-  const response = NextResponse.redirect(new URL(`/apply/${target}`, request.url), 303);
+  const response = redirectTo(`/apply/${target}`, 303);
   response.headers.set('Cache-Control', 'no-store, private');
   return response;
 }
