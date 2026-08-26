@@ -5,6 +5,7 @@ import { Container } from '@/components/layout/Container';
 import { ReassuranceStrip } from '@/components/content/ReassuranceStrip';
 import { ButtonLink } from '@/components/ui/Button';
 import { Pending } from '@/components/ui/Pending';
+import { jurisdictionFor } from '@/lib/content/licensing';
 import { findStateHub } from '@/lib/listings/hubs';
 import styles from './hub.module.css';
 import { allListings } from '@/lib/listings/source';
@@ -85,6 +86,8 @@ export default async function StateHubPage({ params }: { params: Promise<{ state
   const hub = findStateHub(listings, state);
   if (!hub) notFound();
 
+  const licence = jurisdictionFor(hub.state);
+
   return (
     <main id="main">
       <Container width="wide">
@@ -140,9 +143,27 @@ export default async function StateHubPage({ params }: { params: Promise<{ state
           <dl className={styles.legal}>
             <div>
               <dt className={styles.legalLabel}>Brokerage licence</dt>
-              <dd>
-                <Pending>{`brokerage licence number and jurisdiction for ${hub.state}`}</Pending>
-              </dd>
+              {/* These numbers were already in lib/content/licensing.ts, for
+                  every state on this list. This page just never read them, so
+                  it rendered a TO CONFIRM marker over data the codebase
+                  already held. `jurisdictionFor` is the same lookup the footer
+                  and /llms.txt use, so the three cannot disagree. */}
+              {licence ? (
+                <dd className={styles.legalValue}>
+                  {licence.broker} — licence no. {licence.licenceNumber}
+                  {licence.additional?.map((extra) => (
+                    <span key={extra.number}>
+                      {'; '}
+                      {extra.label.toLowerCase()} no. {extra.number}
+                    </span>
+                  ))}
+                  {licence.officeLocation ? ` (office: ${licence.officeLocation})` : ''}
+                </dd>
+              ) : (
+                <dd>
+                  <Pending>{`brokerage licence number and jurisdiction for ${hub.state}`}</Pending>
+                </dd>
+              )}
             </div>
             <div>
               <dt className={styles.legalLabel}>Housing vouchers</dt>
@@ -152,8 +173,21 @@ export default async function StateHubPage({ params }: { params: Promise<{ state
             </div>
             <div>
               <dt className={styles.legalLabel}>Source-of-income protection</dt>
-              <dd>
-                <Pending>{`whether ${hub.state} law prohibits source-of-income discrimination`}</Pending>
+              {/* WHAT THIS DELIBERATELY DOES NOT SAY. It does not assert
+                  whether this state's statute prohibits source-of-income
+                  discrimination. That varies by state AND by city - Florida
+                  has no statewide protection while Miami-Dade and Broward have
+                  local ordinances - so a templated "State X does not prohibit"
+                  would be actively wrong for a renter in the county that does,
+                  on a page about their rights. What is stated instead is our
+                  own policy, which is true everywhere and is the thing a
+                  renter is really asking about. */}
+              <dd className={styles.legalValue}>
+                We accept housing vouchers on every home we lease in {hub.state},
+                whether or not state law requires it. Some cities and counties
+                prohibit source-of-income discrimination where state law does
+                not; if you believe you were treated unfairly, tell us and we
+                will look into it.
               </dd>
             </div>
           </dl>

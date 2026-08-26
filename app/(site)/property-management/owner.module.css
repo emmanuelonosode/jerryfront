@@ -51,3 +51,45 @@
     justify-content: space-between;
   }
 }
+
+/* Owner terms, as a definition list rather than prose: an owner comparing
+   managers reads down a column of figures, and a paragraph hides them. */
+.terms {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  max-width: 68ch;
+}
+
+.termRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-3) 0;
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+}
+
+.termLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.termValue {
+  margin: 0;
+  font-size: var(--font-size-base);
+  text-align: right;
+  flex: 1 1 24ch;
+}
+
+/* The qualifier that keeps an indicative schedule from reading as a quote.
+   Quieter than the figures, but never hidden. */
+.termsNote {
+  margin-top: var(--space-3);
+  max-width: 68ch;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
