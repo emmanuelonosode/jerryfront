@@ -21,8 +21,29 @@ import styles from './TileLayer.module.css';
  * before launch. Attribution is not optional and is rendered, not buried.
  */
 
-const DEFAULT_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const DEFAULT_ATTRIBUTION = '© OpenStreetMap contributors';
+/**
+ * Esri's World Light Gray canvas. Free, no API key, and the right style.
+ *
+ * WHAT IT REPLACED AND WHY. Production pointed at CARTO's `basemaps.cartocdn.com`,
+ * which now requires an API key - so every tile came back stamped
+ * "API KEY REQUIRED" diagonally across the map on every listing and every
+ * search. OpenStreetMap's own tiles were the fallback default here and work
+ * without a key, but they are a full-colour street map where this design wants
+ * a quiet grey canvas that pins read against, and their usage policy is
+ * explicitly not for production traffic.
+ *
+ * Esri's canvas is grey, keyless, and measured at 3.3KB a tile against OSM's
+ * 30KB and CARTO's 10.5KB - roughly a tenth of the bytes for a map that is
+ * mostly a backdrop.
+ *
+ * NOTE THE AXIS ORDER: this service is `{z}/{y}/{x}`, not `{z}/{x}/{y}`.
+ * Getting it the usual way round returns tiles from the wrong place, which
+ * looks like a working map of somewhere else entirely.
+ */
+const DEFAULT_TILE_URL =
+  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+const DEFAULT_ATTRIBUTION =
+  'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const TILE_URL = process.env.NEXT_PUBLIC_MAP_TILE_URL || DEFAULT_TILE_URL;
 /**

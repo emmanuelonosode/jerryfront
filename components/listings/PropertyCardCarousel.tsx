@@ -22,6 +22,25 @@ export function PropertyCardCarousel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  /**
+   * ONE PHOTOGRAPH PER CARD UNTIL SOMEBODY ASKS FOR MORE.
+   *
+   * Every photo of every home used to be in the DOM on first paint. A page of
+   * 24 cards averaging 17 photos each is over 400 `<img>` elements, each with
+   * a srcset the browser must parse and a layout box it must reserve - before
+   * anyone has swiped anything. Lazy loading defers the BYTES; it does nothing
+   * about the elements, and on a mid-tier phone the parse and layout cost is
+   * what makes the list feel heavy.
+   *
+   * So the card renders its lead image, which is the only one visible, and
+   * mounts the rest the moment there is any sign of intent: a pointer over the
+   * card, a focus, or a touch. By the time the arrows can be pressed the
+   * slides are there.
+   */
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? photos : photos.slice(0, 1);
+  const reveal = () => setExpanded(true);
+
   const scroll = (e: React.MouseEvent, direction: 'left' | 'right') => {
     // Prevent the click from navigating the card link
     e.preventDefault();
@@ -63,9 +82,14 @@ export function PropertyCardCarousel({
   }
 
   return (
-    <div className={styles.carousel}>
+    <div
+      className={styles.carousel}
+      onPointerEnter={reveal}
+      onTouchStart={reveal}
+      onFocusCapture={reveal}
+    >
       <div className={styles.scrollContainer} ref={scrollRef}>
-        {photos.map((photo, index) => (
+        {shown.map((photo, index) => (
           <div key={photo.id} className={styles.slide}>
             <Link href={href} draggable={false} className={styles.imageLink}>
               <ListingImage

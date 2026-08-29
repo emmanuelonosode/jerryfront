@@ -53,16 +53,23 @@ type View = 'list' | 'map';
  * the map share, and it is the one the URL is built from anyway.
  */
 /**
- * How many pages load themselves before the reader has to ask.
+ * The list loads until it runs out. There is no batch budget.
  *
- * Not unlimited, and the reason is the footer. With 380 pages of inventory an
- * endlessly-loading list means the fair-housing notice, the licence numbers
- * and the contact details at the bottom of the page can never be reached -
- * the classic infinite-scroll failure, and on this site those are the things
- * a wary renter scrolls down to check. Five batches is about sixty homes,
- * which is well past the point anyone keeps scrolling without deciding.
+ * There used to be one, capped at five, and the reason was the footer: an
+ * endlessly-loading list means the closing content can never be reached, which
+ * is the classic infinite-scroll failure. That reasoning was sound and the
+ * remedy was wrong - it made every reader pay for a problem that belonged to
+ * the layout.
+ *
+ * The footer is now OUTSIDE the scrolling list rather than at the end of it,
+ * and the closing content renders only once the catalogue is exhausted. So
+ * browsing is uninterrupted, and nothing is stranded: the site footer with the
+ * Equal Housing Opportunity mark, the licence numbers and the contact details
+ * sits in the page chrome below the pane, reachable at any time.
+ *
+ * The manual button stays regardless. Auto-loading alone strands a keyboard
+ * user, who has no way to reach content that only appears on scroll.
  */
-const AUTO_BATCHES = 5;
 
 export function SearchResults({
   listings,
@@ -87,7 +94,6 @@ export function SearchResults({
   const [page, setPage] = useState(initialPage);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [atEnd, setAtEnd] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
   /**
@@ -95,7 +101,6 @@ export function SearchResults({
    * and counting it in state meant calling setState synchronously from that
    * effect - a cascading render, which React's own lint rule rejects.
    */
-  const autoLoadsRef = useRef(0);
 
   /**
    * The server-rendered page, then whatever scrolling has added.
@@ -107,6 +112,8 @@ export function SearchResults({
    */
   const all = useMemo(() => [...listings, ...appended], [listings, appended]);
   const hasMore = page < pageCount;
+
+  const loadMoreRef = useRef<() => Promise<void>>(async () => {});
 
   const loadMore = useCallback(async () => {
     if (!filters || loading || !hasMore) return;
@@ -161,8 +168,20 @@ export function SearchResults({
     const paneScrolls =
       pane !== null && /auto|scroll/.test(getComputedStyle(pane).overflowY);
 
+    /*
+     * The observer calls `loadMore` DIRECTLY rather than setting an `atEnd`
+     * flag for an effect to react to. Routing it through state meant the
+     * effect's only job was to call setState again, which is the cascading
+     * render the compiler warns about - and with the auto-load budget removed
+     * there is no longer a guard breaking that chain.
+     *
+     * `loadMoreRef` keeps the callback current without re-creating the
+     * observer on every render.
+     */
     const observer = new IntersectionObserver(
-      (entries) => setAtEnd(Boolean(entries[0]?.isIntersecting)),
+      (entries) => {
+        if (entries[0]?.isIntersecting) void loadMoreRef.current();
+      },
       // Starts fetching before the reader reaches the end, so the next cards
       // are usually already there rather than arriving after a visible stall.
       { root: paneScrolls ? pane : null, rootMargin: '700px' },
@@ -171,12 +190,11 @@ export function SearchResults({
     return () => observer.disconnect();
   }, [hasMore]);
 
+  // The ref is written here rather than during render, which is where reading
+  // or writing a ref is actually permitted.
   useEffect(() => {
-    if (!atEnd || loading || failed || !hasMore) return;
-    if (autoLoadsRef.current >= AUTO_BATCHES) return;
-    autoLoadsRef.current += 1;
-    void loadMore();
-  }, [atEnd, loading, failed, hasMore, loadMore]);
+    loadMoreRef.current = loadMore;
+  }, [loadMore]);
 
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
@@ -390,8 +408,18 @@ export function SearchResults({
             {`Showing ${all.length} homes.`}
           </p>
 
-          {pagination ? <div className={styles.paginationWrap}>{pagination}</div> : null}
-          {footer ? <div className={styles.listFooter}>{footer}</div> : null}
+          {/* CLOSING CONTENT, NOT SCROLL FURNITURE.
+              These used to sit at the end of the list, so a reader working
+              through the catalogue met the reassurance strip and a call to
+              action between batches of homes. They now appear only once there
+              is nothing left to load - at which point they are the end of the
+              list rather than an interruption in it. */}
+          {!hasMore ? (
+            <>
+              {pagination ? <div className={styles.paginationWrap}>{pagination}</div> : null}
+              {footer ? <div className={styles.listFooter}>{footer}</div> : null}
+            </>
+          ) : null}
         </div>
 
       </div>

@@ -55,6 +55,24 @@ export const DEFAULT_FILTERS: SearchFilters = {
 
 export const PAGE_SIZE = 12;
 
+/**
+ * How many homes to ask for at once.
+ *
+ * Browsing the whole catalogue is a scroll through 4,600 homes, and twelve at
+ * a time is the right bite: it paints fast and the reader is never waiting.
+ *
+ * Searching a city is a different act. Somebody who typed "Tampa" wants Tampa,
+ * and most markets hold well under fifty homes - so asking for the market in
+ * one request usually returns all of it before they have finished reading the
+ * first card, instead of four round trips triggered by scrolling. The cap
+ * stays well inside the API's own `max_page_size` of 200.
+ */
+export const AREA_PAGE_SIZE = 48;
+
+export function pageSizeFor(filters: SearchFilters): number {
+  return filters.city || filters.q ? AREA_PAGE_SIZE : PAGE_SIZE;
+}
+
 const SORTS: SortKey[] = ['price-asc', 'price-desc', 'newest', 'beds-desc'];
 
 function toInt(value: string | null): number | null {
@@ -221,14 +239,15 @@ export type SearchResult = {
 
 export function runSearch(listings: Listing[], filters: SearchFilters): SearchResult {
   const matched = sortListings(filterListings(listings, filters), filters.sort);
-  const pageCount = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
+  const size = pageSizeFor(filters);
+  const pageCount = Math.max(1, Math.ceil(matched.length / size));
   // Clamp rather than 404: a stale link to page 9 of a search that now has two
   // pages should show results, not an error.
   const page = Math.min(filters.page, pageCount);
-  const start = (page - 1) * PAGE_SIZE;
+  const start = (page - 1) * size;
 
   return {
-    results: matched.slice(start, start + PAGE_SIZE),
+    results: matched.slice(start, start + size),
     total: matched.length,
     page,
     pageCount,

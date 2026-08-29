@@ -6,6 +6,7 @@ import { computeBreakdown, type Fee, type Pricing } from '../pricing.ts';
 import { countsForHubThreshold } from './lifecycle.ts';
 import {
   PAGE_SIZE,
+  pageSizeFor,
   relaxationLadder,
   relaxFilters,
   runSearch,
@@ -490,15 +491,16 @@ export async function searchListings(
   filters: SearchFilters,
 ): Promise<{ results: Listing[]; total: number; page: number; pageCount: number }> {
   const query = filterQuery(filters);
+  const size = pageSizeFor(filters);
   query.set('page', String(filters.page));
-  query.set('page_size', String(PAGE_SIZE));
+  query.set('page_size', String(size));
   query.set('sort', filters.sort);
 
   try {
     const data = await fetchJson<{ results: ApiProperty[]; count: number }>(
       `/properties/?${query.toString()}`,
     );
-    const pageCount = Math.max(1, Math.ceil(data.count / PAGE_SIZE));
+    const pageCount = Math.max(1, Math.ceil(data.count / size));
     return {
       results: data.results.map(toListing),
       total: data.count,
