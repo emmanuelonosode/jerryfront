@@ -37,6 +37,14 @@ const ROUTES = [
   '/homes-for-rent',
   '/homes-for-rent?beds=3&city=Memphis',
   '/homes-for-rent?maxPrice=1200',
+  // The property detail page is appended below, resolved from the sitemap at
+  // run time rather than hardcoded here. A fixture slug was pinned in this
+  // list and the fixtures are long gone, so for every run since then this
+  // audit loaded the 404 page four times and reported its clean result as the
+  // property template's - the densest page on the site, and the one a renter
+  // spends the most time on, was silently uncovered. The fair-housing audit
+  // hit the same problem and this is the same fix.
+
   '/rentals/tn',
   '/rentals/tn/memphis',
   '/qualifications',
@@ -586,6 +594,27 @@ const sorted = [...byRule.entries()].sort(
     IMPACT_ORDER.indexOf(a[1][0].impact) - IMPACT_ORDER.indexOf(b[1][0].impact) ||
     b[1].length - a[1].length,
 );
+
+/**
+ * A listing that exists right now, from the sitemap.
+ *
+ * Inventory turns over and slugs change, so a hardcoded one eventually points
+ * at a 404 - and every check then quietly asserts things about the not-found
+ * page instead of a property.
+ */
+async function liveListingPath(base) {
+  try {
+    const xml = await (await fetch(`${base}/sitemap.xml`)).text();
+    const match = xml.match(/<loc>[^<]*(\/homes-for-rent\/[^<]+)<\/loc>/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+const livePath = await liveListingPath(BASE);
+if (livePath) ROUTES.push(livePath);
+else console.warn('  ! No live listing found in the sitemap - the property detail page is NOT covered by this run.\n');
 
 console.log(`\nACCESSIBILITY AUDIT — ${ROUTES.length} routes × 2 viewports × 2 themes = ${checked} page loads\n`);
 

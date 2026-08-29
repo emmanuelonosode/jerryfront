@@ -2,6 +2,16 @@
   padding-block: var(--space-5) var(--space-9);
 }
 
+/* The progress trail is sticky too, so "step 2 of 6, 33% complete" is readable
+   from anywhere in a form this long rather than only at the top of it. Paired
+   with the sticky StepNav at the foot, the two ends of the step stay put and
+   the middle scrolls. */
+.trailSticky {
+  position: sticky;
+  top: 0;
+  z-index: 21;
+}
+
 .inner {
   max-width: 46rem;
   margin-inline: auto;
@@ -17,8 +27,34 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding-bottom: var(--space-4);
+  /* Full-bleed out of the shell's inline padding so the blur reaches the edge
+     of the screen when it is stuck. */
+  margin-inline: calc(var(--space-4) * -1);
+  padding: var(--space-3) var(--space-4);
+  /* Opaque for the same reason the foot bar is - see StepNav.module.css. */
+  background-color: var(--color-bg-primary);
   border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+/* ---- Progress bar --------------------------------------------------------
+   The percentage was already computed and printed as text. Drawing it as well
+   costs four lines and is the only part of this trail somebody reads at a
+   glance while scrolling - "33%" has to be parsed, a bar does not. --------- */
+
+.trailBar {
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border-default);
+  overflow: hidden;
+}
+
+.trailBarFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--brand);
+  transition: width var(--duration-slow) var(--easing-default);
 }
 
 .trailSummary {
@@ -37,13 +73,34 @@
   color: var(--color-text-primary);
 }
 
+/* One scrolling row on a phone, not two wrapped ones. Six labels wrapped onto
+   two lines take as much vertical space as a form field and read as a paragraph
+   of link text; a single row that scrolls keeps the shape of a progress trail. */
 .trailList {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-1) var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trailList::-webkit-scrollbar {
+  display: none;
+}
+
+.trailItem {
+  flex: none;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .trailList {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
 
 .trailItem {

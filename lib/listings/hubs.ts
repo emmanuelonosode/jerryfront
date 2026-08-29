@@ -1,4 +1,5 @@
 import { countsForHubThreshold } from './lifecycle.ts';
+import type { CityCount } from './source.ts';
 import type { Listing } from './types.ts';
 
 /**
@@ -24,7 +25,16 @@ export type CityHub = {
   slug: string;
   city: string;
   state: string;
-  listings: Listing[];
+  /**
+   * The homes themselves - present only when the caller actually fetched them.
+   *
+   * `buildHubIndex` builds the same hub shape from GROUP BY counts and leaves
+   * this undefined, because the pages that need the SHAPE (which cities exist,
+   * are they indexable, what are the sibling cities in this state) are not the
+   * pages that need the inventory. Keeping them apart is what stopped the hub
+   * routes pulling the whole catalogue into a 1GB heap.
+   */
+  listings?: Listing[];
   /** Homes someone could actually rent - the number the threshold measures. */
   liveCount: number;
   indexable: boolean;
@@ -116,6 +126,96 @@ export function buildHubs(listings: Listing[]): StateHub[] {
       };
     })
     .sort((a, b) => b.liveCount - a.liveCount || a.state.localeCompare(b.state));
+}
+
+/**
+ * The same hub tree, from counts rather than from listings.
+ *
+ * WHY BOTH EXIST. `buildHubs` needs every Listing because its callers render
+ * cards from them. Everything else - the sitemap, both hub routes' metadata,
+ * the home page's market list - only ever asked it three questions: which
+ * cities exist, how many live homes each has, and is that over the threshold.
+ * Django answers all three in one GROUP BY (`/properties/cities/`), and this
+ * assembles the identical `StateHub[]` from that.
+ *
+ * The rows are already restricted to rentable inventory by the endpoint, so
+ * `count` IS the live count - there is nothing to filter here, which is the
+ * whole point.
+ */
+export function buildHubIndex(rows: CityCount[]): StateHub[] {
+  // Keyed by slug for the same reason `buildHubs` is: the feed sends
+  // "McDonough" and "Mcdonough" as separate rows, and they are one hub.
+  type Bucket = { city: string; count: number; publicCount: number };
+  const byState = new Map<string, Map<string, Bucket>>();
+
+  for (const row of rows) {
+    const cities = byState.get(row.state) ?? new Map<string, Bucket>();
+    const key = citySlug(row.city);
+    const found = cities.get(key);
+    if (found) {
+      // Most frequent spelling wins, matching `displayCity`. Compared before
+      // the counts are merged, or the incumbent always looks bigger.
+      if (row.publicCount > found.publicCount) found.city = row.city;
+      found.count += row.count;
+      found.publicCount += row.publicCount;
+    } else {
+      cities.set(key, { city: row.city, count: row.count, publicCount: row.publicCount });
+    }
+    byState.set(row.state, cities);
+  }
+
+  return [...byState.entries()]
+    .map(([state, cities]) => {
+      const cityHubs: CityHub[] = [...cities.entries()]
+        // Every city with a publicly reachable home gets a hub; only rentable
+        // inventory earns it a place in the index.
+        .filter(([, bucket]) => bucket.publicCount > 0)
+        .map(([slug, { city, count }]) => ({
+          slug,
+          city,
+          state,
+          liveCount: count,
+          indexable: count >= HUB_INDEX_THRESHOLD,
+        }))
+        .sort((a, b) => b.liveCount - a.liveCount || a.city.localeCompare(b.city));
+
+      return {
+        slug: state.toLowerCase(),
+        state,
+        cities: cityHubs,
+        liveCount: cityHubs.reduce((sum, c) => sum + c.liveCount, 0),
+        indexable: cityHubs.some((c) => c.indexable),
+      };
+    })
+    .sort((a, b) => b.liveCount - a.liveCount || a.state.localeCompare(b.state));
+}
+
+/** Look up one state hub in an index built by `buildHubIndex`. */
+export function findStateInIndex(hubs: StateHub[], stateSlug: string): StateHub | undefined {
+  return hubs.find((s) => s.slug === stateSlug.toLowerCase());
+}
+
+/** Look up one city hub in an index built by `buildHubIndex`. */
+export function findCityInIndex(
+  hubs: StateHub[],
+  stateSlug: string,
+  cityKey: string,
+): CityHub | undefined {
+  return findStateInIndex(hubs, stateSlug)?.cities.find(
+    (c) => c.slug === cityKey.toLowerCase(),
+  );
+}
+
+/** Sitemap paths, from the count-based index. */
+export function indexableHubPathsFrom(hubs: StateHub[]): string[] {
+  const paths: string[] = [];
+  for (const state of hubs) {
+    if (state.indexable) paths.push(`/rentals/${state.slug}`);
+    for (const city of state.cities) {
+      if (city.indexable) paths.push(`/rentals/${state.slug}/${city.slug}`);
+    }
+  }
+  return paths;
 }
 
 export function findStateHub(listings: Listing[], stateSlug: string): StateHub | undefined {

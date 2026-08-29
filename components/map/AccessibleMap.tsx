@@ -15,12 +15,39 @@ import styles from './AccessibleMap.module.css';
 export type MapItem = Clusterable & {
   /** Full sentence read to a screen reader when the marker takes focus. */
   label: string;
-  /** Short text painted inside the pin. */
+  /** Short text painted inside the pin. Unused by dots, which carry no text. */
   pin: string;
+  /**
+   * How much of the home this marker knows about.
+   *
+   *   result  a home on the current page of results. Drawn as a labelled
+   *           price pin, and linked to its card by hover and focus.
+   *   dot     a home that matched the search but is not on this page. Drawn
+   *           as a plain point: it has coordinates, a price and a slug, and
+   *           nothing else was fetched for it.
+   *
+   * The distinction is what lets the map show a whole catalogue without
+   * pretending it has a card's worth of data for every home on it.
+   */
+  kind?: 'result' | 'dot';
 };
 
 type Props = {
   items: MapItem[];
+  /**
+   * The subset the opening view is framed around. Defaults to everything.
+   *
+   * WHY THE MAP IS NOT FRAMED ON ALL OF ITS PINS. Once the map carries the
+   * whole catalogue, fitting every pin means every search opens zoomed out to
+   * the entire country - so a renter who searched one city gets a map of
+   * America with their twelve homes as a speck. Framing on the results and
+   * drawing the rest as context keeps the opening view about the search, and
+   * the wider inventory is one zoom-out away.
+   *
+   * It also stops the map jumping: the pins arrive after the results do, and
+   * a viewport derived from them would re-frame under the reader's cursor.
+   */
+  fitItems?: MapItem[];
   selectedId: string | null;
   /** Hover or focus moved to this item - drives linkage with the list. */
   onActiveChange: (id: string | null) => void;
@@ -40,6 +67,19 @@ type Props = {
 
 const MIN_ZOOM = 3;
 const MAX_ZOOM = 14;
+
+/**
+ * The largest group that expands into individual markers in place.
+ *
+ * Expansion exists so a keyboard user can reach a home a cluster is hiding.
+ * That reasoning holds for a group of eight and breaks for a group of nine
+ * hundred: painting nine hundred overlapping buttons into one cell reaches
+ * nothing and makes the arrow-key order meaningless. Above the cap the map
+ * zooms toward the group instead, which is the same destination by the route
+ * that still works - and it is offered to keyboard and pointer alike, so no
+ * one is left with a group they cannot open.
+ */
+const MAX_EXPAND = 24;
 
 /**
  * Marker positions, rounded before they reach the DOM.
@@ -81,6 +121,7 @@ const px = (n: number) => `${Math.round(n * 100) / 100}px`;
  */
 export function AccessibleMap({
   items,
+  fitItems,
   selectedId,
   activeId,
   onActiveChange,
@@ -112,9 +153,10 @@ export function AccessibleMap({
     return () => observer.disconnect();
   }, []);
 
+  const framed = fitItems && fitItems.length > 0 ? fitItems : items;
   const baseViewport = useMemo(
-    () => viewportForBounds(items, size.width, size.height),
-    [items, size.width, size.height],
+    () => viewportForBounds(framed, size.width, size.height),
+    [framed, size.width, size.height],
   );
 
   const viewport = useMemo(() => {
@@ -187,18 +229,53 @@ export function AccessibleMap({
       ?.focus();
   });
 
-  const expandCluster = useCallback(
+  /**
+   * Zoom in ON A POINT rather than on the current centre.
+   *
+   * Used when a group is too large to expand. Zooming on the centre would
+   * magnify wherever the map happened to be looking, which is usually not the
+   * group that was just activated - the reader presses Enter and the thing
+   * they aimed at slides off the edge.
+   */
+  const zoomToward = useCallback(
+    (cx: number, cy: number, delta: number) => {
+      setZoom((current) => {
+        const from = current ?? Math.log2(baseViewport.scale / 256);
+        return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, from + delta));
+      });
+      setCenter({ cx, cy });
+      setExpanded(new Set());
+    },
+    [baseViewport.scale],
+  );
+
+  const openCluster = useCallback(
     (cluster: Cluster<MapItem>, index: number) => {
+      const count = cluster.members.length;
+
+      if (count > MAX_EXPAND) {
+        // Convert the cluster's screen centroid back to world coordinates so
+        // the zoom lands on the group rather than near it.
+        const cx = viewport.cx + (cluster.left - viewport.width / 2) / viewport.scale;
+        const cy = viewport.cy + (cluster.top - viewport.height / 2) / viewport.scale;
+        zoomToward(cx, cy, 2);
+        setAnnouncement(
+          `${count} homes here - too many to list at once. Zoomed in on them; `
+          + 'activate a group again to keep going, or use the arrow keys.',
+        );
+        return;
+      }
+
       // Members take this cluster's slot in reading order, so the marker now
       // at the same index is the group's first home.
       pendingFocusRef.current = index;
       setFocusedIndex(index);
       setExpanded((prev) => new Set(prev).add(cluster.id));
       setAnnouncement(
-        `Expanded group of ${cluster.members.length} homes. Showing the first one. Use the arrow keys to move through them.`,
+        `Expanded group of ${count} homes. Showing the first one. Use the arrow keys to move through them.`,
       );
     },
-    [],
+    [viewport, zoomToward],
   );
 
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -240,9 +317,7 @@ export function AccessibleMap({
 
   function changeZoom(delta: number) {
     const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, currentZoom + delta));
-    setZoom(nextZoom);
-    setCenter({ cx: viewport.cx, cy: viewport.cy });
-    setExpanded(new Set());
+    zoomToward(viewport.cx, viewport.cy, nextZoom - currentZoom);
     setAnnouncement(
       `Zoom level ${nextZoom.toFixed(0)}. ${markers.length} markers shown.`,
     );
@@ -270,7 +345,7 @@ export function AccessibleMap({
         className={styles.map}
         style={{ height: height === '100%' ? '100%' : height }}
         role="group"
-        aria-label={`Map of ${items.length} homes`}
+        aria-label={`Map of ${items.length.toLocaleString('en-US')} homes`}
         aria-describedby="map-instructions"
         tabIndex={-1}
         onKeyDown={onKeyDown}
@@ -298,22 +373,69 @@ export function AccessibleMap({
 
           if (marker.kind === 'cluster') {
             const count = marker.cluster.members.length;
+            /* A group holding a home from the current page of results is
+               drawn as a results group: it is one of the twelve the reader is
+               actually looking at, and it should not recede into the
+               surrounding inventory. */
+            const holdsResult = marker.cluster.members.some((m) => m.kind !== 'dot');
+            const tooMany = count > MAX_EXPAND;
             return (
               <button
                 {...common}
                 key={marker.key}
                 type="button"
-                className={styles.cluster}
-                aria-label={`Group of ${count} homes. Activate to list them individually.`}
-                onClick={() => expandCluster(marker.cluster, index)}
+                className={[styles.cluster, holdsResult ? '' : styles.clusterQuiet]
+                  .filter(Boolean)
+                  .join(' ')}
+                aria-label={
+                  tooMany
+                    ? `Group of ${count} homes. Activate to zoom in on them.`
+                    : `Group of ${count} homes. Activate to list them individually.`
+                }
+                onClick={() => openCluster(marker.cluster, index)}
               >
-                <span aria-hidden="true">{count}</span>
+                <span aria-hidden="true">{count > 999 ? '999+' : count}</span>
               </button>
             );
           }
 
           const isActive = activeId === marker.item.id;
           const isSelected = selectedId === marker.item.id;
+
+          /* A DOT, NOT A PRICE PIN.
+             Nine thousand price labels is unreadable at any zoom - they
+             overlap into a wall of numbers and hide the map they are drawn
+             on. A dot says "a home is here" and nothing more, which is
+             exactly what is known about it, and the label a screen reader
+             hears still carries the price and the address.
+             The button keeps a full-size hit area with only its centre
+             painted: clustering guarantees one marker per 64px cell, so a
+             44px target never overlaps its neighbour. */
+          if (marker.item.kind === 'dot') {
+            return (
+              <button
+                {...common}
+                key={marker.key}
+                type="button"
+                className={[
+                  styles.dot,
+                  isActive ? styles.dotActive : '',
+                  isSelected ? styles.dotSelected : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                aria-label={marker.item.label}
+                aria-current={isSelected ? 'true' : undefined}
+                onClick={() => {
+                  onSelect(marker.item.id);
+                  setAnnouncement(`Selected ${marker.item.label}`);
+                }}
+              >
+                <span className={styles.dotCore} aria-hidden="true" />
+              </button>
+            );
+          }
+
           return (
             <button
               {...common}
@@ -353,9 +475,9 @@ export function AccessibleMap({
       <p className="visually-hidden">
         {items.length === 1
           ? 'One home shown on the map.'
-          : `${items.length} homes shown on the map in ${markers.length} ${
-              markers.length === 1 ? 'marker' : 'markers'
-            }.`}
+          : `${items.length.toLocaleString('en-US')} homes shown on the map in ${
+              markers.length
+            } ${markers.length === 1 ? 'marker' : 'markers'} at this zoom level.`}
       </p>
     </div>
   );

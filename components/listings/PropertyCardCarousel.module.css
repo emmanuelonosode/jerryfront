@@ -58,7 +58,13 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  color: var(--color-text-primary);
+  /* Fixed dark, to match the fixed white behind it.
+     This was `var(--color-text-primary)` against a hardcoded white pill - a
+     pairing that only works while the token happens to be dark. On a surface
+     that themes the token light, the glyph came out at 1.25:1 on white and
+     the arrow vanished. A hardcoded background has to have a hardcoded
+     foreground; the two travel together or neither does. */
+  color: #050505;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   transition: background var(--duration-fast);

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Figtree, Outfit } from 'next/font/google';
+import { SITE_ORIGIN } from '@/lib/seo/site';
 import './globals.css';
 
 /**
@@ -46,6 +47,16 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  /*
+   * Without this every `alternates.canonical` ships as a relative path and
+   * every `openGraph.images` entry as a relative src. Google tolerates a
+   * relative canonical; Facebook, X, iMessage and Slack do not resolve a
+   * relative OG image at all, so a shared listing rendered as a bare link.
+   *
+   * `SITE_ORIGIN` is env-overridable, so a preview deployment canonicalises to
+   * itself rather than advertising production.
+   */
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: 'Affordable, Move-In Ready Rentals · Skelton Realty Group',
     template: '%s · Skelton Realty Group',

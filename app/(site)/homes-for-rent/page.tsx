@@ -14,7 +14,7 @@ import {
   type SortKey,
 } from '@/lib/listings/search';
 import styles from './search.module.css';
-import { allListings, searchListings } from '@/lib/listings/source';
+import { relaxedSearch, searchListings } from '@/lib/listings/source';
 
 /**
  * Search.
@@ -93,10 +93,11 @@ export default async function SearchPage({
   const { results, total, page, pageCount } = await searchListings(filters);
   const activeCount = countActiveFilters(filters);
 
-  // The empty state suggests homes from a relaxed filter set, which needs the
-  // whole catalogue. Fetched only on the miss, so the common path still costs
-  // one page-sized query instead of 1,006 rows.
-  const catalogue = results.length === 0 ? await allListings() : [];
+  // The empty state suggests homes from a relaxed filter set. Resolved by the
+  // database rather than by fetching the catalogue and filtering it here -
+  // see `relaxedSearch` - and still only on the miss, so a normal search costs
+  // exactly one page-sized query.
+  const relaxed = results.length === 0 ? await relaxedSearch(filters) : null;
 
   const pageHref = (n: number) => {
     const q = serialiseFilters({ ...filters, page: n });
@@ -272,7 +273,7 @@ export default async function SearchPage({
         </h2>
         {results.length === 0 ? (
           <Container width="page" className={styles.emptyWrap}>
-            <SearchEmptyState listings={catalogue} filters={filters} />
+            <SearchEmptyState relaxed={relaxed} />
             {footerNode}
           </Container>
         ) : (

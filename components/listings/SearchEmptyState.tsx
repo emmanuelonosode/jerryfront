@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/Button';
 import { PropertyCard } from '@/components/listings/PropertyCard';
-import { relaxFilters, runSearch, serialiseFilters, type SearchFilters } from '@/lib/listings/search';
+import { serialiseFilters, type SearchFilters } from '@/lib/listings/search';
 import type { Listing } from '@/lib/listings/types';
 import { Illustration } from '@/components/brand/Illustration';
 import styles from './SearchEmptyState.module.css';
@@ -24,15 +24,28 @@ import styles from './SearchEmptyState.module.css';
  *      which, with manual entry and a nationwide footprint, is often faster
  *      than the site can be.
  */
-export function SearchEmptyState({
-  listings,
-  filters,
-}: {
-  listings: Listing[];
+export type RelaxedSuggestion = {
+  suggestion: string;
   filters: SearchFilters;
+  count: number;
+  alternatives: Listing[];
+};
+
+export function SearchEmptyState({
+  relaxed,
+}: {
+  /**
+   * The nearest search that returns homes, already resolved.
+   *
+   * COMPUTED BY THE CALLER, AGAINST THE DATABASE. This component used to take
+   * the entire catalogue and relax the filters in memory, which meant the page
+   * a renter reaches by finding nothing had to fetch 8,857 homes across 45
+   * requests before it could render. `relaxedSearch` answers the same question
+   * in one or two small queries, and its counts are the real ones.
+   */
+  relaxed: RelaxedSuggestion | null;
 }) {
-  const relaxed = relaxFilters(listings, filters);
-  const alternatives = relaxed ? runSearch(listings, relaxed.filters).results.slice(0, 3) : [];
+  const alternatives = relaxed?.alternatives ?? [];
   const relaxedHref = relaxed ? `/homes-for-rent?${serialiseFilters(relaxed.filters)}` : null;
 
   return (

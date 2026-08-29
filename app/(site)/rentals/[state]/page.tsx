@@ -5,9 +5,9 @@ import { Container } from '@/components/layout/Container';
 import { ReassuranceStrip } from '@/components/content/ReassuranceStrip';
 import { ButtonLink } from '@/components/ui/Button';
 import { Pending } from '@/components/ui/Pending';
-import { findStateHub } from '@/lib/listings/hubs';
+import { buildHubIndex, findStateInIndex } from '@/lib/listings/hubs';
 import styles from './hub.module.css';
-import { allListings } from '@/lib/listings/source';
+import { fetchCities } from '@/lib/listings/source';
 
 /**
  * State hub.
@@ -26,9 +26,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ state: string }>;
 }): Promise<Metadata> {
-  const listings = await allListings();
   const { state } = await params;
-  const hub = findStateHub(listings, state);
+  const hub = findStateInIndex(buildHubIndex(await fetchCities()), state);
   if (!hub) return { title: 'Not found', robots: { index: false, follow: true } };
 
   return {
@@ -40,9 +39,9 @@ export async function generateMetadata({
 }
 
 export default async function StateHubPage({ params }: { params: Promise<{ state: string }> }) {
-  const listings = await allListings();
   const { state } = await params;
-  const hub = findStateHub(listings, state);
+  /* Counts, not the catalogue - see the note in the city hub for why. */
+  const hub = findStateInIndex(buildHubIndex(await fetchCities()), state);
   if (!hub) notFound();
 
   return (

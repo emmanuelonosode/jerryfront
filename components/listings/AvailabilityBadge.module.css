@@ -1,28 +1,27 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--badge-padding-y) var(--badge-padding-x);
-  border: var(--rule-width) solid;
-  border-radius: var(--badge-radius);
-  font-weight: var(--badge-font-weight);
-  letter-spacing: var(--badge-letter-spacing);
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .md {
-  font-size: var(--font-size-xs);
+  font-size: 14px;
 }
 
 .sm {
-  font-size: 0.6875rem;
-  padding: 1px var(--space-2);
+  font-size: 12px;
+  padding: 2px 8px;
 }
 
 .icon {
   flex: none;
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 16px;
+  height: 16px;
 }
 
 .date {
@@ -33,9 +32,9 @@
 }
 
 .available {
-  background-color: var(--color-status-available-fill);
-  color: var(--color-status-available-text);
-  border-color: var(--color-status-available-border);
+  background-color: #eaf5eb;
+  color: #176f33;
+  border-color: #a8ddb5;
 }
 
 .soon {

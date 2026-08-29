@@ -3,9 +3,10 @@ import { Container } from '@/components/layout/Container';
 import { PropertyCard } from '@/components/listings/PropertyCard';
 import { ButtonLink } from '@/components/ui/Button';
 import { Pending } from '@/components/ui/Pending';
-import { allListings } from '@/lib/listings/source';
+import { fetchCities, searchListings } from '@/lib/listings/source';
+import { DEFAULT_FILTERS } from '@/lib/listings/search';
 import { countsForHubThreshold } from '@/lib/listings/lifecycle';
-import { buildHubs } from '@/lib/listings/hubs';
+import { buildHubIndex } from '@/lib/listings/hubs';
 import { TEAM } from '@/lib/content/team';
 import { GUIDES } from '@/lib/content/guides';
 import { Illustration, type IllustrationName } from '@/components/brand/Illustration';
@@ -52,16 +53,41 @@ const CATEGORY_CHIPS = [
 ];
 
 export async function HomeSections() {
-  const listings = await allListings();
-  const available = listings.filter(countsForHubThreshold);
-  const featured = available.slice(0, 6);
+  /*
+   * THE HOME PAGE NO LONGER LOADS THE CATALOGUE.
+   *
+   * This called `allListings()` - 4,482 properties and 78,417 image rows - to
+   * show six cards and a list of city names. On a 2GB host that was one of the
+   * allocations killing the web process; the home page itself was timing out.
+   *
+   * Two cheap calls instead: one page of homes for the cards, and the city
+   * GROUP BY for the market list. Neither grows with the catalogue.
+   */
+  const [{ results: featuredResults, total }, cityRows] = await Promise.all([
+    searchListings({ ...DEFAULT_FILTERS, sort: 'newest' }),
+    fetchCities(),
+  ]);
 
-  const markets = buildHubs(listings)
+  const featured = featuredResults.filter(countsForHubThreshold).slice(0, 6);
+
+  /*
+   * Market photographs come from the homes already fetched, matched by city.
+   * A market with no card in this page's slice simply shows no photograph -
+   * which is what the carousel already handles - rather than costing a query
+   * each. Three hundred cities is three hundred round trips otherwise.
+   */
+  const photoFor = new Map<string, (typeof featuredResults)[number]>();
+  for (const home of featuredResults) {
+    const key = `${home.state}/${home.city.toLowerCase()}`;
+    if (!photoFor.has(key)) photoFor.set(key, home);
+  }
+
+  const markets = buildHubIndex(cityRows)
     .flatMap((state) =>
       state.cities.filter((c) => c.liveCount > 0).map((c) => ({ ...c, stateSlug: state.slug })),
     )
     .map((market) => {
-      const home = listings.find((l) => l.city === market.city && l.state === market.state);
+      const home = photoFor.get(`${market.state}/${market.city.toLowerCase()}`);
       return { ...market, photo: home?.photos[0] ?? null, seed: home?.slug ?? market.slug };
     })
     .sort((a, b) => b.liveCount - a.liveCount);
@@ -69,7 +95,7 @@ export async function HomeSections() {
   const guides = GUIDES.slice(0, 3);
 
   const stats = [
-    { figure: String(available.length), label: available.length === 1 ? 'Home available now' : 'Homes available now' },
+    { figure: String(total), label: total === 1 ? 'Home available now' : 'Homes available now' },
     { figure: String(markets.length), label: markets.length === 1 ? 'City we serve' : 'Cities we serve' },
     { figure: '24 hrs', label: 'To a stated decision' },
     { figure: '100%', label: 'Voucher & 2nd chance reviewed' },
@@ -119,7 +145,7 @@ export async function HomeSections() {
               </h2>
             </div>
             <Link className={styles.sectionLink} href="/homes-for-rent">
-              See all <span className={styles.figure}>{available.length}</span> homes →
+              See all <span className={styles.figure}>{total}</span> homes →
             </Link>
           </div>
           <ul className={styles.grid} role="list">

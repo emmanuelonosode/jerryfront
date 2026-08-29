@@ -107,15 +107,64 @@ describe('normalising to an embeddable form', () => {
 });
 
 describe('the sandbox', () => {
-  test('never grants allow-same-origin alongside allow-scripts', () => {
-    // With both, the frame can reach out of the sandbox entirely - which
-    // defeats the point of having one.
+  test('grants allow-same-origin so cross-origin embeds can use local storage', () => {
+    // A 3D tour is a WebGL application
     assert.ok(TOUR_SANDBOX.includes('allow-scripts'));
-    assert.ok(!TOUR_SANDBOX.includes('allow-same-origin'));
+    // Providers like Zillow need allow-same-origin to function
+    assert.ok(TOUR_SANDBOX.includes('allow-same-origin'));
   });
 
   test('withholds forms and top-level navigation', () => {
     assert.ok(!TOUR_SANDBOX.includes('allow-forms'));
     assert.ok(!TOUR_SANDBOX.includes('allow-top-navigation'));
+  });
+});
+
+describe('the providers the catalogue actually uses', () => {
+  test('INSIDEMAPS AND ZILLOW RESOLVE AT ALL', () => {
+    // Every tour link in inventory is one of these two. While neither was
+    // listed, the tour section resolved to nothing on all 2,122 homes that
+    // had one - a fully built feature, fully populated, and dark.
+    for (const url of [
+      'https://www.insidemaps.com/app/walkthrough-v2?projectId=MutoGERH2z&env=production',
+      'https://www.insidemaps.com/app/walkthrough-tour/?p=2pBga4jcaD',
+      'https://www.zillow.com/view-3d-home/8d637380-ee06-4d3b-82f1-03877bc7ee58?setAttribution=mls&wl=true',
+      'https://www.zillow.com/view-imx/799b71d1-a57f-456b-95fd-14f8e1e723cd?setAttribution=mls&wl=true&initialViewType=pano',
+    ]) {
+      assert.equal(resolveTour(url, ADDRESS).ok, true, url);
+    }
+  });
+
+  test('insidemaps is told it is embedded', () => {
+    const r = resolveTour(
+      'https://www.insidemaps.com/app/walkthrough-v2?projectId=MutoGERH2z&env=production',
+      ADDRESS,
+    );
+    assert.ok(r.ok);
+    assert.match(r.embed.src, /embedded=true/);
+  });
+
+  test('ZILLOW KEEPS ITS WHITE-LABEL FLAG AND LOSES ITS TRACKING', () => {
+    // `wl=true` is what suppresses Zillow branding and their "see this on
+    // Zillow" prompts. Dropping it would put a competitor's calls to action
+    // inside our own listing page.
+    const r = resolveTour(
+      'https://www.zillow.com/view-imx/abc-123?setAttribution=mls&wl=true&initialViewType=pano&utm_source=dashboard',
+      ADDRESS,
+    );
+    assert.ok(r.ok);
+    assert.equal(r.embed.src, 'https://www.zillow.com/view-imx/abc-123?wl=true&initialViewType=pano');
+    assert.doesNotMatch(r.embed.src, /utm_source|setAttribution/);
+  });
+
+  test('the allowlist still cannot be bypassed by the new hosts', () => {
+    for (const url of [
+      'https://insidemaps.com.evil.example/app/walkthrough-v2',
+      'https://zillow.com.attacker.test/view-3d-home/x',
+      'https://notzillow.com/view-3d-home/x',
+      'http://www.zillow.com/view-3d-home/x',
+    ]) {
+      assert.equal(resolveTour(url, ADDRESS).ok, false, url);
+    }
   });
 });

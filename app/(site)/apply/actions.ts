@@ -210,21 +210,34 @@ export async function applyStepUpdate(
         'image/jpeg': 'jpg',
         'image/webp': 'webp',
         'image/heic': 'heic',
+        'image/heif': 'heic',
         'application/pdf': 'pdf',
       };
       const extension = EXTENSION_FOR[proofFile.type];
       // A receipt is a photo or a PDF. Anything else is not a receipt.
       const MAX_BYTES = 10 * 1024 * 1024;
 
-      if (!extension || proofFile.size > MAX_BYTES) {
-        // Rejected rather than stored. There is no error channel in this
-        // action - validation runs from the draft, and the draft has no field
-        // for "the upload was refused" - so the applicant currently sees the
-        // step simply not record a receipt. Wiring that message through is
-        // outstanding work, noted rather than faked.
-        console.warn(
-          `[apply] refused payment proof: type=${proofFile.type} size=${proofFile.size}`,
-        );
+      /*
+       * A REFUSAL IS NOW SAID OUT LOUD.
+       *
+       * This used to `console.warn` and carry on, so the applicant saw the
+       * step reload with no receipt recorded and no reason given - on the one
+       * screen where they have just sent money. The reason goes on the draft,
+       * the payment step renders it against the upload field, and validation
+       * blocks submission until a file actually lands.
+       *
+       * The two messages are specific because the fixes are different: a
+       * 14MB photo needs resizing, a .docx needs a different file.
+       */
+      if (!extension) {
+        changes.paymentProofRejected =
+          'That file type is not supported. Send a photo or screenshot (PNG, JPG, HEIC or WEBP) or a PDF.';
+        console.warn(`[apply] refused payment proof: type=${proofFile.type}`);
+      } else if (proofFile.size > MAX_BYTES) {
+        changes.paymentProofRejected =
+          `That file is ${(proofFile.size / 1024 / 1024).toFixed(1)}MB, and the limit is 10MB. `
+          + 'A screenshot is usually well under that - try one instead of the full-resolution photo.';
+        console.warn(`[apply] refused payment proof: size=${proofFile.size}`);
       } else {
         const filename = `proof-${draft.id}-${Date.now()}.${extension}`;
         const proofsDir = join(process.cwd(), 'private-uploads', 'proofs');
@@ -235,8 +248,13 @@ export async function applyStepUpdate(
             Buffer.from(await proofFile.arrayBuffer()),
           );
           changes.paymentProofPath = filename;
+          // Clear a previous refusal, so a successful retry stops showing the
+          // message that explained the last failure.
+          changes.paymentProofRejected = null;
         } catch (error) {
           console.error('Failed to save payment proof:', error);
+          changes.paymentProofRejected =
+            'We could not save that file. Try again, and if it keeps failing, contact us and we will take it by email.';
         }
       }
     }

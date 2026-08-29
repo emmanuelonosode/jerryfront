@@ -5,6 +5,7 @@ import { StepNav } from '@/components/apply/StepNav';
 import { Pending } from '@/components/ui/Pending';
 import { AlertIcon, CheckIcon } from '@/components/ui/Icons';
 import { CopyField } from '@/components/apply/CopyField';
+import { ProofUpload } from '@/components/apply/ProofUpload';
 import { FAMILY_OF, type PaymentFamily } from '@/lib/payments/methods';
 import pay from './payment.module.css';
 import { formatUsd } from '@/lib/money';
@@ -216,7 +217,14 @@ export function PaymentStep({
                         </span>
                       </span>
 
-                      <span className={pay.cardMeta}>Arrives {method.clearingTime}</span>
+                      {/* The clearing times are authored as sentences ("Usually
+                          within minutes", "Same day if sent before 2pm"), so
+                          prefixing them verbatim produced "Arrives Usually
+                          within minutes". Lower-casing the first letter only -
+                          never the rest - keeps "2pm" and any brand name intact. */}
+                      <span className={pay.cardMeta}>
+                        Arrives {method.clearingTime.charAt(0).toLowerCase() + method.clearingTime.slice(1)}
+                      </span>
 
                       {/* Revealed by CSS when this card's radio is checked, so
                           the page is not six sets of account details at once
@@ -257,18 +265,36 @@ export function PaymentStep({
         </fieldset>
       )}
 
-      {/* Numbered to match step 1, so the page reads as three things to do
-          rather than a wall of form. */}
+      {/* ---- 2. Send it ---------------------------------------------------
+          Its own numbered stage, and deliberately the shortest: nothing here
+          is a form field, because at this point the applicant is in their
+          banking app rather than on this page. */}
       <h2 className={pay.laterStep}>
         <span className={pay.stepNumber}>2</span>
-        Send the money, then tell us
+        Send {formatUsd(totalFeeCents)} using those details
       </h2>
       <p className={pay.laterHint}>
-        Use the details on the option you picked above. When it is on its way, fill this
-        in — it is what starts your 24-hour decision clock.
+        Put the reference <span className={styles.figure}>{reference}</span> in the memo or
+        note field. Then come back here — this page is saved and will be waiting.
+      </p>
+
+      {/* ---- 3. Prove it -------------------------------------------------- */}
+      <h2 className={pay.laterStep}>
+        <span className={pay.stepNumber}>3</span>
+        Show us the receipt
+      </h2>
+      <p className={pay.laterHint}>
+        Every payment here is sent on a manual rail and checked by a person. A screenshot
+        turns that check into a couple of seconds instead of a hunt through a bank feed —
+        and it is what you point at if a transfer ever goes astray.
       </p>
 
       <div className={styles.sensitiveBlock}>
+        <ProofUpload
+          savedFilename={draft.paymentProofPath?.split('/').pop() ?? null}
+          error={errorFor(errors, 'paymentProof')}
+        />
+
         <Field
           name="paymentReference"
           label="Your confirmation or transfer number"
@@ -279,18 +305,6 @@ export function PaymentStep({
             <TextInput {...p} figure name="paymentReference" defaultValue={draft.paymentReference ?? ''} />
           )}
         </Field>
-
-        <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-bold)', marginBottom: '0.25rem' }} htmlFor="paymentProof">
-            Upload proof of payment (Screenshot/Receipt)
-          </label>
-          <input type="file" id="paymentProof" name="paymentProof" accept="image/*,.pdf" style={{ display: 'block', marginTop: '0.5rem', fontSize: 'var(--font-size-sm)' }} />
-          {draft.paymentProofPath && (
-            <p className={styles.explainerNote} style={{ marginTop: '0.5rem' }}>
-              Proof uploaded: {draft.paymentProofPath.split('/').pop()}
-            </p>
-          )}
-        </div>
 
         <Checkbox
           id="paymentReported"

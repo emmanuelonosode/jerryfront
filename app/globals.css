@@ -8,7 +8,24 @@
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden; /* the page body must never scroll horizontally */
+  /*
+   * `clip`, not `hidden`, and the difference is `position: sticky`.
+   *
+   * `overflow-x: hidden` makes the element a SCROLL CONTAINER - a hidden one,
+   * but a scroll container - and a scroll container on <html>/<body> silently
+   * kills sticky positioning for every descendant on the site. The property
+   * detail page's purchase rail computed as `position: sticky; top: 24px`,
+   * sat inside a 5,000px column with room to travel, and still scrolled away
+   * with the page, because this rule two files up had taken the scrollport
+   * away from it.
+   *
+   * `overflow-x: clip` does the one thing this line is here for - no
+   * horizontal scrolling, ever - without creating a scroll container, so
+   * sticky keeps working. Chrome 90+, Firefox 81+, Safari 16+; anything older
+   * falls back to visible, which is the pre-existing behaviour on those
+   * browsers rather than a new failure.
+   */
+  overflow-x: clip; /* the page body must never scroll horizontally */
 }
 
 img,

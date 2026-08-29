@@ -1,0 +1,105 @@
+/* The fee schedule, as a table.
+
+   A TABLE ON PURPOSE, not a stack of cards. Three of the five questions this
+   page answers are comparisons - which of these is monthly, which is the big
+   one, which only applies to me - and comparison is what a table is for. It is
+   also what a screen reader can navigate cell by cell with the row and column
+   headers announced, which a div grid cannot. */
+
+.tableWrap {
+  /* Wide content scrolls inside its own box; the page body never scrolls
+     horizontally. */
+  overflow-x: auto;
+  margin-block: var(--space-4);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table caption {
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: var(--space-4) var(--space-3);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+  vertical-align: top;
+}
+
+.table thead th {
+  padding-block: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-secondary);
+  border-bottom-color: var(--color-border-strong);
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.feeCell {
+  /* The row header carries the name AND the reason, so the accessible name of
+     every amount cell explains what the money is for. */
+  font-weight: var(--font-weight-normal);
+  min-width: 16rem;
+}
+
+.feeLabel {
+  display: block;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.feeReason {
+  display: block;
+  margin-top: var(--space-1);
+  max-width: 52ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.feeWhen {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.cadence {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.figure {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.note {
+  max-width: 62ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}

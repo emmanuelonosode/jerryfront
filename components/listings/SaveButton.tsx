@@ -23,10 +23,20 @@ export function SaveButton({
   listingId,
   address,
   initiallySaved = false,
+  className,
 }: {
   listingId: string;
   address: string;
   initiallySaved?: boolean;
+  /**
+   * Extra classes from the caller.
+   *
+   * The base style is absolutely positioned for the card corner it was built
+   * for. The detail page puts this in a flex row over the gallery instead, and
+   * needs to reset that without forking the component or duplicating the
+   * optimistic-save logic.
+   */
+  className?: string;
 }) {
   const [saved, setSaved] = useState(initiallySaved);
   const [pending, setPending] = useState(false);
@@ -52,7 +62,7 @@ export function SaveButton({
   return (
     <button
       type="button"
-      className={[styles.save, saved ? styles.saved : ''].filter(Boolean).join(' ')}
+      className={[styles.save, saved ? styles.saved : '', className].filter(Boolean).join(' ')}
       aria-pressed={saved}
       onClick={toggle}
       disabled={pending}

@@ -4,6 +4,7 @@ import { useCallback, useRef, useState, useEffect } from 'react';
 import { useDialogBehavior } from '@/hooks/useDialogBehavior';
 import { CloseIcon } from '@/components/ui/Icons';
 import type { Photo } from '@/lib/listings/types';
+import { cdnSrcSet, GALLERY_SIZES } from '@/lib/images/pipeline';
 import styles from './Gallery.module.css';
 
 function GridIcon() {
@@ -33,7 +34,22 @@ function ChevronRight() {
   );
 }
 
-export function Gallery({ photos, address }: { photos: Photo[]; address: string }) {
+export function Gallery({
+  photos,
+  address,
+  actions,
+}: {
+  photos: Photo[];
+  address: string;
+  /**
+   * Controls floated over the top-right of the mosaic - save, share.
+   *
+   * Passed in rather than built here because they are page concerns: the
+   * detail page knows the visitor's saved list, and the search cards already
+   * carry their own save control. A slot keeps this component about photographs.
+   */
+  actions?: React.ReactNode;
+}) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -103,7 +119,26 @@ export function Gallery({ photos, address }: { photos: Photo[]; address: string 
             <img
               className={styles.heroImg}
               src={lead.url}
-              alt={lead.alt ?? ''}
+              /* `sizes` alone was doing nothing here - there was no srcset to
+                 choose from, so a phone downloaded the 1500px hero (192.6KB)
+                 to paint a 375px slot (45.5KB). This is the LCP element. */
+              srcSet={cdnSrcSet(lead.url) ?? undefined}
+              sizes={GALLERY_SIZES}
+              /*
+               * The one photo that gets an invented alt, and only because it
+               * is not invented.
+               *
+               * Photo.alt is nullable on purpose - the feed's images arrive
+               * without descriptions and we will not make up a claim about a
+               * room somebody has not seen. The lead photo is different: the
+               * ingest pipeline orders exteriors first, so "the front of this
+               * address" is a fact we already know rather than a guess about
+               * the contents of the frame. It is also the LCP element and the
+               * one image on the page a screen reader user has any reason to
+               * be told about, so leaving it decorative dropped the whole
+               * gallery out of the accessible page.
+               */
+              alt={lead.alt ?? `Front of ${address}`}
               width={lead.width}
               height={lead.height}
               loading="eager"
@@ -127,6 +162,10 @@ export function Gallery({ photos, address }: { photos: Photo[]; address: string 
                   <img
                     className={styles.mosaicImg}
                     src={photo.url}
+                    srcSet={cdnSrcSet(photo.url) ?? undefined}
+                    /* Quarter-tiles beside the hero, so never more than a
+                       third of the shell even on a wide screen. */
+                    sizes="(min-width: 768px) 22vw, 45vw"
                     alt=""
                     width={photo.width}
                     height={photo.height}
@@ -137,6 +176,8 @@ export function Gallery({ photos, address }: { photos: Photo[]; address: string 
               ))}
             </div>
           ) : null}
+
+          {actions ? <div className={styles.actionCluster}>{actions}</div> : null}
 
           {/* Floating 'View All Photos' Pill Button */}
           <button
@@ -198,6 +239,10 @@ export function Gallery({ photos, address }: { photos: Photo[]; address: string 
                 <img
                   className={styles.viewerPhoto}
                   src={current.url}
+                  srcSet={cdnSrcSet(current.url) ?? undefined}
+                  /* Full-bleed in the lightbox, so this is the one place the
+                     large renditions are genuinely wanted. */
+                  sizes="100vw"
                   alt={current.alt ?? `Photo ${openIndex + 1} of ${address}`}
                   width={current.width}
                   height={current.height}
@@ -230,6 +275,13 @@ export function Gallery({ photos, address }: { photos: Photo[]; address: string 
                   <img
                     className={styles.thumbStripImg}
                     src={photo.url}
+                    srcSet={cdnSrcSet(photo.url) ?? undefined}
+                    /* THE WORST OFFENDER ON THE PAGE. Every photograph in the
+                       set renders here, and each was pulling its 1500px
+                       rendition to paint an 80px thumbnail - on a 24-photo
+                       home, ~4.6MB to draw a filmstrip. `80px` pins the
+                       browser to the smallest candidate. */
+                    sizes="80px"
                     alt=""
                     width={80}
                     height={54}

@@ -155,6 +155,46 @@ export function validateSources(
   return errors;
 }
 
+/**
+ * Responsive `srcset` for an image still living on the partner CDN.
+ *
+ * WHY THIS EXISTS ALONGSIDE `buildSrcSet`. That one needs an `ImageStore` -
+ * the self-hosted pipeline this module specifies and which does not exist
+ * yet. Until it does, every photograph on the site is a partner CDN URL, and
+ * the components were passing `sizes` with NO `srcset` at all. `sizes` alone
+ * does nothing: the browser has exactly one candidate and downloads it.
+ *
+ * The consequence is the one CARD_SIZES below warns about, measured: the
+ * detail hero is 192.6KB at w_1500 and 45.5KB at w_640, and a phone was
+ * getting the 1500. Thirty-two images on a listing page, all at full width.
+ *
+ * The CDN encodes its rendition in the path - `w_1500,h_1000,c_limit,q_auto` -
+ * so the variants can be addressed by rewriting that one segment. The source
+ * aspect ratio is preserved rather than assumed, and a URL that does not carry
+ * the token returns null so the caller falls back to a plain `src`.
+ */
+export function cdnSrcSet(url: string): string | null {
+  const match = url.match(/\/w_(\d+),h_(\d+)([^/]*)\//);
+  if (!match) return null;
+
+  const sourceWidth = Number(match[1]);
+  const sourceHeight = Number(match[2]);
+  if (!sourceWidth || !sourceHeight) return null;
+
+  const aspect = sourceHeight / sourceWidth;
+  // Never offer a rendition larger than the source: upscaling costs bytes and
+  // adds nothing, and the CDN would just return the original anyway.
+  const widths = RENDITION_WIDTHS.filter((w) => w <= sourceWidth);
+  if (widths.length === 0) return null;
+
+  return widths
+    .map((w) => {
+      const h = Math.round(w * aspect);
+      return `${url.replace(match[0], `/w_${w},h_${h}${match[3]}/`)} ${w}w`;
+    })
+    .join(', ');
+}
+
 /** Responsive `srcset` for one stored image. */
 export function buildSrcSet(store: ImageStore, key: string, format: RenditionFormat): string {
   return RENDITION_WIDTHS.map((w) => `${store.urlFor(key, w, format)} ${w}w`).join(', ');

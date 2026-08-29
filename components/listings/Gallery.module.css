@@ -400,3 +400,18 @@
     height: 56px;
   }
 }
+
+/* ---- Floated page actions (save, share) --------------------------------- */
+
+.actionCluster {
+  /* Anchors the share confirmation toast to the cluster rather than to the
+     mosaic, so it lands under the button that produced it. */
+  position: absolute;
+  z-index: 3;
+  top: var(--space-4);
+  inset-inline-end: var(--space-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  isolation: isolate;
+}

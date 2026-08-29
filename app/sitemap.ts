@@ -1,9 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { SITE_ORIGIN } from '@/lib/seo/site';
-import { buildHubs } from '@/lib/listings/hubs';
+import { buildHubIndex } from '@/lib/listings/hubs';
 import { GUIDES } from '@/lib/content/guides';
-import { allListings } from '@/lib/listings/source';
-import { isSearchable } from '@/lib/listings/lifecycle';
+import { fetchCities, fetchSitemapSlugs } from '@/lib/listings/source';
 
 /**
  * Sitemap, generated from live data.
@@ -17,7 +16,16 @@ import { isSearchable } from '@/lib/listings/lifecycle';
  * market that drops below it leaves the sitemap on the next build without
  * anyone remembering, and rejoins when inventory recovers. Manual sitemaps go
  * stale in exactly the way this business cannot afford.
+ *
+ * IT NO LONGER BUILDS ITSELF OUT OF `Listing` OBJECTS. Producing 4,840 URLs
+ * used to mean fetching all 4,482 properties with their 78,417 image rows,
+ * their fee schedules and their descriptions, mapping every one through
+ * `toListing`, and then reading two fields off each. That is hundreds of
+ * megabytes to emit a list of paths, and on a 2GB host it was a direct cause
+ * of the web process being OOM-killed. Both halves now come from endpoints
+ * that return only what a sitemap can actually use.
  */
+export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
@@ -56,8 +64,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    * for a city, at least one indexable city for a state.
    */
   const hubs: MetadataRoute.Sitemap = [];
-  const listings = await allListings();
-  for (const state of buildHubs(listings)) {
+  const [cityRows, slugs] = await Promise.all([fetchCities(), fetchSitemapSlugs()]);
+
+  for (const state of buildHubIndex(cityRows)) {
     if (state.indexable) {
       hubs.push({
         url: `${SITE_ORIGIN}/rentals/${state.slug}`,
@@ -101,16 +110,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    * unpriced drops out of the sitemap on the next regeneration rather than
    * being advertised as available.
    */
-  const properties: MetadataRoute.Sitemap = listings
-    .filter(isSearchable)
-    .map((listing) => ({
-      url: `${SITE_ORIGIN}/homes-for-rent/${listing.slug}`,
-      lastModified: now,
-      changeFrequency: 'daily' as const,
-      // Below the hubs: the hubs are the location-intent front doors, and a
-      // sitemap where everything is equally important says nothing.
-      priority: 0.6,
-    }));
+  const properties: MetadataRoute.Sitemap = slugs.map((entry) => ({
+    url: `${SITE_ORIGIN}/homes-for-rent/${entry.slug}`,
+    /*
+     * The home's own `updated_at`, not the build time.
+     *
+     * Every entry claiming it changed at the moment the sitemap was generated
+     * is how `lastmod` stops being believed - the guides below already avoid
+     * it, and there is no reason the 4,482 listings should not.
+     */
+    lastModified: entry.updatedAt ? new Date(entry.updatedAt) : now,
+    changeFrequency: 'daily' as const,
+    // Below the hubs: the hubs are the location-intent front doors, and a
+    // sitemap where everything is equally important says nothing.
+    priority: 0.6,
+  }));
 
   return [...core, ...hubs, ...guides, ...properties];
 }

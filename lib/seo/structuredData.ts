@@ -174,6 +174,17 @@ export function listingJsonLd(listing: {
   photos: { url: string }[];
   totalMonthlyCents: number;
   available: boolean;
+  /* ---- Optional, and omitted rather than guessed --------------------------
+     Each of these is absent on part of the catalogue. A `yearBuilt: null` or
+     an empty `amenityFeature` array is not a smaller claim than a wrong one -
+     it is a claim that the value is empty, which is different from having no
+     opinion. So every one below is spread conditionally, exactly like `image`.
+     ---------------------------------------------------------------------- */
+  yearBuilt?: number | null;
+  petsAllowed?: boolean;
+  amenities?: readonly string[];
+  /** ISO date the home becomes available; becomes `datePosted`. */
+  availableFrom?: string | null;
 }): JsonLd {
   return {
     '@context': 'https://schema.org',
@@ -187,6 +198,18 @@ export function listingJsonLd(listing: {
       value: listing.sqft,
       unitCode: 'FTK',
     },
+    ...(typeof listing.yearBuilt === 'number' ? { yearBuilt: listing.yearBuilt } : {}),
+    ...(typeof listing.petsAllowed === 'boolean' ? { petsAllowed: listing.petsAllowed } : {}),
+    ...(listing.availableFrom ? { datePosted: listing.availableFrom } : {}),
+    ...(listing.amenities && listing.amenities.length > 0
+      ? {
+          amenityFeature: listing.amenities.map((name) => ({
+            '@type': 'LocationFeatureSpecification',
+            name,
+            value: true,
+          })),
+        }
+      : {}),
     address: {
       '@type': 'PostalAddress',
       streetAddress: listing.addressLine,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { cdnSrcSet } from '@/lib/images/pipeline';
 
 /**
  * A listing photograph, with artwork behind it.
@@ -57,6 +58,14 @@ export function ListingImage({
   }, []);
 
   const resolved = failed ? `/api/dev/placeholder/${encodeURIComponent(seed)}?i=0` : src;
+  /*
+   * `sizes` was being passed with no `srcset`, which does nothing at all: the
+   * browser has one candidate and downloads it whatever the slot measures. On
+   * the detail hero that was 192.6KB where 45.5KB would do, on every image on
+   * the page. The fallback artwork is generated at request size and needs no
+   * srcset of its own.
+   */
+  const srcSet = failed ? null : cdnSrcSet(resolved);
 
   return (
     /* The ingest pipeline emits pre-sized AVIF/WebP from our own storage, so
@@ -66,6 +75,7 @@ export function ListingImage({
       ref={check}
       className={className}
       src={resolved}
+      srcSet={srcSet ?? undefined}
       // Empty alt when there is no caption: a screen reader skipping the image
       // beats it reading an invented claim about a room.
       alt={failed ? '' : (alt ?? '')}

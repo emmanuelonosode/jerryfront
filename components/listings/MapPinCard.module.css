@@ -1,0 +1,59 @@
+/*
+   The card a dot opens before its home has been fetched.
+
+   Sized to the compact PropertyCard it is replaced by, so the swap does not
+   move anything under the reader's cursor.
+*/
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background-color: var(--color-bg-surface);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  color: var(--color-text-primary);
+}
+
+.figure {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.per {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.specs {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.link {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  /* A 44px target, because on a phone this sits over a map the reader is
+     also panning - a small link here is one mis-tap from a lost home. */
+  min-height: var(--button-height);
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link:hover {
+  color: var(--color-accent-primary, var(--color-text-primary));
+}

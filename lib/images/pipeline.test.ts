@@ -1,6 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  cdnSrcSet,
   CARD_SIZES,
   RENDITION_WIDTHS,
   buildSrcSet,
@@ -105,5 +106,39 @@ describe('responsive output', () => {
     assert.match(CARD_SIZES, /min-width: 1280px\) 30vw/);
     assert.match(CARD_SIZES, /min-width: 640px\) 45vw/);
     assert.match(CARD_SIZES, /100vw$/);
+  });
+});
+
+describe('cdnSrcSet', () => {
+  const URL = '/media/proxy/invitation/web/w_1500,h_1000,c_limit,q_auto/5414-verdugos-pl-78244-117743/abc.jpg';
+
+  test('SIZES WITHOUT SRCSET DOWNLOADS THE LARGEST RENDITION, ALWAYS', () => {
+    // The failure this fixes: components passed `sizes` and no `srcset`, so
+    // the browser had one candidate and took it - 192.6KB of hero on a phone
+    // that needed 45.5KB.
+    const set = cdnSrcSet(URL);
+    assert.ok(set);
+    assert.match(set, /w_320,h_213[^ ]* 320w/);
+    assert.match(set, /w_640,h_427[^ ]* 640w/);
+    assert.match(set, /w_1280,h_853[^ ]* 1280w/);
+  });
+
+  test('the source aspect ratio is preserved, not assumed', () => {
+    const square = cdnSrcSet('/x/w_1000,h_1000,c_limit/y/z.jpg');
+    assert.ok(square);
+    assert.match(square, /w_640,h_640/);
+  });
+
+  test('NEVER OFFERS A RENDITION LARGER THAN THE SOURCE', () => {
+    // Upscaling costs bytes for no additional detail.
+    const set = cdnSrcSet('/x/w_700,h_467,c_limit/y/z.jpg');
+    assert.ok(set);
+    assert.doesNotMatch(set, /960w|1280w|1920w/);
+    assert.match(set, /640w/);
+  });
+
+  test('a URL with no rendition token returns null rather than a guess', () => {
+    assert.equal(cdnSrcSet('/images/team/jerry-skelton.jpg'), null);
+    assert.equal(cdnSrcSet(''), null);
   });
 });

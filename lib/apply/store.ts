@@ -30,6 +30,10 @@ export function normaliseDraft(draft: ApplicationDraft): ApplicationDraft {
     paymentMethod: draft.paymentMethod ?? null,
     paymentReportedAt: draft.paymentReportedAt ?? null,
     paymentReference: draft.paymentReference ?? null,
+    // Both added after drafts were already in flight, so a record written
+    // before them reads back without them.
+    paymentProofPath: draft.paymentProofPath ?? null,
+    paymentProofRejected: draft.paymentProofRejected ?? null,
     paymentVerifiedAt: draft.paymentVerifiedAt ?? null,
     incomeSources: draft.incomeSources ?? [],
     priorAddresses: draft.priorAddresses ?? [],

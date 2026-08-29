@@ -1,0 +1,78 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.item {
+  border: var(--rule-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg-secondary);
+  transition: border-color var(--duration-fast) var(--easing-out);
+}
+
+.item:hover {
+  border-color: var(--color-border-default);
+}
+
+.item[open] {
+  border-color: var(--color-border-default);
+}
+
+.question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  /* Comfortably past the 44px touch floor once the type is in it. */
+  min-height: 56px;
+  padding: var(--space-4) var(--space-5);
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--lh-body);
+  color: var(--color-text-primary);
+}
+
+/* Safari draws its own disclosure triangle unless both of these are set. */
+.question::-webkit-details-marker {
+  display: none;
+}
+
+.question::marker {
+  content: '';
+}
+
+.question:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-xl);
+}
+
+.questionText {
+  min-width: 0;
+}
+
+.chevron {
+  flex: none;
+  color: var(--color-text-tertiary);
+  transition: transform var(--duration-slow) var(--easing-default);
+}
+
+.item[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.answer {
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+.answer p {
+  margin: 0;
+  /* 45-75 characters at every breakpoint. */
+  max-width: 68ch;
+  font-size: var(--text-body);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}

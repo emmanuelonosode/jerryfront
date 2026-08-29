@@ -1,8 +1,4 @@
-.wrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
+/* ---- The player, once someone has asked for it -------------------------- */
 
 .frame {
   position: relative;
@@ -24,17 +20,155 @@
   border: 0;
 }
 
-.caption {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+/* ---- The poster ---------------------------------------------------------
+   One face for both kinds of tour: the framed player and the outbound link.
+   Rendered as a <button> in one case and an <a> in the other, so everything
+   here has to hold for both - hence the resets at the top. ----------------- */
+
+.poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  /* Photography ratio, not player ratio. This is a picture of the home until
+     the moment it becomes a tour. */
+  aspect-ratio: 16 / 10;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-inverse);
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  isolation: isolate;
 }
 
-.icon {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 1px;
+.posterImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The lift is on the photograph rather than the whole card, so the play
+     button and the type stay exactly where the eye left them. */
+  transition: transform var(--duration-slow) var(--easing-default);
+}
+
+.poster:hover .posterImage {
+  transform: scale(1.03);
+}
+
+.posterFallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #2f3a45, #16202a);
+}
+
+/* Weighted to the middle, where the type sits, and eased at both ends so the
+   photograph is not flattened into a grey slab. */
+.posterScrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      ellipse at 50% 52%,
+      rgb(0 0 0 / 0.55) 0%,
+      rgb(0 0 0 / 0.32) 45%,
+      rgb(0 0 0 / 0.1) 75%
+    ),
+    linear-gradient(to top, rgb(0 0 0 / 0.28), rgb(0 0 0 / 0) 45%);
+}
+
+.posterBody {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5);
+}
+
+.playButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-full);
+  background-color: #ffffff;
+  color: #0a1317;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.28);
+  transition: transform var(--duration-fast) var(--easing-default);
+}
+
+/* The triangle reads as centred only when it is nudged off centre. */
+.playButton svg {
+  margin-left: 3px;
+}
+
+.poster:hover .playButton {
+  transform: scale(1.06);
+}
+
+.poster:active .playButton {
+  transform: scale(0.97);
+}
+
+.posterTitle {
+  font-size: var(--header-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--lh-header-md);
+  color: #ffffff;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.4);
+}
+
+.posterMeta {
+  font-size: var(--font-size-sm);
+  line-height: var(--lh-sm);
+  color: rgb(255 255 255 / 0.86);
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.4);
+}
+
+.poster:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* The no-JS escape hatch. Hidden inside <noscript>, so it only ever paints
+   where the facade's button cannot work. */
+.noscriptLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--space-3);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-link);
+}
+
+@media (min-width: 640px) {
+  .playButton {
+    width: 84px;
+    height: 84px;
+  }
+
+  .posterTitle {
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-snug);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .posterImage,
+  .playButton {
+    transition: none;
+  }
+
+  .poster:hover .posterImage {
+    transform: none;
+  }
 }

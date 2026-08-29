@@ -8,7 +8,7 @@ import { SAVED_COOKIE, parseSaved } from '@/lib/saved/list';
 import { visibilityOf } from '@/lib/listings/lifecycle';
 import { Illustration } from '@/components/brand/Illustration';
 import styles from './saved.module.css';
-import { allListings } from '@/lib/listings/source';
+import { listingsByIds } from '@/lib/listings/source';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,12 +18,20 @@ export const metadata: Metadata = {
 };
 
 export default async function SavedPage() {
-  const listings = await allListings();
   const jar = await cookies();
   const ids = parseSaved(jar.get(SAVED_COOKIE)?.value);
 
+  /*
+   * Asked for by id, in the order they were saved.
+   *
+   * This used to fetch all 4,482 properties and `find` through them once per
+   * saved id. The database resolves at most fifty ids in one query; the sort
+   * below restores the cookie's order, which is most-recently-saved first.
+   */
+  const fetched = await listingsByIds(ids);
+  const byId = new Map(fetched.map((l) => [l.id, l]));
   const saved = ids
-    .map((id) => listings.find((l) => l.id === id))
+    .map((id) => byId.get(id))
     .filter((l): l is NonNullable<typeof l> => Boolean(l));
 
   const live = saved.filter((l) => visibilityOf(l) === 'live');

@@ -242,6 +242,61 @@ export function runSearch(listings: Listing[], filters: SearchFilters): SearchRe
  * and location last, because those are usually real constraints, and the
  * feature toggles first. An empty search is a lead, not a dead end.
  */
+export type Relaxation = { suggestion: string; next: SearchFilters };
+
+/**
+ * The relaxation ladder, in the order a renter is likely to accept it.
+ *
+ * SPLIT OUT SO THE DATABASE CAN WALK IT TOO. `relaxFilters` below needs a
+ * catalogue in memory to count matches, which on this inventory means pulling
+ * 8,857 records across 45 requests to render three suggestion cards. The
+ * ordering, though, is a product decision with no data in it - so it lives
+ * here on its own, and `relaxedSearch` in the source layer walks the same
+ * ladder against the API. One definition, so the two cannot drift.
+ *
+ * `cheapestDollars` is the all-in monthly cost of the cheapest home matching
+ * everything EXCEPT the price cap, or null when that is unknown. It is what
+ * makes the budget suggestion land on a number that actually returns homes,
+ * instead of a guessed percentage bump that can still fall short.
+ */
+export function relaxationLadder(
+  filters: SearchFilters,
+  cheapestDollars: number | null,
+): Relaxation[] {
+  const relaxations: Relaxation[] = [];
+
+  if (filters.accessible) {
+    relaxations.push({
+      suggestion: 'without the accessibility filter',
+      next: { ...filters, accessible: false },
+    });
+  }
+  if (filters.homeType) {
+    relaxations.push({ suggestion: 'including all home types', next: { ...filters, homeType: null } });
+  }
+  if (filters.beds !== null && filters.beds > 1) {
+    relaxations.push({
+      suggestion: `with ${filters.beds - 1}+ bedrooms`,
+      next: { ...filters, beds: filters.beds - 1 },
+    });
+  }
+  if (filters.maxPrice !== null && cheapestDollars !== null && cheapestDollars > filters.maxPrice) {
+    const raised = Math.ceil(cheapestDollars / 50) * 50;
+    relaxations.push({
+      suggestion: `up to $${raised.toLocaleString('en-US')} a month`,
+      next: { ...filters, maxPrice: raised },
+    });
+  }
+  if (filters.city) {
+    relaxations.push({
+      suggestion: `across all of ${filters.state ?? 'the state'}`,
+      next: { ...filters, city: null },
+    });
+  }
+
+  return relaxations;
+}
+
 export function relaxFilters(listings: Listing[], filters: SearchFilters): {
   suggestion: string;
   filters: SearchFilters;

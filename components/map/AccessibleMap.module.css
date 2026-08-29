@@ -78,7 +78,8 @@
 }
 
 .pin,
-.cluster {
+.cluster,
+.dot {
   /* Above the basemap tiles. */
   z-index: 1;
   position: absolute;
@@ -132,11 +133,85 @@
   background-color: var(--button-primary-bg-hover);
 }
 
+/* A group made only of homes off the current page. Present, legible, and
+   visibly secondary to the results the reader is actually scrolling. */
+.clusterQuiet {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-strong);
+  font-weight: var(--font-weight-medium);
+}
+
+.clusterQuiet:hover {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+}
+
+/* ---- Dots -----------------------------------------------------------------
+   A home that matched the search but is not on this page of results.
+
+   THE TARGET IS FULL SIZE; ONLY THE CENTRE IS PAINTED. A 12px circle is a
+   12px tap target, which fails on a phone and fails a pointer-precision
+   guideline besides. The button keeps the same 44px box every other marker
+   has and draws a small core inside it - and because clustering allows one
+   marker per 64px cell, those boxes never overlap each other.
+   -------------------------------------------------------------------------- */
+
+.dot {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.dotCore {
+  width: 11px;
+  height: 11px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-inverse);
+  /* A ring in the page background, so a dot stays legible over dark tiles,
+     over pale ones, and over another dot. */
+  box-shadow: 0 0 0 2px var(--color-bg-primary), 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition:
+    width var(--duration-fast) var(--easing-default),
+    height var(--duration-fast) var(--easing-default),
+    background-color var(--duration-fast) var(--easing-default);
+}
+
+.dot:hover .dotCore,
+.dotActive .dotCore {
+  width: 15px;
+  height: 15px;
+  background-color: var(--color-accent-primary, var(--color-bg-inverse));
+}
+
+/* Selection is size plus a heavier ring, never colour alone - and `aria-current`
+   carries it for anyone the drawing does not reach. */
+.dotSelected .dotCore {
+  width: 17px;
+  height: 17px;
+  background-color: var(--color-accent-primary, var(--color-bg-inverse));
+  box-shadow:
+    0 0 0 3px var(--color-bg-primary),
+    0 0 0 5px var(--color-bg-inverse),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.dot:focus-visible {
+  z-index: 5;
+}
+
 /* Markers sit on a busy grid; the two-layer ring needs to win against it, so
    raise the focused marker above its neighbours. */
 .pin:focus-visible,
 .cluster:focus-visible {
   z-index: 5;
+}
+
+/* A result pin outranks the dots around it: it is one of the homes whose card
+   is on screen, and it must not be buried under nearby context. */
+.pin {
+  z-index: 2;
 }
 
 .status {

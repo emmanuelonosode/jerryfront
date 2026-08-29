@@ -3,11 +3,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AccessibleMap, type MapItem } from '@/components/map/AccessibleMap';
 import { PropertyCard } from '@/components/listings/PropertyCard';
+import { MapPinCard } from '@/components/listings/MapPinCard';
 import { formatUsd } from '@/lib/money';
 import { computeBreakdown, pinPriceCents } from '@/lib/pricing';
 import { AVAILABILITY_LABEL, type Listing } from '@/lib/listings/types';
-import { serialiseFilters, type SearchFilters } from '@/lib/listings/search';
-import { searchListings } from '@/lib/listings/source';
+import {
+  DEFAULT_FILTERS,
+  parseFilters,
+  serialiseFilters,
+  type SearchFilters,
+} from '@/lib/listings/search';
+import { fetchMapPins, listingBySlug, searchListings, type MapPin } from '@/lib/listings/source';
 import styles from './SearchResults.module.css';
 
 type View = 'list' | 'map';
@@ -31,6 +37,20 @@ type View = 'list' | 'map';
  * cost of source order is one extra tab stop before the results - and only
  * one, because the map is a single stop with roving arrow-key focus inside it
  * rather than a tab stop per pin.
+ *
+ * THE MAP SHOWS THE WHOLE SEARCH, NOT THE PAGE.
+ *
+ * It used to plot exactly the twelve homes whose cards were rendered, which on
+ * a catalogue of 8,841 read as "twelve homes exist" rather than "this is page
+ * one of 738". Fetching the rest as listings was never an option - that is a
+ * megabyte per two hundred records, almost all of it image metadata a map
+ * cannot draw - so the map has its own endpoint returning five values per
+ * home. The whole catalogue costs 229KB gzipped, arrives after the results
+ * have painted, and degrades to the old page-only behaviour if it fails.
+ *
+ * MARKERS ARE KEYED BY SLUG, NOT BY ID. A pin knows its slug; only a fully
+ * fetched listing knows its UUID. The slug is the identifier both halves of
+ * the map share, and it is the one the URL is built from anyway.
  */
 /**
  * How many pages load themselves before the reader has to ask.
@@ -157,25 +177,126 @@ export function SearchResults({
     autoLoadsRef.current += 1;
     void loadMore();
   }, [atEnd, loading, failed, hasMore, loadMore]);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const items = useMemo<MapItem[]>(
+  const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+
+  /* ---- The rest of the catalogue, as coordinates -------------------------
+     Fetched in the browser rather than on the server, and deliberately so:
+     these are context for a page that is already complete without them, and
+     putting 229KB in front of the first paint to draw dots would trade the
+     thing renters came for against the thing they glance at. */
+  const [pins, setPins] = useState<MapPin[]>([]);
+
+  /**
+   * WHAT THE PIN FETCH DEPENDS ON, AS A STRING.
+   *
+   * `filters` is a fresh object on every parent render, so an effect that
+   * depends on it would re-download the catalogue on each keystroke elsewhere
+   * on the page. Serialising it gives a value that changes only when a filter
+   * actually does - and paging and sorting are normalised away first, because
+   * neither changes WHICH homes matched, only which twelve are on screen.
+   */
+  const filterKey = filters
+    ? serialiseFilters({ ...filters, page: 1, sort: DEFAULT_FILTERS.sort })
+    : null;
+
+  useEffect(() => {
+    if (filterKey === null) return;
+    // Parsed back from the key rather than closed over, so the effect depends
+    // on exactly the value it uses and nothing more.
+    const controller = new AbortController();
+    fetchMapPins(parseFilters(new URLSearchParams(filterKey)), controller.signal)
+      .then(setPins)
+      // A failed pin fetch is not a failed page. The map falls back to the
+      // homes on this page, which is what it drew before this existed.
+      .catch(() => {});
+    return () => controller.abort();
+  }, [filterKey]);
+
+  /* ---- Markers ------------------------------------------------------------
+     Homes on this page become labelled price pins; everything else the search
+     matched becomes a dot. Built as one map keyed by slug so a home cannot
+     appear as both - which is what would happen on every page after the first,
+     since the pin set covers the whole result, page one included. */
+  const resultItems = useMemo<MapItem[]>(
     () =>
-      all.map((home) => {
-        const total = computeBreakdown(home.pricing).totalMonthlyMaxCents;
-        return {
-          id: home.id,
-          lat: home.lat,
-          lng: home.lng,
-          pin: formatUsd(pinPriceCents(total)),
-          label: `${formatUsd(total)} per month total. ${home.beds} bed, ${home.baths} bath, ${home.sqft} square feet. ${home.addressLine}, ${home.city}, ${home.state}. ${AVAILABILITY_LABEL[home.availability]}.`,
-        };
-      }),
+      all
+        .filter((home) => home.lat !== 0 || home.lng !== 0)
+        .map((home) => {
+          const total = computeBreakdown(home.pricing).totalMonthlyMaxCents;
+          return {
+            id: home.slug,
+            lat: home.lat,
+            lng: home.lng,
+            kind: 'result' as const,
+            pin: formatUsd(pinPriceCents(total)),
+            label: `${formatUsd(total)} per month total. ${home.beds} bed, ${home.baths} bath, ${home.sqft} square feet. ${home.addressLine}, ${home.city}, ${home.state}. ${AVAILABILITY_LABEL[home.availability]}.`,
+          };
+        }),
     [all],
   );
 
-  const selected = selectedId ? listings.find((l) => l.id === selectedId) : null;
+  const items = useMemo<MapItem[]>(() => {
+    if (pins.length === 0) return resultItems;
+    const onThisPage = new Set(resultItems.map((item) => item.id));
+    const dots: MapItem[] = [];
+    for (const pin of pins) {
+      if (onThisPage.has(pin.slug)) continue;
+      dots.push({
+        id: pin.slug,
+        lat: pin.lat,
+        lng: pin.lng,
+        kind: 'dot',
+        pin: '',
+        // A dot knows a price and a bedroom count and nothing else, so that is
+        // exactly what it claims. Inventing a street from the slug would put a
+        // guess into a screen reader as though it were a fact.
+        label: `${formatUsd(pin.totalMonthlyCents)} per month total, ${pin.beds} bed. Not on this page of results - activate to open it.`,
+      });
+    }
+    return [...dots, ...resultItems];
+  }, [pins, resultItems]);
+
+  /* ---- Selection ----------------------------------------------------------
+     A selected result already has its whole card in memory. A selected dot has
+     five values, so the card starts from those and upgrades itself once the
+     home has been fetched - immediate, then complete, rather than a spinner in
+     front of information already in hand. */
+  const selectedListing = selectedSlug
+    ? all.find((home) => home.slug === selectedSlug) ?? null
+    : null;
+  const selectedPin = selectedSlug && !selectedListing
+    ? pins.find((pin) => pin.slug === selectedSlug) ?? null
+    : null;
+  const selectedPinSlug = selectedPin?.slug ?? null;
+  const [fetchedListing, setFetchedListing] = useState<Listing | null>(null);
+
+  useEffect(() => {
+    if (!selectedPinSlug) return;
+    let live = true;
+    listingBySlug(selectedPinSlug)
+      .then((home) => {
+        if (live && home) setFetchedListing(home);
+      })
+      // The light card stays, and its link still works. A dot that cannot be
+      // enriched is not a dot that stops functioning.
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [selectedPinSlug]);
+
+  /**
+   * Whether the fetched home is still the one being looked at is DERIVED, not
+   * stored. Clearing it in an effect would mean a render where the reader has
+   * selected a new dot and the previous home's card is still on screen - and
+   * it is the cascading-render pattern React's own lint rule rejects. A slug
+   * comparison at render time cannot go stale.
+   */
+  const enriched =
+    fetchedListing && fetchedListing.slug === selectedSlug ? fetchedListing : null;
+  const selectedCard = selectedListing ?? enriched;
 
   return (
     <div className={styles.wrap}>
@@ -200,15 +321,22 @@ export function SearchResults({
           <div className={styles.mapSticky}>
             <AccessibleMap
               items={items}
-              activeId={activeId}
-              selectedId={selectedId}
-              onActiveChange={setActiveId}
-              onSelect={setSelectedId}
+              /* Framed on the results, not on the catalogue: a search for one
+                 city must not open zoomed out to the whole country. */
+              fitItems={resultItems}
+              activeId={activeSlug}
+              selectedId={selectedSlug}
+              onActiveChange={setActiveSlug}
+              onSelect={setSelectedSlug}
               height="100%"
             />
-            {selected ? (
+            {selectedCard ? (
               <div className={styles.selected}>
-                <PropertyCard listing={selected} density="compact" headingLevel="h3" />
+                <PropertyCard listing={selectedCard} density="compact" headingLevel="h3" />
+              </div>
+            ) : selectedPin ? (
+              <div className={styles.selected}>
+                <MapPinCard pin={selectedPin} />
               </div>
             ) : null}
           </div>
@@ -219,15 +347,15 @@ export function SearchResults({
             {all.map((listing, index) => (
               <li
                 key={listing.id}
-                onMouseEnter={() => setActiveId(listing.id)}
-                onMouseLeave={() => setActiveId(null)}
-                onFocus={() => setActiveId(listing.id)}
-                onBlur={() => setActiveId(null)}
+                onMouseEnter={() => setActiveSlug(listing.slug)}
+                onMouseLeave={() => setActiveSlug(null)}
+                onFocus={() => setActiveSlug(listing.slug)}
+                onBlur={() => setActiveSlug(null)}
               >
                 <PropertyCard
                   listing={listing}
                   density="grid"
-                  active={activeId === listing.id || selectedId === listing.id}
+                  active={activeSlug === listing.slug || selectedSlug === listing.slug}
                   priority={index < 3}
                 />
               </li>

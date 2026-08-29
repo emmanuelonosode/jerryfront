@@ -21,7 +21,13 @@ function ProgressTrail({ current, progress }: { current: StepSlug; progress: Pro
   const currentIndex = stepIndex(current);
 
   return (
-    <nav className={styles.trail} aria-label="Application progress">
+    <nav className={`${styles.trail} ${styles.trailSticky}`} aria-label="Application progress">
+      {/* Decorative: the same figure is in the sentence below, announced there
+          once rather than twice. */}
+      <span className={styles.trailBar} aria-hidden="true">
+        <span className={styles.trailBarFill} style={{ width: `${progress.percent}%` }} />
+      </span>
+
       <p className={styles.trailSummary}>
         Step <span className={styles.figure}>{Math.min(currentIndex + 1, PROGRESS_STEPS.length)}</span>{' '}
         of <span className={styles.figure}>{PROGRESS_STEPS.length}</span>

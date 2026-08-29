@@ -39,7 +39,7 @@ describe('hub index threshold', () => {
     assert.equal(jackson.liveCount, 2);
     assert.equal(jackson.indexable, false);
     // The page still exists - someone with the link lands somewhere useful.
-    assert.equal(jackson.listings.length, 2);
+    assert.equal(jackson.listings!.length, 2);
   });
 
   test('homes under application do not count toward the threshold', () => {
@@ -134,7 +134,7 @@ describe('one city, several spellings', () => {
 
   test('counts every home, whichever spelling it arrived under', () => {
     const [city] = buildHubs(mixedSpellings).find((s) => s.slug === 'ga')!.cities;
-    assert.equal(city.listings.length, 5);
+    assert.equal(city.listings!.length, 5);
   });
 
   test('shows the spelling most of the records use', () => {

@@ -111,6 +111,47 @@ describe('per-step validation', () => {
     }
   });
 
+  /**
+   * THE PAYMENT STEP IS THE ONE THAT TAKES MONEY, and every rail behind it is
+   * manual. Nothing else in this file guards a business rule with a financial
+   * consequence, so these are deliberately explicit.
+   */
+  test('payment cannot be submitted without proof of payment', () => {
+    const paid = {
+      paymentMethod: 'zelle',
+      paymentReportedAt: NOW.toISOString(),
+    };
+    // A method chosen and the box ticked is a CLAIM that money was sent.
+    // Without a receipt a person has to go hunting through a bank feed for a
+    // payment that may never have been made.
+    const withoutProof = validateStep(draft(paid), 'payment');
+    assert.deepEqual(withoutProof.map((e) => e.field), ['paymentProof']);
+
+    const withProof = validateStep(
+      draft({ ...paid, paymentProofPath: 'proof-abc-123.png' }),
+      'payment',
+    );
+    assert.deepEqual(withProof, []);
+  });
+
+  test('a refused upload explains itself instead of asking again generically', () => {
+    // The applicant has just sent money. "Add a screenshot" when they already
+    // tried to is the least useful thing this page could say, so the refusal
+    // reason takes the place of the generic prompt.
+    const rejected = draft({
+      paymentMethod: 'zelle',
+      paymentReportedAt: NOW.toISOString(),
+      paymentProofRejected: 'That file is 14.2MB, and the limit is 10MB.',
+    });
+    const error = validateStep(rejected, 'payment').find((e) => e.field === 'paymentProof');
+    assert.match(error!.message, /14\.2MB/);
+  });
+
+  test('payment still requires a method and the sent confirmation', () => {
+    const errors = validateStep(draft(), 'payment').map((e) => e.field).sort();
+    assert.deepEqual(errors, ['paymentMethod', 'paymentProof', 'paymentReported']);
+  });
+
   test('income counts every kind of source, not just wages', () => {
     for (const kind of ['self-employment', 'benefits', 'voucher', 'support'] as const) {
       const d = draft({ incomeSources: [{ kind, monthlyCents: dollars(2000), description: null }] });

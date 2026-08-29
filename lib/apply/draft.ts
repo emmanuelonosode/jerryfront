@@ -100,6 +100,19 @@ export type ApplicationDraft = {
   paymentReference: string | null;
   /** Path to the uploaded payment proof screenshot/receipt */
   paymentProofPath: string | null;
+  /**
+   * Why the last upload was refused, if it was.
+   *
+   * Stored on the draft rather than passed as a query parameter, for the same
+   * reason `attemptedSteps` is: the save route redirects, and a message held
+   * anywhere else does not survive that hop, a refresh, or a resume link.
+   *
+   * Before this existed a refused file - wrong type, too large - was logged to
+   * the server console and nothing else. The applicant saw the step reload
+   * with no receipt recorded and no reason, which on the step that takes their
+   * money is the worst place on the site to say nothing.
+   */
+  paymentProofRejected: string | null;
   /** When a person confirmed the money arrived. Starts the 24-hour clock. */
   paymentVerifiedAt: string | null;
 
@@ -171,6 +184,7 @@ export function emptyDraft(id: string, listingSlug: string | null, now: Date): A
     applicationFeeCents: null,
     paymentReference: null,
     paymentProofPath: null,
+    paymentProofRejected: null,
     paymentVerifiedAt: null,
     attemptedSteps: [],
     furthestStep: 'details',
@@ -281,6 +295,27 @@ export function validateStep(draft: ApplicationDraft, step: StepSlug): FieldErro
     case 'payment': {
       if (!draft.paymentMethod) {
         errors.push({ field: 'paymentMethod', message: 'Choose how you want to pay.' });
+      }
+      /*
+       * PROOF IS REQUIRED, NOT OPTIONAL.
+       *
+       * Every rail here is manual and reconciled by a person. Their only other
+       * signal is a tick box saying "I have sent it", which is a claim, not
+       * evidence - so an application could be submitted, enter the verification
+       * queue, and sit there while somebody hunts through a bank feed for a
+       * payment that may never have been made. A screenshot turns that into a
+       * two-second check.
+       *
+       * It also protects the applicant: a receipt with our reference on it is
+       * what they point at when a transfer goes astray.
+       */
+      if (!draft.paymentProofPath) {
+        errors.push({
+          field: 'paymentProof',
+          message:
+            draft.paymentProofRejected
+            ?? 'Add a screenshot or receipt of the payment. It is how we match your money to your application.',
+        });
       }
       if (!draft.paymentReportedAt) {
         errors.push({

@@ -1,0 +1,43 @@
+.share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--button-height);
+  height: var(--button-height);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border: var(--rule-width) solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-default);
+}
+
+.share:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* The live region is always in the DOM so assistive tech is watching it before
+   the message arrives; an element that appears at the same moment as its own
+   text is frequently missed. */
+.status {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(var(--button-height) + var(--space-2));
+  pointer-events: none;
+}
+
+.toast {
+  display: inline-block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}

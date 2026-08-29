@@ -2,9 +2,9 @@ import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
 import { ButtonLink } from '@/components/ui/Button';
 import { PropertyCard } from '@/components/listings/PropertyCard';
-import { allListings } from '@/lib/listings/source';
+import { searchListings } from '@/lib/listings/source';
+import { DEFAULT_FILTERS } from '@/lib/listings/search';
 import { countsForHubThreshold } from '@/lib/listings/lifecycle';
-import { filterablePriceCents } from '@/lib/pricing';
 import { Illustration } from '@/components/brand/Illustration';
 import styles from './error-pages.module.css';
 
@@ -27,11 +27,16 @@ import styles from './error-pages.module.css';
  * this is the rarer case, but when it happens it should still convert.
  */
 export async function NotFoundContent() {
-  const listings = await allListings();
-  const alternatives = [...listings]
-    .filter(countsForHubThreshold)
-    .sort((a, b) => filterablePriceCents(a.pricing) - filterablePriceCents(b.pricing))
-    .slice(0, 3);
+  /*
+   * Three homes, asked for as three homes.
+   *
+   * This pulled the entire catalogue, sorted it in JavaScript and took the
+   * first three - on the 404 page, which is the one page a crawler hitting bad
+   * URLs lands on repeatedly. `price-asc` is the database's job and `PAGE_SIZE`
+   * already caps the result.
+   */
+  const { results } = await searchListings({ ...DEFAULT_FILTERS, sort: 'price-asc' });
+  const alternatives = results.filter(countsForHubThreshold).slice(0, 3);
 
   return (
     <main id="main" className={styles.page}>

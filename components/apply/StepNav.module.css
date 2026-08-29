@@ -1,27 +1,81 @@
+/* ---- Step navigation ------------------------------------------------------
+
+   STICKY ON MOBILE, and that is the point of this file.
+
+   The application steps run long - "About you" is roughly 6,500px on a 375px
+   screen - and Continue used to sit at the very bottom of that. So the primary
+   action was reachable only by scrolling past every field, including the ones
+   already filled in, on every single save. Someone correcting one answer had
+   to scroll the whole form again to commit it.
+
+   Sticky rather than fixed: it pins to the bottom of the viewport while the
+   form is on screen and then scrolls away with it, so it never sits on top of
+   the footer - where the Equal Housing Opportunity mark and the
+   non-discrimination statement are.
+
+   (This only works at all because app/globals.css uses `overflow-x: clip`
+   rather than `hidden`; `hidden` makes the body a scroll container and kills
+   sticky positioning for every descendant on the site.)
+   -------------------------------------------------------------------------- */
+
 .nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  /* ONE ROW, not two. Stacked, the bar was 121px - a sixth of a 760px phone
+     viewport permanently occupied by chrome, on a form where the whole problem
+     is that there is too much to read at once. Side by side it is 72px, and
+     Continue still gets the width because `.back` is sized to its text. */
   display: flex;
-  flex-direction: column-reverse;
-  gap: var(--space-3);
-  padding-top: var(--space-5);
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  /* Full-bleed out of the shell's padding, so the bar reads as chrome rather
+     than as another card in the form. */
+  margin-inline: calc(var(--space-4) * -1);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  /* Opaque, not translucent. A 6% window onto the form underneath put ghost
+     input borders and half-legible labels behind the primary action - blur
+     softens a photograph, and does nothing good behind a text field. */
+  background-color: var(--color-bg-primary);
   border-top: var(--rule-width) solid var(--color-border-default);
+  box-shadow: 0 -2px 12px rgb(38 38 38 / 0.1);
+}
+
+/* The submit button is the only flexible item, so it absorbs whatever Back
+   does not use. */
+.nav > button {
+  flex: 1;
 }
 
 .back {
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   min-height: var(--button-height);
-  padding-inline: var(--space-4);
+  padding-inline: var(--space-3);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
 }
 
 @media (min-width: 640px) {
+  /* Back in the flow on a screen tall enough not to need the crutch, and
+     without the chrome treatment that only made sense pinned. */
   .nav {
-    flex-direction: row-reverse;
+    position: static;
     justify-content: flex-end;
-    align-items: center;
     gap: var(--space-4);
+    margin-inline: 0;
+    padding: var(--space-5) 0 0;
+    background-color: transparent;
+    border-top: var(--rule-width) solid var(--color-border-default);
+    box-shadow: none;
+  }
+
+  .nav > button {
+    flex: none;
   }
 }

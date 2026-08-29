@@ -42,6 +42,44 @@
   line-height: var(--line-height-relaxed);
 }
 
+/* ---- Field groups ---------------------------------------------------------
+   A named block of related questions, so a twenty-field step reads as five
+   short forms instead of one column with no landmarks. The rule on the left is
+   what makes the grouping survive a phone screen, where only two or three
+   fields of a group are visible at once. -------------------------------------- */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  border: 0;
+  border-left: 2px solid var(--color-border-default);
+}
+
+.groupTitle {
+  /* A <legend> inside a flex fieldset is taken out of flow in some engines, so
+     it is floated back in explicitly rather than trusted to the default. */
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--lh-header-md);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--color-text-primary);
+}
+
+.groupHint {
+  max-width: 62ch;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
 .fieldset {
   display: flex;
   flex-direction: column;

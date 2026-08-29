@@ -6,11 +6,15 @@ import { ReassuranceStrip } from '@/components/content/ReassuranceStrip';
 import { PropertyCard } from '@/components/listings/PropertyCard';
 import { ButtonLink } from '@/components/ui/Button';
 import { Pending } from '@/components/ui/Pending';
-import { HUB_INDEX_THRESHOLD, findCityHub, findStateHub } from '@/lib/listings/hubs';
-import { countsForHubThreshold, similarListings } from '@/lib/listings/lifecycle';
-import { filterablePriceCents } from '@/lib/pricing';
+import {
+  HUB_INDEX_THRESHOLD,
+  buildHubIndex,
+  findCityInIndex,
+  findStateInIndex,
+} from '@/lib/listings/hubs';
 import styles from '../hub.module.css';
-import { allListings } from '@/lib/listings/source';
+import { fetchCities, searchListings } from '@/lib/listings/source';
+import { DEFAULT_FILTERS } from '@/lib/listings/search';
 
 /**
  * City hub - the indexed front door for location intent.
@@ -23,6 +27,18 @@ import { allListings } from '@/lib/listings/source';
  * Below the inventory threshold the page still renders - someone with the link
  * always lands somewhere useful - but it leaves the index rather than becoming
  * a thin page that disappoints every visitor it acquires.
+ *
+ * THIS PAGE USED TO CALL `allListings()` TWICE - once in `generateMetadata`
+ * and again in the render - and `allListings()` pulls all 4,482 properties
+ * with their 78,417 image rows across 23 sequential requests. Two full
+ * catalogues per request, on a 2GB host with a ~1GB Node heap. Eleven Florida
+ * hubs were serving 502 and twenty-four were timing out, and the web process
+ * had been OOM-killed and restarted 73 times.
+ *
+ * It now asks for exactly two things: the city GROUP BY that Django already
+ * exposes at `/properties/cities/`, and one page of homes for THIS city. The
+ * hub shape comes from the first, the cards from the second, and neither
+ * grows with the size of the catalogue.
  */
 export const dynamic = 'force-dynamic';
 
@@ -31,9 +47,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ state: string; city: string }>;
 }): Promise<Metadata> {
-  const listings = await allListings();
   const { state, city } = await params;
-  const hub = findCityHub(listings, state, city);
+  const hub = findCityInIndex(buildHubIndex(await fetchCities()), state, city);
   if (!hub) return { title: 'Not found', robots: { index: false, follow: true } };
 
   return {
@@ -49,19 +64,35 @@ export default async function CityHubPage({
 }: {
   params: Promise<{ state: string; city: string }>;
 }) {
-  const listings = await allListings();
   const { state, city } = await params;
-  const hub = findCityHub(listings, state, city);
+  const hubs = buildHubIndex(await fetchCities());
+  const hub = findCityInIndex(hubs, state, city);
   if (!hub) notFound();
 
-  const stateHub = findStateHub(listings, state);
-  const available = hub.listings.filter(countsForHubThreshold);
+  const stateHub = findStateInIndex(hubs, state);
 
-  // Below the threshold the page has to do more work, not less: nearest
-  // markets, an alert, and a route to apply. An empty hub is a lead.
+  /*
+   * One page of homes for this city, not the catalogue.
+   *
+   * `liveCount` on the hub is the authoritative total - it is a COUNT(*) from
+   * the database - so the page can say "all 34 homes" while only ever holding
+   * the six it draws.
+   */
+  const { results: available } = await searchListings({
+    ...DEFAULT_FILTERS,
+    city: hub.city,
+    state: hub.state,
+  });
+
+  /*
+   * When the city is empty, the nearest homes come from the same state rather
+   * than from a similarity pass over every listing we have. An empty hub is a
+   * lead, and the cheapest available home in the state is a better answer than
+   * one ranked against a home that is no longer rentable anyway.
+   */
   const nearby =
-    available.length === 0 && hub.listings[0]
-      ? similarListings(hub.listings[0], listings, (l) => filterablePriceCents(l.pricing), 3)
+    available.length === 0
+      ? (await searchListings({ ...DEFAULT_FILTERS, state: hub.state })).results.slice(0, 3)
       : [];
 
   return (
@@ -89,8 +120,8 @@ export default async function CityHubPage({
           <p className={styles.lead}>
             {available.length > 0 ? (
               <>
-                <span className={styles.figure}>{available.length}</span>{' '}
-                {available.length === 1 ? 'home' : 'homes'} available now. Every price is
+                <span className={styles.figure}>{hub.liveCount}</span>{' '}
+                {hub.liveCount === 1 ? 'home' : 'homes'} available now. Every price is
                 the total monthly cost - base rent plus every required fee.
               </>
             ) : (
@@ -140,12 +171,12 @@ export default async function CityHubPage({
                 </li>
               ))}
             </ul>
-            {available.length > 6 ? (
+            {hub.liveCount > 6 ? (
               <Link
                 className={styles.moreLink}
                 href={`/homes-for-rent?city=${encodeURIComponent(hub.city)}&state=${hub.state}`}
               >
-                See all {available.length} homes in {hub.city}
+                See all {hub.liveCount} homes in {hub.city}
               </Link>
             ) : null}
           </section>

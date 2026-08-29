@@ -70,11 +70,27 @@ export function viewportForBounds(
     return { cx: 0.5, cy: 0.5, scale: zoomToScale(2), width, height };
   }
 
-  const projected = points.map(project);
-  const minX = Math.min(...projected.map((p) => p.x));
-  const maxX = Math.max(...projected.map((p) => p.x));
-  const minY = Math.min(...projected.map((p) => p.y));
-  const maxY = Math.max(...projected.map((p) => p.y));
+  /*
+   * A loop rather than `Math.min(...projected.map(...))`.
+   *
+   * Spreading an array into a call passes one argument per element, and the
+   * engine's argument limit is in the tens of thousands - so the pretty
+   * version throws RangeError on a large enough point set, and does it as an
+   * uncaught error inside a render. The catalogue is already at 8,841
+   * plottable homes; this is not a limit worth being one growth spurt away
+   * from. The loop also makes one pass instead of eight.
+   */
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const point of points) {
+    const { x, y } = project(point);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
 
   const spanX = Math.max(maxX - minX, 1e-6);
   const spanY = Math.max(maxY - minY, 1e-6);
@@ -110,6 +126,15 @@ export type Cluster<T extends Clusterable> = {
  * viewport - the same input always produces the same groups, which is what
  * makes the keyboard order below deterministic.
  */
+/**
+ * How far outside the viewport a marker is still worth building, in pixels.
+ *
+ * Not zero. A marker is drawn from its centre, and a cluster centroid can sit
+ * just off-screen while its bubble is still half visible; culling exactly at
+ * the edge makes markers wink out early at the borders during a pan.
+ */
+const CULL_MARGIN_PX = 96;
+
 export function clusterByGrid<T extends Clusterable>(
   items: T[],
   vp: Viewport,
@@ -117,8 +142,28 @@ export function clusterByGrid<T extends Clusterable>(
 ): Cluster<T>[] {
   const cells = new Map<string, T[]>();
 
+  /*
+   * OFF-SCREEN HOMES ARE DROPPED BEFORE THEY BECOME MARKERS.
+   *
+   * Without this, clustering an entire catalogue produces a cell for every
+   * occupied patch of the world and the map renders a button for each - so
+   * zooming in, which is when the fewest homes are actually visible, produced
+   * the MOST DOM. Thousands of absolutely-positioned buttons parked outside
+   * the container, each one a tab-order and layout cost, none of them
+   * visible. Culling makes the marker count a function of the viewport rather
+   * than of how much inventory exists, which is what lets the map hold nine
+   * thousand homes at all.
+   */
   for (const item of items) {
     const { left, top } = toScreen(item, vp);
+    if (
+      left < -CULL_MARGIN_PX
+      || top < -CULL_MARGIN_PX
+      || left > vp.width + CULL_MARGIN_PX
+      || top > vp.height + CULL_MARGIN_PX
+    ) {
+      continue;
+    }
     const key = `${Math.floor(left / cellPx)}:${Math.floor(top / cellPx)}`;
     const bucket = cells.get(key);
     if (bucket) bucket.push(item);
