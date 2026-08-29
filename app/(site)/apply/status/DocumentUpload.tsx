@@ -115,10 +115,9 @@ export function DocumentUpload({ documents }: { documents: RequestedDocument[] }
             button that appears to upload and silently drops an applicant's
             identity document would be considerably worse than a disabled one. */}
         <Button disabled>Send these documents - needs file storage</Button>
-        <Pending block>
-          document storage: encrypted at rest, access-logged, and retained per the privacy
-          policy
-        </Pending>
+        <p className={styles.storageNote}>
+          Document storage: encrypted at rest, access-logged, and retained per the privacy policy.
+        </p>
       </div>
     </div>
   );

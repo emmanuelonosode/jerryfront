@@ -273,6 +273,13 @@
   border-top: var(--rule-width) solid var(--color-border-default);
 }
 
+.storageNote {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+  max-width: 60ch;
+}
+
 /* ---- Help ---------------------------------------------------------------- */
 
 .helpBlock {

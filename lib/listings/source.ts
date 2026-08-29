@@ -103,20 +103,40 @@ function toAvailability(status: string): Listing['availability'] {
   }
 }
 
+/**
+ * Serve a partner-hosted image from our own origin.
+ *
+ * Every image URL the feed supplies points at the managing partner's CDN. Left
+ * as-is, the most valuable thing on a listing page - the photographs - is
+ * attributed to a competitor's domain in Google's image index, and the pages
+ * link out to them from every `<img>` and every `og:image`.
+ *
+ * `next.config.ts` rewrites `/media/proxy/invitation/*` back to their CDN, so
+ * the bytes still come from them and we store nothing; only the hostname a
+ * crawler sees changes.
+ *
+ * EXTRACTED BECAUSE FLOOR PLANS WERE MISSING IT. This logic was inline in
+ * `toPhotos`, so the 187 photographs on a listing page were proxied and the
+ * floor-plan drawing beside them was not - it shipped the partner's hostname
+ * in an `href` and a `src` on every home that has one.
+ */
+function proxied(url: string | null | undefined): string {
+  if (!url) return '';
+  if (!url.includes('images.invitationhomes.com')) return url;
+  try {
+    const parsed = new URL(url);
+    return `/media/proxy/invitation${parsed.pathname}${parsed.search}`;
+  } catch {
+    // A URL the parser rejects is left exactly as it came, so a malformed
+    // record still renders its image rather than a broken proxy path.
+    return url;
+  }
+}
+
 function toPhotos(images: ApiImage[] | undefined, fallback: ApiImage | null): Photo[] {
   const list = images?.length ? images : fallback ? [fallback] : [];
   return list.map((image, index) => {
-    let url = image.url;
-    // Proxy invitationhomes images to hide the source domain from search engines
-    if (url.includes('images.invitationhomes.com')) {
-      try {
-        const parsed = new URL(url);
-        url = `/media/proxy/invitation${parsed.pathname}${parsed.search}`;
-      } catch {
-        // A URL the parser rejects is left exactly as it came, so a malformed
-        // record still renders its image rather than a broken proxy path.
-      }
-    }
+    const url = proxied(image.url);
 
     return {
       id: image.id,
@@ -217,7 +237,11 @@ export function toListing(property: ApiProperty): Listing {
     officeInfo: property.office_info && Object.keys(property.office_info).length > 0
       ? property.office_info
       : null,
-    floorPlans: property.floor_plans ?? [],
+    floorPlans: (property.floor_plans ?? []).map((plan) => ({
+      ...plan,
+      image_url: proxied(plan.image_url),
+      thumbnail_url: plan.thumbnail_url ? proxied(plan.thumbnail_url) : null,
+    })),
     listingType: property.listing_type || 'for-rent',
     lotSize: property.lot_size ?? null,
     condition: property.condition || null,
