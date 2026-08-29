@@ -36,6 +36,9 @@ export type StepDefinition = {
   revisitable: boolean;
 };
 
+/** Where an application begins. Named once so the entry route cannot drift. */
+export const FIRST_STEP: StepSlug = 'details';
+
 export const STEPS: StepDefinition[] = [
   {
     slug: 'details',

@@ -41,12 +41,26 @@ export function proxy(request: NextRequest) {
     if (!hasSession) return NextResponse.next();
     const next = request.nextUrl.searchParams.get('next');
     const destination = next?.startsWith('/portal') ? next : '/portal/dashboard';
-    return NextResponse.redirect(new URL(destination, request.url));
+    return NextResponse.redirect(new URL(destination, request.nextUrl.origin));
   }
 
   if (hasSession) return NextResponse.next();
 
-  const login = new URL(LOGIN_PATH, request.url);
+  /**
+   * Absolute, and built from `request.nextUrl.origin` rather than
+   * `request.url`.
+   *
+   * Middleware is the one place a relative `Location` is not an option: Next
+   * parses the header itself before returning the response and throws
+   * `TypeError: Invalid URL` on a bare path, which surfaces as a 500 on every
+   * guarded route. The route handlers under `app/` have no such constraint and
+   * use relative paths - see lib/http/redirect.ts for why that matters there.
+   *
+   * `nextUrl.origin` is the host the visitor actually asked for, because
+   * middleware builds NextURL from the incoming request rather than from the
+   * address the Node server is bound to.
+   */
+  const login = new URL(LOGIN_PATH, request.nextUrl.origin);
   // Round-trips them back to where they were aiming. Only same-site paths are
   // ever echoed back - see the `startsWith('/portal')` check above, which is
   // what stops `?next=https://evil.example` becoming an open redirect.

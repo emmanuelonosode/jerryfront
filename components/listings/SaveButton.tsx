@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './SaveButton.module.css';
 
 /**
@@ -23,11 +23,22 @@ export function SaveButton({
   listingId,
   address,
   initiallySaved = false,
+  resolveOnMount = false,
   className,
 }: {
   listingId: string;
   address: string;
   initiallySaved?: boolean;
+  /**
+   * Ask the server for the saved state after mount instead of being told it.
+   *
+   * For pages that must stay cacheable. Reading the `httpOnly` cookie during
+   * the render calls `cookies()`, which makes the whole route dynamic - and on
+   * the listing route that is the difference between 4,476 pages being indexed
+   * and not. Search cards still pass `initiallySaved` because that page is
+   * request-scoped anyway and a filled heart on first paint is better.
+   */
+  resolveOnMount?: boolean;
   /**
    * Extra classes from the caller.
    *
@@ -40,6 +51,21 @@ export function SaveButton({
 }) {
   const [saved, setSaved] = useState(initiallySaved);
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    if (!resolveOnMount) return;
+    const abort = new AbortController();
+    fetch(`/api/saved?ids=${encodeURIComponent(listingId)}`, { signal: abort.signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { saved?: string[] } | null) => {
+        if (data?.saved) setSaved(data.saved.includes(listingId));
+      })
+      // A failed lookup leaves the heart empty, which is the honest default:
+      // it is what someone who has saved nothing should see, and pressing it
+      // still works.
+      .catch(() => {});
+    return () => abort.abort();
+  }, [resolveOnMount, listingId]);
 
   async function toggle() {
     const next = !saved;

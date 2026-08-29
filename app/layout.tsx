@@ -47,14 +47,19 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  /*
-   * Without this every `alternates.canonical` ships as a relative path and
-   * every `openGraph.images` entry as a relative src. Google tolerates a
-   * relative canonical; Facebook, X, iMessage and Slack do not resolve a
-   * relative OG image at all, so a shared listing rendered as a bare link.
+  /**
+   * The origin every relative URL in `metadata` is resolved against.
    *
-   * `SITE_ORIGIN` is env-overridable, so a preview deployment canonicalises to
-   * itself rather than advertising production.
+   * Without it Next emits `alternates.canonical` exactly as written, so every
+   * listing page shipped `<link rel="canonical" href="/homes-for-rent/...">` -
+   * a path, not a URL. The detail pages set a self-canonical precisely because
+   * the feed reissues slugs, and a canonical that names no host is the one
+   * signal on the page that cannot do that job reliably. Same for any og:url
+   * or og:image added later, which default to localhost without this.
+   *
+   * SITE_ORIGIN, not a literal, so a preview deployment canonicalises to
+   * itself rather than advertising production - the same rule the sitemap and
+   * robots.txt already follow.
    */
   metadataBase: new URL(SITE_ORIGIN),
   title: {

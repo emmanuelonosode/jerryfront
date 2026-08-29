@@ -3,6 +3,7 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { Suspense } from 'react';
 import { Tracker } from '@/components/analytics/Tracker';
+import { CallbackPrompt } from '@/components/marketing/CallbackPrompt';
 
 /**
  * Public site chrome.
@@ -26,6 +27,11 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <Tracker />
       </Suspense>
+      {/* Renders nothing until someone has actually engaged - see the
+          component for the depth, dwell and suppression rules. It lives in
+          this layout rather than in the root one so it can never appear over
+          the resident portal or the admin. */}
+      <CallbackPrompt />
     </>
   );
 }

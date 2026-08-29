@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { sanitiseDescription } from '@/lib/listings/description';
 import { AvailabilityBadge } from '@/components/listings/AvailabilityBadge';
@@ -32,7 +31,6 @@ import { DEFAULT_FILTERS } from '@/lib/listings/search';
 import { citySlug } from '@/lib/listings/hubs';
 import { cityCostContext } from '@/lib/listings/marketContext';
 import { buildListingFaq } from '@/lib/listings/faq';
-import { isSaved, parseSaved, SAVED_COOKIE } from '@/lib/saved/list';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd, faqJsonLd, listingJsonLd } from '@/lib/seo/structuredData';
 import { SITE_NAME, SITE_ORIGIN } from '@/lib/seo/site';
@@ -79,6 +77,53 @@ import styles from './detail.module.css';
  * is now cached, which is where the time was going.
  */
 
+/**
+ * Cached, not rendered per visitor.
+ *
+ * This was `force-dynamic`, which is the single largest reason these pages are
+ * not in the index. It opts the route out of the fetch cache and sends
+ * `Cache-Control: no-store`, so every crawl of every URL re-rendered the page
+ * and re-fetched what it needs from Django. Measured on production that is
+ * 5-7s to first byte on a route with 4,476 URLs in the sitemap. Google throttles
+ * crawl rate against host response time, so at that speed it cannot get
+ * through the catalogue - the pages are discovered and then never fetched
+ * often enough to be indexed.
+ *
+ * Nothing on this page is per-visitor: it is inventory, which changes when a
+ * person edits it. Five minutes matches LISTINGS_REVALIDATE_SECONDS and the
+ * home page, so the numbers here and the listings behind them go stale
+ * together rather than disagreeing.
+ *
+ * THIS IS ALSO WHY THE SAVED-HOMES COOKIE IS NOT READ HERE. `cookies()` is a
+ * request-time API, and one call to it makes the whole route dynamic again -
+ * silently undoing everything above for the sake of a heart icon being filled
+ * in on first paint. `SaveButton` resolves its own state after mount instead.
+ */
+export const revalidate = 300;
+
+/**
+ * Empty on purpose - this is the switch that turns the cache on.
+ *
+ * `export const revalidate` on its own does nothing here. Without a
+ * `generateStaticParams` Next treats a dynamic segment as fully dynamic,
+ * ignores the revalidate window and sends `Cache-Control: no-store` - which is
+ * what production was still doing after the revalidate line was added, and why
+ * none of the 4,476 listing pages were getting indexed. The first fix was
+ * necessary and not sufficient; this is the rest of it, and the route table is
+ * the place to check: a route listed as `f` with no value in the Revalidate
+ * column is not being cached, whatever the source says.
+ *
+ * Returning `[]` opts the route into the incremental path without prerendering
+ * anything at build time - which matters, because prerendering every home in
+ * the catalogue on a 2GB host is how a build gets OOM-killed. `dynamicParams`
+ * defaults to true, so a slug that has never been requested is rendered on its
+ * first request and served from cache until the window closes. The crawler
+ * pays the render cost once per five minutes per URL, not once per fetch.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 const HOME_TYPE_LABEL: Record<Listing['homeType'], string> = {
   'single-family': 'Single-family house',
   townhome: 'Townhome',
@@ -93,6 +138,7 @@ const HOME_TYPE_NOUN: Record<Listing['homeType'], string> = {
   condo: 'Condo',
   apartment: 'Apartment',
 };
+
 
 export async function generateMetadata({
   params,
@@ -232,16 +278,6 @@ export default async function PropertyDetailPage({
   const breakdown = computeBreakdown(listing.pricing);
   const canApply = isApplicable(listing);
   const descriptionParagraphs = sanitiseDescription(listing.description);
-
-  /*
-   * Saved state, read server-side.
-   *
-   * The cookie is httpOnly by design — page script must not be able to read
-   * somebody's shortlist — so this is the only way the heart can be correct on
-   * first paint rather than empty-then-popping.
-   */
-  const jar = await cookies();
-  const saved = isSaved(parseSaved(jar.get(SAVED_COOKIE)?.value), listing.id);
 
   /*
    * Similar homes come from a city-scoped query, not from the whole catalogue,
@@ -425,10 +461,13 @@ export default async function PropertyDetailPage({
             address={`${listing.addressLine}, ${listing.city}, ${listing.state}`}
             actions={
               <>
+                {/* No `initiallySaved`: reading the cookie here would call
+                    `cookies()` and make this route dynamic, undoing the
+                    caching above. The button asks for its own state. */}
                 <SaveButton
                   listingId={listing.id}
                   address={`${listing.addressLine}, ${listing.city}`}
-                  initiallySaved={saved}
+                  resolveOnMount
                   className={styles.galleryAction}
                 />
                 <ShareButton

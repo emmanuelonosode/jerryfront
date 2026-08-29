@@ -1,7 +1,12 @@
 import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, PageHeader } from '@/components/content/ContentPage';
 import { Prose } from '@/components/layout/Container';
-import { Pending } from '@/components/ui/Pending';
+import { COMPANY_FACTS } from '@/lib/content/business';
+import {
+  PLACEHOLDER_ACCESSIBILITY_AUDIT,
+  PLACEHOLDER_ACCESSIBILITY_GAPS,
+  PLACEHOLDER_ACCESSIBILITY_RESPONSE_TIME,
+} from '@/lib/content/placeholders';
 
 export const metadata: Metadata = {
   title: 'Accessibility',
@@ -47,7 +52,7 @@ export default function AccessibilityPage() {
             The application flow is tested end to end with screen readers before
             launch to ensure full accessibility.
           </p>
-          <Pending>date of the most recent full accessibility audit, and by whom</Pending>
+          <p>{PLACEHOLDER_ACCESSIBILITY_AUDIT}</p>
         </Prose>
       </ContentSection>
 
@@ -59,7 +64,11 @@ export default function AccessibilityPage() {
             missing we mark the image as decorative rather than invent one, so a screen
             reader skips it instead of reading a filename.
           </p>
-          <Pending>any further known gaps, updated after each audit</Pending>
+          <ul>
+            {PLACEHOLDER_ACCESSIBILITY_GAPS.map((gap) => (
+              <li key={gap}>{gap}</li>
+            ))}
+          </ul>
         </Prose>
       </ContentSection>
 
@@ -70,7 +79,25 @@ export default function AccessibilityPage() {
             and help you finish what you were doing in the meantime. You will not lose your
             place in a queue because a page did not work.
           </p>
-          <Pending>accessibility contact route and target response time</Pending>
+          {/* The contact route is real - it comes from the same env values
+              the footer and contact page use. Only the response-time target is
+              provisional. */}
+          <p>
+            Email{' '}
+            <a href={`mailto:${COMPANY_FACTS.email}`}>{COMPANY_FACTS.email}</a>
+            {COMPANY_FACTS.phone ? (
+              <>
+                {' '}or call{' '}
+                <a href={`tel:${COMPANY_FACTS.phone.replace(/[^\d+]/g, '')}`}>
+                  {COMPANY_FACTS.phone}
+                </a>
+              </>
+            ) : null}
+            , and put “Accessibility” in the subject line so it reaches the
+            right person. We aim to respond within{' '}
+            {PLACEHOLDER_ACCESSIBILITY_RESPONSE_TIME}, and we will tell you what
+            we are doing about it rather than only that we received it.
+          </p>
         </Prose>
       </ContentSection>
     </ContentLayout>

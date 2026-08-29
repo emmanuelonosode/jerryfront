@@ -73,6 +73,21 @@ export function CheckIcon({ className }: IconProps) {
   );
 }
 
+/**
+ * Handset with call waves, as on the callback prompt.
+ *
+ * Same single stroke weight as every other glyph here, and decorative: it
+ * always sits beside a real label or a visually-hidden one, never alone.
+ */
+export function PhoneIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6.6 3.2 8 6.1 6.4 7.7a9.6 9.6 0 0 0 4 4l1.6-1.6 2.9 1.4v2.6c0 .8-.7 1.4-1.5 1.3A12.4 12.4 0 0 1 2.6 4.7c-.1-.8.5-1.5 1.3-1.5Z" />
+      <path d="M12.4 3.4a4.6 4.6 0 0 1 3.6 3.5M12 6.2a1.9 1.9 0 0 1 1.4 1.4" />
+    </svg>
+  );
+}
+
 export function ClockIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

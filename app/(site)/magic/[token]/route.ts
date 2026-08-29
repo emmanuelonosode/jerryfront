@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
+import { redirectTo } from '@/lib/http/redirect';
 import { prospectAuth } from '@/lib/auth/instance';
 import { SESSION_COOKIE, SESSION_COOKIE_OPTIONS } from '@/lib/auth/prospect';
 import type { Purpose } from '@/lib/auth/store';
@@ -17,7 +18,7 @@ import type { Purpose } from '@/lib/auth/store';
  * places URL-borne credentials actually leak - not clever attacks. Consuming
  * the token on arrival closes all of them at once.
  */
-const DESTINATION: Record<Purpose, string> = {
+const DESTINATION: Record<Purpose, `/${string}`> = {
   'application-status': '/apply/status',
   'application-resume': '/apply',
   'saved-homes': '/saved',
@@ -36,16 +37,13 @@ export async function GET(
     // replaced in history rather than added to it.
     // TODO(C5): a real "link expired, send me another" page. The reason is
     // carried so that page can distinguish resend from re-authenticate.
-    const failure = NextResponse.redirect(new URL(`/?link=${result.reason}`, request.url), 303);
+    const failure = redirectTo(`/?link=${result.reason}`, 303);
     failure.headers.set('Referrer-Policy', 'no-referrer');
     failure.headers.set('X-Robots-Tag', 'noindex, nofollow');
     return failure;
   }
 
-  const response = NextResponse.redirect(
-    new URL(DESTINATION[result.session.purpose], request.url),
-    303,
-  );
+  const response = redirectTo(DESTINATION[result.session.purpose], 303);
   response.cookies.set(SESSION_COOKIE, result.sessionToken, SESSION_COOKIE_OPTIONS);
   response.headers.set('Referrer-Policy', 'no-referrer');
   response.headers.set('X-Robots-Tag', 'noindex, nofollow');

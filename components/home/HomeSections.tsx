@@ -10,7 +10,7 @@ import { buildHubIndex } from '@/lib/listings/hubs';
 import { TEAM } from '@/lib/content/team';
 import { GUIDES } from '@/lib/content/guides';
 import { Illustration, type IllustrationName } from '@/components/brand/Illustration';
-import { MarketCarousel } from './MarketCarousel';
+import { MarketCarousel, type MarketData } from './MarketCarousel';
 import styles from './HomeSections.module.css';
 
 const STEPS: { num: string; title: string; time: string; body: string; art: IllustrationName }[] = [
@@ -82,9 +82,40 @@ export async function HomeSections() {
     if (!photoFor.has(key)) photoFor.set(key, home);
   }
 
-  const markets = buildHubIndex(cityRows)
+  /**
+   * Seven fields per city, named one by one, and NOT `{ ...cityHub }`.
+   *
+   * The spread was a 27MB home page. `CityHub` carried a `listings: Listing[]`
+   * of every home in that city, `MarketCarousel` is a client component, and
+   * React serialises a client component's props into the RSC payload embedded
+   * in the HTML - so spreading the hub shipped the entire 4,476-home catalogue,
+   * with every photo URL, fee and description, inside a <script> tag on the
+   * most-linked page on the site. Measured: 27.3MB of HTML, 26.5MB of it that
+   * payload. Google stops parsing HTML at ~15MB, so the crawler was reading a
+   * truncated page and everything below the cut - including the market links
+   * this section exists to provide - was never seen.
+   *
+   * TypeScript did not catch it and will not: excess-property checking does
+   * not apply to spread properties, so `{ ...c }` satisfies `MarketData` while
+   * carrying anything else the hub happens to hold. Listing the fields is the
+   * only thing that actually bounds what crosses the server/client boundary.
+   *
+   * `buildHubIndex` now also never populates `listings` at all - it is built
+   * from counts, not from Listings - so the payload is bounded twice over.
+   * Both guards are kept deliberately: one stops the fetch, the other stops
+   * whatever the hub shape grows next from crossing the boundary.
+   */
+  const markets: MarketData[] = buildHubIndex(cityRows)
     .flatMap((state) =>
-      state.cities.filter((c) => c.liveCount > 0).map((c) => ({ ...c, stateSlug: state.slug })),
+      state.cities
+        .filter((c) => c.liveCount > 0)
+        .map((c) => ({
+          city: c.city,
+          state: c.state,
+          stateSlug: state.slug,
+          slug: c.slug,
+          liveCount: c.liveCount,
+        })),
     )
     .map((market) => {
       const home = photoFor.get(`${market.state}/${market.city.toLowerCase()}`);

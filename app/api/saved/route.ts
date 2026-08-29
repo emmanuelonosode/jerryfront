@@ -1,6 +1,6 @@
 import { API_BASE } from '@/lib/env';
 import { NextResponse, type NextRequest } from 'next/server';
-import { SAVED_COOKIE, parseSaved, serialiseSaved, toggleSaved } from '@/lib/saved/list';
+import { MAX_SAVED, SAVED_COOKIE, parseSaved, serialiseSaved, toggleSaved } from '@/lib/saved/list';
 
 /**
  * Toggle a saved home.
@@ -29,6 +29,35 @@ import { SAVED_COOKIE, parseSaved, serialiseSaved, toggleSaved } from '@/lib/sav
 
 
 const PORTAL_COOKIE = 'portal_access';
+
+/**
+ * Which of these ids are saved.
+ *
+ * EXISTS SO A PAGE CAN STAY CACHEABLE. The cookie is `httpOnly` - deliberately,
+ * so page script cannot read somebody's shortlist - which used to mean the only
+ * way to render a filled heart was to read it during the server render. On the
+ * listing page that single `cookies()` call made the whole route dynamic, and a
+ * dynamic listing route is why 4,476 pages were not being indexed.
+ *
+ * So the state is fetched after mount instead. It answers only about ids the
+ * caller already named, never "list everything this person saved", so a page
+ * cannot use it to enumerate a stranger's shortlist.
+ */
+export async function GET(request: NextRequest) {
+  const asked = (request.nextUrl.searchParams.get("ids") ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean)
+    .slice(0, MAX_SAVED);
+
+  const current = parseSaved(request.cookies.get(SAVED_COOKIE)?.value);
+  const saved = asked.filter((id) => current.includes(id));
+
+  return NextResponse.json(
+    { saved },
+    { headers: { "Cache-Control": "no-store, private" } },
+  );
+}
 
 export async function POST(request: NextRequest) {
   const { id } = (await request.json()) as { id?: string };

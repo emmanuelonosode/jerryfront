@@ -89,6 +89,16 @@ export function SiteHeader() {
           </nav>
 
           <div className={styles.actions}>
+            {/* Tour sits beside Apply at every breakpoint. It was reachable
+                only inside the "Find a home" disclosure, which is two taps and
+                a guess on a phone - and a tour is the step most of this
+                audience takes BEFORE they are ready to apply, so burying it
+                behind the harder commitment had the funnel backwards. Styled
+                secondary so it supports Apply rather than competing with it. */}
+            <Link className={styles.tourButton} href="/schedule-tour">
+              Book a tour
+            </Link>
+
             {/* Apply stays in the bar at every breakpoint. Primary conversion
                 is never one tap deeper than it has to be. */}
             <Link className={styles.applyButton} href="/apply">

@@ -52,19 +52,25 @@ export default async function ApplyStepPage({
    * query string, so the router serves the cached payload after the action's
    * redirect and the newly-saved errors never reach the screen.
    */
-  const query = await searchParams;
+  void (await searchParams);
   if (!isStepSlug(step)) notFound();
 
   const draft = await draftForRender();
 
-  // No draft yet means they arrived without going through the entry route, so
-  // there is no cookie and nothing could be saved. Send them through it.
-  if (draft.id === 'unsaved') {
-    // `started=1` means we have already been through /apply/start once and the
-    // cookie still did not stick - going back would loop forever, so hand the
-    // entry route the marker that makes it explain the problem instead.
-    redirect(query?.started === '1' ? '/apply/start?retry=1' : '/apply/start');
-  }
+  /**
+   * An unsaved draft renders the form, it does not redirect.
+   *
+   * This used to bounce to `/apply/start`, which created a row and set a
+   * cookie so the page would find something on the way back. That handshake is
+   * why entering the funnel wrote to the database at all. Now `draftForRender`
+   * returns a transient blank draft that renders identically, and the row is
+   * created by the first save.
+   *
+   * It also removes the redirect loop this page and the entry route used to
+   * form when the cookie could not persist, along with the `retry=1` marker
+   * that existed to break it. There is no loop to break: nothing here
+   * redirects on a missing draft.
+   */
 
   // Someone deep-linking past an unfinished step is sent to the first gap
   // rather than shown a form that will be rejected at review.
@@ -84,7 +90,14 @@ export default async function ApplyStepPage({
   const liveMethods = step === 'payment' ? await methodsForDraft(draft.id) : [];
 
   return (
-    <StepShell step={step as StepSlug} progress={progressOf(draft)} savedAt={draft.updatedAt}>
+    <StepShell
+      step={step as StepSlug}
+      progress={progressOf(draft)}
+      // Nothing has been saved yet, so the shell must not claim it has. The
+      // blank draft carries a fresh `updatedAt` purely because it is a
+      // well-formed draft object.
+      savedAt={draft.id === 'unsaved' ? null : draft.updatedAt}
+    >
       {step === 'details' ? <DetailsStep draft={draft} errors={errors} /> : null}
       {step === 'income' ? <IncomeStep draft={draft} errors={errors} /> : null}
       {step === 'history' ? <HistoryStep draft={draft} errors={errors} /> : null}

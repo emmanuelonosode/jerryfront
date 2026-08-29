@@ -5,6 +5,7 @@ import { Container } from '@/components/layout/Container';
 import { ReassuranceStrip } from '@/components/content/ReassuranceStrip';
 import { ButtonLink } from '@/components/ui/Button';
 import { Pending } from '@/components/ui/Pending';
+import { jurisdictionFor } from '@/lib/content/licensing';
 import { buildHubIndex, findStateInIndex } from '@/lib/listings/hubs';
 import styles from './hub.module.css';
 import { fetchCities } from '@/lib/listings/source';
@@ -19,7 +20,47 @@ import { fetchCities } from '@/lib/listings/source';
  * Indexed only when at least one of its cities is, so it never becomes an
  * index page for thin pages.
  */
-export const dynamic = 'force-dynamic';
+/**
+ * Cached, not rendered per visitor.
+ *
+ * This was `force-dynamic`, which is the single largest reason these pages are
+ * not in the index. It opts the route out of the fetch cache and sends
+ * `Cache-Control: no-store`, so every crawl of every URL re-rendered the page
+ * and re-fetched what it needs from Django. Measured on production that is
+ * 5-7s to first byte on a route with one per state URLs in the sitemap. Google throttles
+ * crawl rate against host response time, so at that speed it cannot get
+ * through the catalogue - the pages are discovered and then never fetched
+ * often enough to be indexed.
+ *
+ * Nothing on this page is per-visitor: it is inventory, which changes when a
+ * person edits it. Five minutes matches LISTINGS_REVALIDATE_SECONDS and the
+ * home page, so the numbers here and the listings behind them go stale
+ * together rather than disagreeing.
+ */
+export const revalidate = 300;
+
+/**
+ * Empty on purpose - this is the switch that turns the cache on.
+ *
+ * `export const revalidate` on its own does nothing here. Without a
+ * `generateStaticParams` Next treats a dynamic segment as fully dynamic,
+ * ignores the revalidate window and sends `Cache-Control: no-store` - which is
+ * what production was still doing after the revalidate line was added, and why
+ * the state hubs were re-rendered on every crawl. The first fix was necessary and not sufficient; this is the rest of
+ * it, and the route table is the place to check: a route listed as `f` with no
+ * value in the Revalidate column is not being cached, whatever the source says.
+ *
+ * Returning `[]` opts the route into the incremental path without prerendering
+ * anything at build time - which matters, because prerendering a hub per state on a
+ * 2GB host is how a build gets OOM-killed. `dynamicParams` defaults to true,
+ * so a slug that has never been requested is rendered on its first request and
+ * served from cache until the window closes. The crawler pays the render cost
+ * once per five minutes per URL, not once per fetch.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 
 export async function generateMetadata({
   params,
@@ -43,6 +84,8 @@ export default async function StateHubPage({ params }: { params: Promise<{ state
   /* Counts, not the catalogue - see the note in the city hub for why. */
   const hub = findStateInIndex(buildHubIndex(await fetchCities()), state);
   if (!hub) notFound();
+
+  const licence = jurisdictionFor(hub.state);
 
   return (
     <main id="main">
@@ -99,9 +142,27 @@ export default async function StateHubPage({ params }: { params: Promise<{ state
           <dl className={styles.legal}>
             <div>
               <dt className={styles.legalLabel}>Brokerage licence</dt>
-              <dd>
-                <Pending>{`brokerage licence number and jurisdiction for ${hub.state}`}</Pending>
-              </dd>
+              {/* These numbers were already in lib/content/licensing.ts, for
+                  every state on this list. This page just never read them, so
+                  it rendered a TO CONFIRM marker over data the codebase
+                  already held. `jurisdictionFor` is the same lookup the footer
+                  and /llms.txt use, so the three cannot disagree. */}
+              {licence ? (
+                <dd className={styles.legalValue}>
+                  {licence.broker} — licence no. {licence.licenceNumber}
+                  {licence.additional?.map((extra) => (
+                    <span key={extra.number}>
+                      {'; '}
+                      {extra.label.toLowerCase()} no. {extra.number}
+                    </span>
+                  ))}
+                  {licence.officeLocation ? ` (office: ${licence.officeLocation})` : ''}
+                </dd>
+              ) : (
+                <dd>
+                  <Pending>{`brokerage licence number and jurisdiction for ${hub.state}`}</Pending>
+                </dd>
+              )}
             </div>
             <div>
               <dt className={styles.legalLabel}>Housing vouchers</dt>
@@ -111,8 +172,21 @@ export default async function StateHubPage({ params }: { params: Promise<{ state
             </div>
             <div>
               <dt className={styles.legalLabel}>Source-of-income protection</dt>
-              <dd>
-                <Pending>{`whether ${hub.state} law prohibits source-of-income discrimination`}</Pending>
+              {/* WHAT THIS DELIBERATELY DOES NOT SAY. It does not assert
+                  whether this state's statute prohibits source-of-income
+                  discrimination. That varies by state AND by city - Florida
+                  has no statewide protection while Miami-Dade and Broward have
+                  local ordinances - so a templated "State X does not prohibit"
+                  would be actively wrong for a renter in the county that does,
+                  on a page about their rights. What is stated instead is our
+                  own policy, which is true everywhere and is the thing a
+                  renter is really asking about. */}
+              <dd className={styles.legalValue}>
+                We accept housing vouchers on every home we lease in {hub.state},
+                whether or not state law requires it. Some cities and counties
+                prohibit source-of-income discrimination where state law does
+                not; if you believe you were treated unfairly, tell us and we
+                will look into it.
               </dd>
             </div>
           </dl>

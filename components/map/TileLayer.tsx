@@ -30,7 +30,23 @@ const TILE_URL = process.env.NEXT_PUBLIC_MAP_TILE_URL || DEFAULT_TILE_URL;
  * tile URL so the CSS dimming is skipped rather than applied twice.
  */
 const RAW_TILES = process.env.NEXT_PUBLIC_MAP_TILES_ARE_THEMED === 'true';
-const ATTRIBUTION = process.env.NEXT_PUBLIC_MAP_ATTRIBUTION || DEFAULT_ATTRIBUTION;
+/**
+ * Attribution, as markup.
+ *
+ * Tile hosts require a specific line with working links - CARTO's terms and
+ * the OSM licence both do - so this value is HTML. It was rendered as a text
+ * node, which printed the tags and the entities to the page verbatim under the
+ * map instead of a sentence with two links in it.
+ *
+ * The backslash strip is the other half of the same bug. dotenv removes the
+ * quotes wrapping a value but does NOT unescape `\"` inside them, so an
+ * attribution written the way a shell string is written arrives with its
+ * backslashes intact and every href in it broken. Stripping here means the
+ * component survives either quoting style rather than depending on whoever
+ * edits `.env.local` next knowing the difference.
+ */
+const ATTRIBUTION = (process.env.NEXT_PUBLIC_MAP_ATTRIBUTION || DEFAULT_ATTRIBUTION)
+  .replace(/\\(["'])/g, '$1');
 
 export const TILE_SIZE = 256;
 
@@ -50,8 +66,39 @@ export type TileView = {
   height: number;
 };
 
+/**
+ * Hosts the `{s}` placeholder cycles through.
+ *
+ * Picked from the tile's own coordinates rather than at random, so a given
+ * tile always resolves to the same host. A random pick re-points the same
+ * tile at a different origin on every render, which misses the browser cache
+ * every time and opens connections to four hosts instead of one.
+ */
+const TILE_SUBDOMAINS = ['a', 'b', 'c', 'd'];
+
+/**
+ * Fills every placeholder a tile template can carry.
+ *
+ * `{s}` and `{r}` are substituted as well as `{z}/{x}/{y}` because tile hosts
+ * document their URLs in the Leaflet template dialect - that is the string
+ * anyone setting NEXT_PUBLIC_MAP_TILE_URL will paste, and the configured CARTO
+ * URL is exactly that shape. Leaving them unhandled does not degrade
+ * gracefully: it emits `https://{s}.basemaps.cartocdn.com/.../54622{r}.png`, a
+ * hostname that cannot resolve, so every tile fails and the Location section
+ * renders as an empty grid with a pin floating on it. That is what shipped.
+ *
+ * `{r}` resolves to '' rather than '@2x'. These are plain server-rendered
+ * <img> tags with no knowledge of the visitor's device pixel ratio, and a
+ * retina tile is ~2.3x the bytes on a locator map this component deliberately
+ * kept cheap. A deployment that wants them can put a literal @2x in the URL.
+ */
 function tileUrl(z: number, x: number, y: number): string {
-  return TILE_URL.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
+  return TILE_URL
+    .replace('{s}', TILE_SUBDOMAINS[(x + y) % TILE_SUBDOMAINS.length])
+    .replace('{r}', '')
+    .replace('{z}', String(z))
+    .replace('{x}', String(x))
+    .replace('{y}', String(y));
 }
 
 /**
@@ -131,7 +178,14 @@ export function TileLayer({ view }: { view: TileView }) {
           />
         ))}
       </div>
-      <p className={styles.attribution}>{ATTRIBUTION}</p>
+      {/* dangerouslySetInnerHTML is safe here in the way it is rarely safe: this
+          is a NEXT_PUBLIC_ build-time constant, inlined into the bundle from a
+          file only someone who can already deploy can edit. It is code, not
+          input, and the tile licence requires the links it contains. */}
+      <p
+        className={styles.attribution}
+        dangerouslySetInnerHTML={{ __html: ATTRIBUTION }}
+      />
     </>
   );
 }

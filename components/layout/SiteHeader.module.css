@@ -317,3 +317,36 @@
     display: none;
   }
 }
+
+/* Secondary to Apply: outlined on the dark bar rather than filled, so the two
+   read as a pair with an obvious primary. Hidden below 30rem, where the bar
+   holds the wordmark, search and Apply and a fourth control would crush them -
+   the drawer carries the tour link at that size. */
+.tourButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding-inline: var(--space-moderate);
+  background-color: transparent;
+  color: var(--white);
+  border: 1px solid rgb(255 255 255 / 0.45);
+  border-radius: var(--button-radius);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast), border-color var(--duration-fast);
+}
+
+.tourButton:hover {
+  background-color: rgb(255 255 255 / 0.12);
+  border-color: var(--white);
+  text-decoration: none;
+}
+
+@media (max-width: 30rem) {
+  .tourButton {
+    display: none;
+  }
+}

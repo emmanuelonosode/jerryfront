@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, PageHeader } from '@/components/content/ContentPage';
 import { ButtonLink } from '@/components/ui/Button';
-import { Pending } from '@/components/ui/Pending';
+import {
+  PLACEHOLDER_OWNER_REPORTING,
+  PLACEHOLDER_OWNER_TERMS,
+} from '@/lib/content/placeholders';
 import styles from './owner.module.css';
 
 export const metadata: Metadata = {
@@ -38,7 +41,22 @@ export default function PropertyManagementPage() {
           </>
         }
       >
-        <Pending block>commercial terms: revenue share, contract length, and notice periods</Pending>
+        {/* INDICATIVE, AND SAID SO. Published commercial terms can be read
+            as an offer, so the qualifier below is not decoration - it is what
+            keeps a provisional fee schedule from being treated as a quote. */}
+        <dl className={styles.terms}>
+          {PLACEHOLDER_OWNER_TERMS.map((term) => (
+            <div key={term.label} className={styles.termRow}>
+              <dt className={styles.termLabel}>{term.label}</dt>
+              <dd className={styles.termValue}>{term.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className={styles.termsNote}>
+          Indicative terms for a single-family portfolio. Your actual schedule
+          is set out in the management agreement we sign with you, and larger
+          portfolios are priced individually.
+        </p>
       </ContentSection>
 
       <ContentSection
@@ -85,7 +103,14 @@ export default function PropertyManagementPage() {
         title="What you get back"
         intro={<p>What we report, how often, and through what system.</p>}
       >
-        <Pending block>owner reporting: cadence, format, and portal access</Pending>
+        <dl className={styles.terms}>
+          {PLACEHOLDER_OWNER_REPORTING.map((row) => (
+            <div key={row.label} className={styles.termRow}>
+              <dt className={styles.termLabel}>{row.label}</dt>
+              <dd className={styles.termValue}>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
       </ContentSection>
 
       <div className={styles.cta}>
