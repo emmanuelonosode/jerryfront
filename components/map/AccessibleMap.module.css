@@ -242,3 +242,48 @@
     flex: none;
   }
 }
+
+/* ---- Basemap style toggle ------------------------------------------------
+   Top-left, opposite the zoom controls, which is where every mapping product
+   puts it - so nobody has to look for it. */
+
+.styleToggle {
+  position: absolute;
+  z-index: 3;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-primary);
+  box-shadow: 0 1px 6px rgb(38 38 38 / 0.24);
+}
+
+.styleButton {
+  min-height: 32px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-out),
+    color var(--duration-fast) var(--easing-out);
+}
+
+.styleButton:hover {
+  color: var(--color-text-primary);
+}
+
+.styleButtonOn,
+.styleButtonOn:hover {
+  background-color: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+}
+
+.styleButton:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 1px;
+}

@@ -9,7 +9,7 @@ import {
   type Cluster,
   type Clusterable,
 } from '@/lib/geo';
-import { TileLayer } from './TileLayer';
+import { TileLayer, type MapStyle } from './TileLayer';
 import styles from './AccessibleMap.module.css';
 
 export type MapItem = Clusterable & {
@@ -137,6 +137,7 @@ export function AccessibleMap({
     height: typeof height === 'number' ? height : 520,
   });
   const [zoom, setZoom] = useState<number | null>(null);
+  const [mapStyle, setMapStyle] = useState<MapStyle>('map');
   const [center, setCenter] = useState<{ cx: number; cy: number } | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [focusedIndex, setFocusedIndex] = useState(0);
@@ -325,6 +326,26 @@ export function AccessibleMap({
 
   return (
     <div className={styles.wrap} style={height === '100%' ? { height: '100%' } : undefined}>
+      {/* MAP OR SATELLITE, because they answer different questions. A street
+          map is how somebody places an address; imagery is how they see
+          whether there is a yard, a pool, or a motorway behind the fence.
+          Both are keyless Esri services - see TileLayer. */}
+      <div className={styles.styleToggle} role="group" aria-label="Basemap style">
+        {(['map', 'satellite'] as MapStyle[]).map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={[styles.styleButton, mapStyle === option ? styles.styleButtonOn : '']
+              .filter(Boolean)
+              .join(' ')}
+            aria-pressed={mapStyle === option}
+            onClick={() => setMapStyle(option)}
+          >
+            {option === 'map' ? 'Map' : 'Satellite'}
+          </button>
+        ))}
+      </div>
+
       <div className={styles.toolbar}>
         <p className={styles.instructions} id="map-instructions">
           Tab into the map, then use the arrow keys to move between markers. Enter opens a
@@ -352,7 +373,7 @@ export function AccessibleMap({
       >
         {/* Basemap behind the markers. Purely decorative - the markers, their
             labels and the address text carry every bit of the meaning. */}
-        <TileLayer view={viewport} />
+        <TileLayer view={viewport} style={mapStyle} />
 
         {markers.map((marker, index) => {
           const isFocusTarget = index === safeIndex;

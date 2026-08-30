@@ -116,3 +116,27 @@ ol[role='list'] {
   white-space: nowrap;
   border: 0;
 }
+
+
+/* -----------------------------------------------------------------------------
+   Chrome the search tool opts out of.
+
+   `/homes-for-rent` is a tool, not a document: the results list keeps loading
+   as you scroll, and the six-column marketing footer under it put a newsletter
+   form and a sitemap in the middle of browsing homes. The page marks itself
+   with `data-chrome="search"` and the footer is suppressed for it.
+
+   NOT A COMPLIANCE HOLE. The page renders `SearchLegalStrip` in its place,
+   carrying the Equal Housing Opportunity mark and the non-discrimination
+   statement verbatim - so the text the fair-housing audit looks for is still
+   visible, just in one line rather than six columns.
+
+   Done here with `:has()` rather than in the layout because a Next layout
+   cannot opt out of its parent, and splitting the route into its own group
+   made BOTH layouts render - the segment is shared with
+   `/homes-for-rent/[slug]`, which does want the full footer.
+   -------------------------------------------------------------------------- */
+
+body:has(main[data-chrome='search']) > footer {
+  display: none;
+}

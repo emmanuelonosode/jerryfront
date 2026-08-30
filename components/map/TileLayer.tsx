@@ -22,28 +22,45 @@ import styles from './TileLayer.module.css';
  */
 
 /**
- * Esri's World Light Gray canvas. Free, no API key, and the right style.
+ * Basemaps. Esri's public services: free, keyless, and two of them.
  *
- * WHAT IT REPLACED AND WHY. Production pointed at CARTO's `basemaps.cartocdn.com`,
- * which now requires an API key - so every tile came back stamped
- * "API KEY REQUIRED" diagonally across the map on every listing and every
- * search. OpenStreetMap's own tiles were the fallback default here and work
- * without a key, but they are a full-colour street map where this design wants
- * a quiet grey canvas that pins read against, and their usage policy is
- * explicitly not for production traffic.
+ * WHAT THEY REPLACED. Production pointed at CARTO, which now requires an API
+ * key, so every tile came back stamped "API KEY REQUIRED" diagonally across
+ * the map. A grey canvas was the first replacement and it was too quiet: on a
+ * search page the map is the interface, and a near-blank backdrop gives a
+ * renter nothing to place a home against. A street map is what people read
+ * addresses on, and satellite is what they use to see whether there is a yard.
  *
- * Esri's canvas is grey, keyless, and measured at 3.3KB a tile against OSM's
- * 30KB and CARTO's 10.5KB - roughly a tenth of the bytes for a map that is
- * mostly a backdrop.
+ * NOTE THE AXIS ORDER: these services are `{z}/{y}/{x}`, not the usual
+ * `{z}/{x}/{y}`. Getting it the normal way round returns a perfectly working
+ * map of somewhere else entirely.
  *
- * NOTE THE AXIS ORDER: this service is `{z}/{y}/{x}`, not `{z}/{x}/{y}`.
- * Getting it the usual way round returns tiles from the wrong place, which
- * looks like a working map of somewhere else entirely.
+ * `NEXT_PUBLIC_MAP_TILE_URL` still overrides both, for the day someone buys a
+ * paid host - at which point the toggle collapses to that one style.
  */
-const DEFAULT_TILE_URL =
-  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
-const DEFAULT_ATTRIBUTION =
-  'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+export type MapStyle = 'map' | 'satellite';
+
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services';
+
+const TILE_STYLES: Record<MapStyle, { url: string; attribution: string; labels?: string }> = {
+  map: {
+    url: `${ESRI}/World_Street_Map/MapServer/tile/{z}/{y}/{x}`,
+    attribution:
+      'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+  satellite: {
+    url: `${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
+    // Imagery alone has no place names, so a renter cannot tell which suburb
+    // they are looking at. The reference layer puts boundaries and labels back
+    // over the photography.
+    labels: `${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`,
+    attribution:
+      'Imagery &copy; Esri &mdash; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+  },
+};
+
+const DEFAULT_TILE_URL = TILE_STYLES.map.url;
+const DEFAULT_ATTRIBUTION = TILE_STYLES.map.attribution;
 
 const TILE_URL = process.env.NEXT_PUBLIC_MAP_TILE_URL || DEFAULT_TILE_URL;
 /**
@@ -113,8 +130,8 @@ const TILE_SUBDOMAINS = ['a', 'b', 'c', 'd'];
  * retina tile is ~2.3x the bytes on a locator map this component deliberately
  * kept cheap. A deployment that wants them can put a literal @2x in the URL.
  */
-function tileUrl(z: number, x: number, y: number): string {
-  return TILE_URL
+function tileUrl(template: string, z: number, x: number, y: number): string {
+  return template
     .replace('{s}', TILE_SUBDOMAINS[(x + y) % TILE_SUBDOMAINS.length])
     .replace('{r}', '')
     .replace('{z}', String(z))
@@ -130,7 +147,7 @@ function tileUrl(z: number, x: number, y: number): string {
  * exactly rather than drifting a few pixels at intermediate zooms - a drift
  * that puts the pin on the wrong street.
  */
-export function tilesFor(view: TileView) {
+export function tilesFor(view: TileView, template: string = DEFAULT_TILE_URL) {
   const zoom = Math.log2(view.scale / TILE_SIZE);
   const z = Math.max(0, Math.min(19, Math.floor(zoom)));
   // Fractional zoom becomes a CSS scale, so the basemap tracks the markers
@@ -158,7 +175,7 @@ export function tilesFor(view: TileView) {
       const wrappedX = ((x % worldTiles) + worldTiles) % worldTiles;
       tiles.push({
         key: `${z}/${x}/${y}`,
-        src: tileUrl(z, wrappedX, y),
+        src: tileUrl(template, z, wrappedX, y),
         left: x * TILE_SIZE - (cxAtZ - halfW),
         top: y * TILE_SIZE - (cyAtZ - halfH),
       });
@@ -167,9 +184,21 @@ export function tilesFor(view: TileView) {
   return { tiles, scale };
 }
 
-export function TileLayer({ view }: { view: TileView }) {
+export function TileLayer({ view, style = 'map' }: { view: TileView; style?: MapStyle }) {
   if (!view.width || !view.height) return null;
-  const { tiles, scale } = tilesFor(view);
+
+  // A configured host wins over both built-in styles: someone who has paid for
+  // tiles gets those, and the toggle stops being meaningful.
+  const chosen = TILE_STYLES[style];
+  const baseUrl = process.env.NEXT_PUBLIC_MAP_TILE_URL || chosen.url;
+  const attribution = (
+    process.env.NEXT_PUBLIC_MAP_ATTRIBUTION || chosen.attribution
+  ).replace(/\\(["'])/g, '$1');
+
+  const { tiles, scale } = tilesFor(view, baseUrl);
+  const labelTiles = chosen.labels && !process.env.NEXT_PUBLIC_MAP_TILE_URL
+    ? tilesFor(view, chosen.labels).tiles
+    : null;
 
   return (
     <>
@@ -199,13 +228,35 @@ export function TileLayer({ view }: { view: TileView }) {
           />
         ))}
       </div>
+
+      {/* Place names over the photography. Satellite alone cannot tell a
+          renter which suburb they are looking at. */}
+      {labelTiles ? (
+        <div className={styles.layer} aria-hidden style={{ transform: `scale(${scale})` }}>
+          {labelTiles.map((tile) => (
+            /* eslint-disable-next-line @next/next/no-img-element -- see above */
+            <img
+              key={`label-${tile.key}`}
+              src={tile.src}
+              alt=""
+              width={TILE_SIZE}
+              height={TILE_SIZE}
+              loading="lazy"
+              decoding="async"
+              className={styles.tile}
+              style={{ left: tile.left, top: tile.top }}
+            />
+          ))}
+        </div>
+      ) : null}
+
       {/* dangerouslySetInnerHTML is safe here in the way it is rarely safe: this
           is a NEXT_PUBLIC_ build-time constant, inlined into the bundle from a
           file only someone who can already deploy can edit. It is code, not
           input, and the tile licence requires the links it contains. */}
       <p
         className={styles.attribution}
-        dangerouslySetInnerHTML={{ __html: ATTRIBUTION }}
+        dangerouslySetInnerHTML={{ __html: attribution }}
       />
     </>
   );

@@ -5,6 +5,7 @@ import { ReassuranceStrip } from '@/components/content/ReassuranceStrip';
 import { SearchResults } from '@/components/listings/SearchResults';
 import { SearchFiltersForm } from '@/components/listings/SearchFilters';
 import { SearchEmptyState } from '@/components/listings/SearchEmptyState';
+import { SearchLegalStrip } from '@/components/listings/SearchLegalStrip';
 import { ButtonLink } from '@/components/ui/Button';
 import {
   countActiveFilters,
@@ -242,6 +243,10 @@ export default async function SearchPage({
   return (
     <main
       id="main"
+      /* Suppresses the site footer for this route - see globals.css. The
+         compact legal strip at the foot of this page carries the fair-housing
+         statements the footer would otherwise be providing. */
+      data-chrome="search"
       className={[styles.mainSearch, results.length === 0 ? styles.mainEmpty : '']
         .filter(Boolean)
         .join(' ')}
@@ -291,6 +296,8 @@ export default async function SearchPage({
           />
         )}
       </div>
+
+      <SearchLegalStrip />
     </main>
   );
 }
