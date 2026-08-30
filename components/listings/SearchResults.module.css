@@ -218,3 +218,44 @@
   font-size: var(--font-size-sm);
   color: var(--color-status-error-text, var(--color-text-primary));
 }
+
+/* ---- Area scoping ---------------------------------------------------------
+   Shown when the map has narrowed the list. Sticky, because the reader scrolls
+   the results and needs to keep seeing that these are not all the homes. */
+
+.areaBar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--brand-tint);
+  color: var(--brand-text-on-tint);
+}
+
+.areaText {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.areaClear {
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: var(--rule-width) solid currentColor;
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: inherit;
+  cursor: pointer;
+}
+
+.areaClear:hover {
+  background-color: var(--color-bg-primary);
+}

@@ -7,6 +7,7 @@ import { MapPinCard } from '@/components/listings/MapPinCard';
 import { formatUsd } from '@/lib/money';
 import { computeBreakdown, pinPriceCents } from '@/lib/pricing';
 import { AVAILABILITY_LABEL, type Listing } from '@/lib/listings/types';
+import type { Bounds } from '@/lib/geo';
 import {
   DEFAULT_FILTERS,
   parseFilters,
@@ -92,6 +93,46 @@ export function SearchResults({
   const [view, setView] = useState<View>('list');
   const [appended, setAppended] = useState<Listing[]>([]);
   const [page, setPage] = useState(initialPage);
+
+  /*
+   * THE LIST FOLLOWS THE MAP once the reader moves it.
+   *
+   * Pressing a cluster zooms onto a region, and until now the cards beside it
+   * carried on listing the whole catalogue - so the map showed Orlando and the
+   * list showed everything. Two halves of one search, disagreeing.
+   *
+   * `area` holds the box the map is framing and the homes inside it. It is
+   * deliberately NOT part of `filters`: it comes from where the map happens to
+   * be pointing, so it must never reach the URL, the canonical tag or a
+   * shared link. Clearing it returns to the filter-driven list untouched.
+   */
+  const [area, setArea] = useState<{
+    bounds: Bounds;
+    results: Listing[];
+    total: number;
+  } | null>(null);
+  const [areaLoading, setAreaLoading] = useState(false);
+  const areaRequest = useRef(0);
+
+  const scopeToArea = useCallback(
+    async (bounds: Bounds) => {
+      if (!filters) return;
+      const ticket = ++areaRequest.current;
+      setAreaLoading(true);
+      try {
+        const result = await searchListings({ ...filters, page: 1 }, bounds);
+        // Panning fires faster than the network answers; only the newest
+        // request is allowed to land, or the list flickers between regions.
+        if (ticket !== areaRequest.current) return;
+        setArea({ bounds, results: result.results, total: result.total });
+      } catch {
+        if (ticket === areaRequest.current) setArea(null);
+      } finally {
+        if (ticket === areaRequest.current) setAreaLoading(false);
+      }
+    },
+    [filters],
+  );
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -110,8 +151,13 @@ export function SearchResults({
    * search engines and for anyone without JavaScript while the reader
    * experiences one continuous list.
    */
-  const all = useMemo(() => [...listings, ...appended], [listings, appended]);
-  const hasMore = page < pageCount;
+  const all = useMemo(
+    () => (area ? area.results : [...listings, ...appended]),
+    [area, listings, appended],
+  );
+  // Scrolling loads more of the FILTER results, not of an area selection - an
+  // area is a deliberate narrowing and paging past it would undo it.
+  const hasMore = area ? false : page < pageCount;
 
   const loadMoreRef = useRef<() => Promise<void>>(async () => {});
 
@@ -346,6 +392,7 @@ export function SearchResults({
               selectedId={selectedSlug}
               onActiveChange={setActiveSlug}
               onSelect={setSelectedSlug}
+              onViewportChange={scopeToArea}
               height="100%"
             />
             {selectedCard ? (
@@ -361,6 +408,29 @@ export function SearchResults({
         </div>
         <div className={styles.listPane} ref={paneRef}>
           <div className={styles.listHead}>{header}</div>
+
+          {/* SAYING SO, AND OFFERING THE WAY BACK. A list that silently
+              narrows itself when the map moves reads as homes disappearing. */}
+          {area ? (
+            <div className={styles.areaBar}>
+              <p className={styles.areaText}>
+                {areaLoading
+                  ? 'Finding homes in this area…'
+                  : `${area.total} ${area.total === 1 ? 'home' : 'homes'} in this area`}
+              </p>
+              <button
+                type="button"
+                className={styles.areaClear}
+                onClick={() => {
+                  areaRequest.current += 1;
+                  setArea(null);
+                  setAreaLoading(false);
+                }}
+              >
+                Show all homes
+              </button>
+            </div>
+          ) : null}
           <ul className={styles.grid} role="list">
             {all.map((listing, index) => (
               <li

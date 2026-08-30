@@ -489,8 +489,22 @@ export function filterQuery(filters: SearchFilters): URLSearchParams {
 
 export async function searchListings(
   filters: SearchFilters,
+  /**
+   * The map's current box, when the reader has scoped the search to a region.
+   *
+   * Passed alongside the filters rather than folded into them because it is
+   * not a filter the URL owns: it comes from where the map happens to be
+   * pointing, and it must not end up in a canonical URL or a shareable link.
+   */
+  bounds?: { north: number; south: number; east: number; west: number } | null,
 ): Promise<{ results: Listing[]; total: number; page: number; pageCount: number }> {
   const query = filterQuery(filters);
+  if (bounds) {
+    query.set('north', bounds.north.toFixed(6));
+    query.set('south', bounds.south.toFixed(6));
+    query.set('east', bounds.east.toFixed(6));
+    query.set('west', bounds.west.toFixed(6));
+  }
   const size = pageSizeFor(filters);
   query.set('page', String(filters.page));
   query.set('page_size', String(size));

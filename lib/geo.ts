@@ -33,6 +33,41 @@ export function project({ lat, lng }: LatLng): { x: number; y: number } {
   };
 }
 
+/**
+ * Web Mercator, back to a coordinate. The exact inverse of `project`.
+ *
+ * Needed because the map has to be able to say what it is LOOKING AT, not just
+ * where to draw a pin. Clicking a cluster zooms the map; without this the list
+ * beside it has no way to know which region the reader just chose, so it keeps
+ * showing the whole catalogue while the map shows one city.
+ */
+export function unproject({ x, y }: { x: number; y: number }): LatLng {
+  const lng = x * 360 - 180;
+  const n = Math.PI - 2 * Math.PI * y;
+  const lat = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+  return { lat, lng };
+}
+
+export type Bounds = { north: number; south: number; east: number; west: number };
+
+/** The geographic box a viewport currently frames. */
+export function boundsOf(vp: Viewport): Bounds {
+  const topLeft = unproject({
+    x: vp.cx - vp.width / 2 / vp.scale,
+    y: vp.cy - vp.height / 2 / vp.scale,
+  });
+  const bottomRight = unproject({
+    x: vp.cx + vp.width / 2 / vp.scale,
+    y: vp.cy + vp.height / 2 / vp.scale,
+  });
+  return {
+    north: topLeft.lat,
+    south: bottomRight.lat,
+    west: topLeft.lng,
+    east: bottomRight.lng,
+  };
+}
+
 export function toScreen(point: LatLng, vp: Viewport): { left: number; top: number } {
   const { x, y } = project(point);
   return {

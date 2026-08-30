@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  boundsOf,
   clusterByGrid,
   toScreen,
   viewportForBounds,
+  type Bounds,
   zoomToScale,
   type Cluster,
   type Clusterable,
@@ -53,6 +55,16 @@ type Props = {
   onActiveChange: (id: string | null) => void;
   activeId: string | null;
   onSelect: (id: string) => void;
+  /**
+   * What the map is currently framing.
+   *
+   * Fires only when the reader MOVED the map - a cluster press, a zoom button,
+   * a drag - never on the initial fit or a re-fit caused by the results
+   * changing. Reporting the latter would make the list narrow itself to
+   * whatever it had just loaded, which is a feedback loop rather than a
+   * search.
+   */
+  onViewportChange?: (bounds: Bounds) => void;
   /**
    * Any CSS length, not just pixels.
    *
@@ -126,6 +138,7 @@ export function AccessibleMap({
   activeId,
   onActiveChange,
   onSelect,
+  onViewportChange,
   height = 520,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -139,6 +152,16 @@ export function AccessibleMap({
   const [zoom, setZoom] = useState<number | null>(null);
   const [mapStyle, setMapStyle] = useState<MapStyle>('map');
   const [center, setCenter] = useState<{ cx: number; cy: number } | null>(null);
+
+  /*
+   * Only a reader-driven move reports a new box.
+   *
+   * `zoom`/`center` are null until somebody presses something - the initial
+   * view is derived from the items themselves. Gating on that is what stops
+   * the list narrowing to whatever it had just loaded and then re-fitting the
+   * map to that narrower set, over and over.
+   */
+  const moved = zoom !== null || center !== null;
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [announcement, setAnnouncement] = useState('');
@@ -169,6 +192,18 @@ export function AccessibleMap({
     () => clusterByGrid(items, viewport, 64),
     [items, viewport],
   );
+
+  // Reported after paint rather than during render, and only once the reader
+  // has actually moved the map.
+  const reportRef = useRef(onViewportChange);
+  useEffect(() => {
+    reportRef.current = onViewportChange;
+  }, [onViewportChange]);
+
+  useEffect(() => {
+    if (!moved || !viewport.width || !viewport.height) return;
+    reportRef.current?.(boundsOf(viewport));
+  }, [moved, viewport]);
 
   /**
    * Flatten clusters into the ordered list of focusable markers.
@@ -253,6 +288,36 @@ export function AccessibleMap({
   const openCluster = useCallback(
     (cluster: Cluster<MapItem>, index: number) => {
       const count = cluster.members.length;
+
+      /*
+       * EVERY CLUSTER PRESS SCOPES THE LIST, whatever the map then does with
+       * it. A big group zooms and a small one expands in place, and driving
+       * this off the viewport alone meant only the first of those reached the
+       * results - press a group of two and the map opened it while the list
+       * carried on showing the whole catalogue.
+       *
+       * The box comes from the members themselves rather than from the
+       * viewport, so it is exactly the homes in the circle that was pressed.
+       * Padded slightly because a cluster of one is a point, and a zero-area
+       * box matches nothing.
+       */
+      const lats = cluster.members.map((m) => m.lat);
+      const lngs = cluster.members.map((m) => m.lng);
+      /*
+       * A HAIR OF PADDING, NOT A HALO. 0.02 degrees is over two kilometres,
+       * and in a dense metro that turned a circle labelled "2 homes" into a
+       * list of 56 - the list contradicting the number the reader had just
+       * pressed. 0.0015 is about 150 metres: enough that a cluster of one is
+       * a box rather than a zero-area point that matches nothing, and tight
+       * enough that the list is the homes in the circle.
+       */
+      const pad = 0.0015;
+      reportRef.current?.({
+        north: Math.max(...lats) + pad,
+        south: Math.min(...lats) - pad,
+        east: Math.max(...lngs) + pad,
+        west: Math.min(...lngs) - pad,
+      });
 
       if (count > MAX_EXPAND) {
         // Convert the cluster's screen centroid back to world coordinates so

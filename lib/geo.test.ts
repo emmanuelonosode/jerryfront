@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { clusterByGrid, MAX_ZOOM, MIN_ZOOM, viewportForBounds, zoomToScale } from './geo.ts';
+import { boundsOf, clusterByGrid, MAX_ZOOM, MIN_ZOOM, project, unproject, viewportForBounds, zoomToScale } from './geo.ts';
 
 
 describe('zoom is bounded', () => {
@@ -77,5 +77,36 @@ describe('the whole catalogue fits through the projection', () => {
       vp,
     );
     assert.deepEqual(clusters.flatMap((c) => c.members.map((m) => m.id)), ['near']);
+  });
+});
+
+describe('viewport to bounds', () => {
+  test('unproject is the exact inverse of project', () => {
+    // The map reports what it is framing so the results list can follow it.
+    // A round trip that drifts puts homes just outside the box the reader can
+    // see, which reads as "the map and the list disagree".
+    for (const point of [
+      { lat: 36.1627, lng: -86.7816 },
+      { lat: 25.7617, lng: -80.1918 },
+      { lat: 47.6062, lng: -122.3321 },
+      { lat: 0, lng: 0 },
+    ]) {
+      const back = unproject(project(point));
+      assert.ok(Math.abs(back.lat - point.lat) < 1e-9, `lat ${point.lat}`);
+      assert.ok(Math.abs(back.lng - point.lng) < 1e-9, `lng ${point.lng}`);
+    }
+  });
+
+  test('bounds contain the points the viewport was built to frame', () => {
+    const points = [
+      { id: 'a', lat: 36.1, lng: -86.8 },
+      { id: 'b', lat: 35.9, lng: -86.6 },
+    ];
+    const vp = viewportForBounds(points, 800, 600);
+    const box = boundsOf(vp);
+    for (const p of points) {
+      assert.ok(p.lat <= box.north && p.lat >= box.south, `lat of ${p.id}`);
+      assert.ok(p.lng >= box.west && p.lng <= box.east, `lng of ${p.id}`);
+    }
   });
 });
