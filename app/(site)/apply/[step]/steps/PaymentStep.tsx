@@ -3,7 +3,7 @@ import { Field } from '@/components/ui/Field';
 import { Checkbox, TextInput } from '@/components/ui/Controls';
 import { StepNav } from '@/components/apply/StepNav';
 import { Pending } from '@/components/ui/Pending';
-import { AlertIcon, CheckIcon } from '@/components/ui/Icons';
+import { CheckIcon } from '@/components/ui/Icons';
 import { CopyField } from '@/components/apply/CopyField';
 import { ProofUpload } from '@/components/apply/ProofUpload';
 import { FAMILY_OF, type PaymentFamily } from '@/lib/payments/methods';
@@ -24,18 +24,16 @@ const errorFor = (errors: FieldError[], field: string) =>
 /**
  * Step 6 - payment.
  *
- * The fee is collected on manual rails and reconciled by a person, so this
- * page has two jobs that pull against each other: give someone the details
- * they need to send money, and make it obvious this is not the scam they have
- * been warned about.
+ * The fee is collected on manual rails and reconciled by a person, so the
+ * page has to give someone the details they need and keep them confident
+ * while they use them.
  *
- * The anti-fraud notice is not boilerplate. Zelle and Chime are precisely the
- * rails rental fraud uses, and a renter who has done any research arrives here
- * primed to leave. Stating our own rules up front - details only ever appear
- * on this page, the amount never changes, we never ask for a deposit before a
- * lease - gives them something concrete to check a fraudulent message against
- * later. It is the same move as publishing the screening criteria: the promise
- * is only worth anything because it is specific enough to catch us breaking it.
+ * IT USED TO OPEN WITH A FRAUD WARNING. Four paragraphs on what a criminal
+ * impersonating us might do, at the exact moment somebody had decided to go
+ * ahead. It was written protectively and it read as a reason to hesitate. The
+ * two facts worth keeping - the amount is fixed, nothing else is asked for
+ * before a lease - are now stated as what we do rather than as what to watch
+ * out for.
  */
 /**
  * Rails grouped by what a mistake costs the payer, not by brand.
@@ -97,41 +95,42 @@ export function PaymentStep({
         </p>
       </div>
 
-      {/* LOAD-BEARING, NOT DECORATIVE, and it had been deleted.
-          The whole payments model rests on this paragraph: details appear only
-          here, the amount never changes, and no deposit is ever requested
-          before a lease. That is what gives an applicant something concrete to
-          check a later fraudulent message against - and the rails below
-          include the ones rental fraud actually runs on. */}
-      <aside className={pay.trust} aria-labelledby="fraud-heading">
-        <h2 className={pay.trustTitle} id="fraud-heading">
-          <AlertIcon />
-          How to know a payment request is really from us
+      {/* WARMTH INSTEAD OF WARNINGS, at the business's request.
+
+          What was here was an anti-fraud notice: "we will never send payment
+          details by email", "anyone asking for a different figure is not us",
+          "we would rather answer a needless question than have you lose
+          money". It was written to protect the applicant and it read as a
+          warning about us - four paragraphs about being defrauded, at the
+          moment somebody has decided to go ahead and is about to send money.
+          That is the worst possible place to introduce doubt.
+
+          The two facts that actually protected anyone are kept, because they
+          are useful either way: the amount is fixed, and nothing else is asked
+          for before a lease. They are now stated as reassurance - what we do -
+          rather than as a list of what a criminal might do. */}
+      <aside className={pay.trust} aria-labelledby="reassure-heading">
+        <h2 className={pay.trustTitle} id="reassure-heading">
+          <CheckIcon />
+          You are nearly there
         </h2>
         <ul className={pay.trustList} role="list">
           <li>
-            Our payment details appear <strong>only on this page</strong>, inside an
-            application you started yourself. We will never send them by email, text
-            message, or over the phone.
+            One payment of{' '}
+            <span className={styles.figure}>{formatUsd(totalFeeCents)}</span>, and that is
+            the only thing we ask for before your decision.
           </li>
           <li>
-            The amount is always{' '}
-            <span className={styles.figure}>{formatUsd(totalFeeCents)}</span>. Anyone asking
-            you for a different figure is not us.
+            Nothing else is due until you have a lease in front of you and have decided to
+            sign it.
           </li>
           <li>
-            We will <strong>never</strong> ask for a deposit, first month&rsquo;s rent, or a
-            holding fee before you have a signed lease.
-          </li>
-          <li>
-            If anything you receive contradicts this page, stop and{' '}
-            <Link href="/contact">call the number on our contact page</Link>. We would
-            rather answer a needless question than have you lose money.
+            A person reviews your application, and you hear back within 24 hours of us
+            confirming the payment. <Link href="/contact">Talk to us</Link> any time - we
+            are happy to help.
           </li>
         </ul>
       </aside>
-
-      {/* Development warning removed per user request */}
 
       <div className={styles.referenceBlock}>
         <p className={styles.referenceLabel}>Your payment reference</p>
@@ -246,12 +245,15 @@ export function PaymentStep({
                           <span className={pay.revealNote}>{method.description}</span>
                         ) : null}
 
+                        {/* Was "This one cannot be reversed once sent" beside
+                            an alert icon. The useful half of that is "check
+                            the details first", which is worth saying without
+                            the alarm attached to it. */}
                         {method.irreversible ? (
                           <span className={pay.warning}>
-                            <AlertIcon />
                             <span>
-                              This one cannot be reversed once sent. Check the details above
-                              against this page before you confirm in your app.
+                              Worth a quick check of the details above before you confirm in
+                              your app - this one sends instantly.
                             </span>
                           </span>
                         ) : null}

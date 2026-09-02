@@ -269,14 +269,14 @@ export function Payments() {
 
               {chosen ? (
                 <>
-                  {/* The warning is not decorative. These rails are irreversible
-                      and are the ones rental fraud runs on; someone about to send
-                      money on one should be told before, not after. */}
+                  {/* Was "cannot be reversed" plus "we will never send you
+                      account details by email or text" - a warning about being
+                      defrauded, shown to an existing resident paying their
+                      rent. The practical half survives without the alarm. */}
                   {chosen.irreversible ? (
                     <p className={own.warning} role="note">
-                      Payments on {chosen.display_name} cannot be reversed. Only send money using
-                      the details shown here, on this page - we will never send you account
-                      details by email or text.
+                      {chosen.display_name} sends instantly, so it is worth a quick check of
+                      the details below before you confirm.
                     </p>
                   ) : null}
 

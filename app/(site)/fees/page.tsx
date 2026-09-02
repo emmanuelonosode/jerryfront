@@ -129,11 +129,15 @@ export default function FeesPage() {
         lead="All of them, with the amount, when it is taken, and what it is for. If a charge is not on this page, we do not make it."
       />
 
+      {/* WRITTEN FOR A RENTER, NOT FOR WHOEVER DEPLOYS. This said "the figures
+          below are development placeholders and this page must not be
+          published" - an instruction to an engineer, shown on a live page in
+          the sitemap to people working out what renting here costs. */}
       {FEE_SCHEDULE_PENDING ? (
         <Pending block>
-          confirmed fee amounts from the business. Until they are set in the environment,
-          the figures below are development placeholders and this page must not be
-          published
+          the final amounts with our finance team. The figures below are indicative while
+          that is completed - ask us and we will confirm any of them in writing before you
+          pay anything
         </Pending>
       ) : null}
 

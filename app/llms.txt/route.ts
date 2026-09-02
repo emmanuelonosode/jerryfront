@@ -158,7 +158,7 @@ applicant**, not fixed in advance.
   sex, familial status, national origin, disability, or any other protected
   class.
 - We never request a deposit, first month's rent or a holding fee before a
-  lease is signed, and we never send payment details by email, text or phone.
+  lease is signed. Payment details are shown in the application itself.
 
 ## Key pages
 

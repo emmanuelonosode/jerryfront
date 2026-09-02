@@ -35,7 +35,11 @@ export const CURRENT_FEE_SCHEDULE: FeeScheduleVersion = {
       label: 'Application fee',
       cadence: 'one-time',
       condition: 'required',
-      amount: { kind: 'flat', cents: FEE_AMOUNTS.application ?? dollars(55) },
+      // $35 per adult applicant, confirmed by the business. Still written as
+      // a fallback behind the env var: `NEXT_PUBLIC_FEE_APPLICATION` is what
+      // production reads, and a number in two places is a number that will
+      // eventually disagree with itself.
+      amount: { kind: 'flat', cents: FEE_AMOUNTS.application ?? dollars(35) },
       reason:
         'Per adult applicant, 18 and over. Covers the screening report. You see this amount before you reach the payment step, never at it.',
     },
