@@ -218,9 +218,14 @@ export const STALE_AFTER_DAYS = 14;
 /**
  * How long a leased home stays reachable before it 404s.
  *
+ * SEVEN DAYS, set by the business. Long enough that somebody following a link
+ * from a text message a few days old still lands on "this one is gone, here
+ * are three like it" rather than a dead end, and short enough that the
+ * catalogue reflects what is actually on the market. It was 45.
+ *
  * The brief requires leased homes to keep working rather than disappear:
  * someone following a link from a text message or a saved tab should land on
  * "this one is gone, here are three like it" instead of a dead end. That is a
  * conversion opportunity and a trust signal at the same time.
  */
-export const LEASED_GRACE_DAYS = 45;
+export const LEASED_GRACE_DAYS = 7;
