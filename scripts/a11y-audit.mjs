@@ -86,6 +86,25 @@ const AUDIT = `(() => {
     if (!el.isConnected) return false;
     const s = getComputedStyle(el);
     if (s.display === 'none' || s.visibility === 'hidden') return false;
+    /*
+      NOT IN THE ACCESSIBILITY TREE IS NOT A FINDING.
+
+      This checked CSS only, so an element deliberately removed from the tree
+      with aria-hidden - the correct treatment for a redundant link wrapping a
+      decorative image, where a named link to the same place sits beside it -
+      was still reported as "link with no accessible name". Sixty-eight of
+      them on the home page, all of them already fixed. An audit that keeps
+      failing correct code teaches people to ignore it.
+
+      A closest() lookup rather than a check on the element itself:
+      aria-hidden applies to the whole subtree, so a span inside a hidden
+      wrapper is hidden too. The img rule below already honours the
+      attribute; this makes the rest of the file agree with it.
+
+      No backticks in this comment - the whole block runs inside a template
+      literal, and one would close it.
+    */
+    if (el.closest('[aria-hidden="true"]')) return false;
     return el.offsetParent !== null || s.position === 'fixed';
   };
 
