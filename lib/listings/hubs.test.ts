@@ -25,18 +25,38 @@ function listing(city: string, state: string, availability: Availability = 'avai
 }
 
 describe('hub index threshold', () => {
-  test('a city clears the threshold at three rentable homes', () => {
-    const hubs = buildHubs([
-      listing('Memphis', 'TN'), listing('Memphis', 'TN'), listing('Memphis', 'TN'),
-    ]);
+  /*
+   * THE RULE CHANGED WITH THE PAGE. These asserted the old threshold of
+   * three, which was correct when a city hub was a heading, six cards and a
+   * "TO CONFIRM" block - at two homes there was genuinely nothing on it. The
+   * hub is now written from the market's own inventory, so a two-home city
+   * carries a rent table, its ZIPs, a size range and eight answered questions
+   * about that city. One rentable home is enough to have something true to
+   * say; none is not.
+   */
+  test('one rentable home is enough to be worth indexing', () => {
+    const hubs = buildHubs([listing('Memphis', 'TN')]);
     assert.equal(hubs[0].cities[0].liveCount, HUB_INDEX_THRESHOLD);
     assert.equal(hubs[0].cities[0].indexable, true);
   });
 
-  test('a thin city renders but stays out of the index', () => {
+  test('a small city is indexed, not excluded for being small', () => {
     const hubs = buildHubs([listing('Jackson', 'MS'), listing('Jackson', 'MS')]);
     const jackson = hubs[0].cities[0];
     assert.equal(jackson.liveCount, 2);
+    assert.equal(jackson.indexable, true);
+    assert.equal(jackson.listings!.length, 2);
+  });
+
+  test('a city with nothing rentable renders but stays out of the index', () => {
+    // No rentable inventory means no stats, so the page has no rent table, no
+    // ZIP list and no FAQ - a soft 404 wearing a city name.
+    const hubs = buildHubs([
+      listing('Jackson', 'MS', 'leased'),
+      listing('Jackson', 'MS', 'application-pending'),
+    ]);
+    const jackson = hubs[0].cities[0];
+    assert.equal(jackson.liveCount, 0);
     assert.equal(jackson.indexable, false);
     // The page still exists - someone with the link lands somewhere useful.
     assert.equal(jackson.listings!.length, 2);
@@ -46,11 +66,10 @@ describe('hub index threshold', () => {
     // A hub whose inventory is entirely pending would disappoint every visitor
     // it acquired.
     const hubs = buildHubs([
-      listing('Memphis', 'TN', 'available'),
       listing('Memphis', 'TN', 'application-pending'),
       listing('Memphis', 'TN', 'application-pending'),
     ]);
-    assert.equal(hubs[0].cities[0].liveCount, 1);
+    assert.equal(hubs[0].cities[0].liveCount, 0);
     assert.equal(hubs[0].cities[0].indexable, false);
   });
 
@@ -77,14 +96,17 @@ describe('state hubs', () => {
   test('a state is indexable when any of its cities is', () => {
     const hubs = buildHubs([
       listing('Memphis', 'TN'), listing('Memphis', 'TN'), listing('Memphis', 'TN'),
-      listing('Nashville', 'TN'),
+      listing('Nashville', 'TN', 'leased'),
     ]);
     assert.equal(hubs[0].indexable, true);
     assert.equal(hubs[0].cities.find((c) => c.city === 'Nashville')?.indexable, false);
   });
 
-  test('a state of only thin cities is not an index page for thin pages', () => {
-    const hubs = buildHubs([listing('Jackson', 'MS'), listing('Biloxi', 'MS')]);
+  test('a state of only empty cities is not an index page for empty pages', () => {
+    const hubs = buildHubs([
+      listing('Jackson', 'MS', 'leased'),
+      listing('Biloxi', 'MS', 'application-pending'),
+    ]);
     assert.equal(hubs[0].indexable, false);
   });
 
@@ -101,7 +123,7 @@ describe('sitemap paths', () => {
   test('only indexable hubs are emitted', () => {
     const paths = indexableHubPaths([
       listing('Memphis', 'TN'), listing('Memphis', 'TN'), listing('Memphis', 'TN'),
-      listing('Jackson', 'MS'),
+      listing('Jackson', 'MS', 'leased'),
     ]);
     assert.deepEqual(paths, ['/rentals/tn', '/rentals/tn/memphis']);
     assert.ok(!paths.some((p) => p.includes('jackson')));

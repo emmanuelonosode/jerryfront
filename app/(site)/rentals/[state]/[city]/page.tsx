@@ -10,12 +10,7 @@ import { FaqAccordion } from '@/components/listings/FaqAccordion';
 import { ButtonLink } from '@/components/ui/Button';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd, faqJsonLd } from '@/lib/seo/structuredData';
-import {
-  HUB_INDEX_THRESHOLD,
-  buildHubIndex,
-  findCityInIndex,
-  findStateInIndex,
-} from '@/lib/listings/hubs';
+import { buildHubIndex, findCityInIndex, findStateInIndex } from '@/lib/listings/hubs';
 import {
   bedLabel,
   commonestBand,
@@ -370,16 +365,6 @@ export default async function CityHubPage({
               </li>
             </ul>
 
-            {!hub.indexable ? (
-              <p className={styles.thinNote}>
-                This page currently has{' '}
-                <span className={styles.figure}>{hub.liveCount}</span> available{' '}
-                {hub.liveCount === 1 ? 'home' : 'homes'}, below the{' '}
-                <span className={styles.figure}>{HUB_INDEX_THRESHOLD}</span> needed to enter the
-                sitemap, so it is excluded from search indexes until inventory recovers. It stays
-                reachable for anyone with the link.
-              </p>
-            ) : null}
           </section>
         ) : null}
 

@@ -12,14 +12,38 @@ import type { Listing } from './types.ts';
  * new-york, oklahoma, kansas, and indiana. Nesting the city under its state
  * fixes it permanently and gives real breadcrumbs.
  *
- * AN INDEX THRESHOLD. Nationwide, 500+ homes across many metros averages
- * single digits per city. A hub with nothing on it is a thin page that
- * disappoints every visitor it acquires and drags site-wide quality down with
- * it. So index eligibility is earned per hub, evaluated against live data at
- * sitemap generation, and self-corrects as inventory turns.
+ * AN INDEX THRESHOLD. A hub with nothing on it is a thin page that disappoints
+ * every visitor it acquires and drags site-wide quality down with it. So index
+ * eligibility is earned per hub, evaluated against live data at sitemap
+ * generation, and self-corrects as inventory turns.
  */
 
-export const HUB_INDEX_THRESHOLD = 3;
+/**
+ * ONE HOME. It was three, and three was right at the time.
+ *
+ * WHY IT WAS THREE. The city hub used to be a heading, one sentence, six
+ * cards and a visible "TO CONFIRM: genuinely local content" block. At two
+ * homes that page really was thin - there was nothing on it a search engine
+ * had not seen on the other 680 - and keeping it out of the index was the
+ * correct call.
+ *
+ * WHY IT IS NOW ONE. The hub is written from the market's own inventory
+ * (`lib/listings/cityStats.ts`): what each size actually rents for here, the
+ * ZIPs, the size range, the pet and voucher position, eight FAQ answers built
+ * from those same numbers, and a named person to call. Measured on the live
+ * site, Kings Mountain NC - TWO homes - renders 1,016 words of content
+ * specific to Kings Mountain. It is not a thin page any more, and 204 hubs
+ * were being excluded from the index by a rule written about a page that no
+ * longer exists.
+ *
+ * WHY IT IS NOT ZERO. A city with no rentable homes has no stats, so it has
+ * no rent table, no ZIP list and no FAQ - it renders "nothing available this
+ * week" and little else, and 38 of those pages would be near-identical to
+ * each other. That is a soft 404 wearing a city name, and it is the thing
+ * this threshold exists to catch. Such a hub still RENDERS for anyone with
+ * the link, and rejoins the index by itself the moment one home lists there.
+ */
+export const HUB_INDEX_THRESHOLD = 1;
 
 export type CityHub = {
   slug: string;
