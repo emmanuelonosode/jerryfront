@@ -120,57 +120,43 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
         </Field>
       </fieldset>
 
-      {/* ---- Identity ------------------------------------------------------ */}
+      {/* ---- Date of birth ------------------------------------------------- */}
       <fieldset className={styles.group}>
-        <legend className={styles.groupTitle}>Identity</legend>
+        <legend className={styles.groupTitle}>Date of birth</legend>
+        {/* Was "Identity" and "these four run the screening report" - true
+            when the SSN, maiden name and licence sat here, and left describing
+            one field once they moved to review. */}
         <p className={styles.groupHint}>
-          These four run the screening report described on our criteria page. They are
-          stored with field-level encryption, never shown back to you, and never appear in
-          a status view.
+          Needed to confirm you are over 18 and to match the screening report to the
+          right person. Stored with field-level encryption and never shown back to you.
         </p>
 
-        <div className={styles.pair}>
-          <Field name="dateOfBirth" label="Date of birth" required error={errorFor(errors, 'dateOfBirth')}>
-            {(p) => (
-              <TextInput {...p} figure type="date" name="dateOfBirth" autoComplete="bday" max="2006-12-31" defaultValue={draft.dateOfBirth ?? ''} />
-            )}
-          </Field>
-          <Field name="ssn" label="Social Security Number" required>
-            {(p) => (
-              <TextInput
-                {...p}
-                figure
-                name="ssn"
-                inputMode="numeric"
-                autoComplete="off"
-                placeholder="XXX-XX-XXXX"
-                defaultValue={draft.ssn ?? ''}
-              />
-            )}
-          </Field>
-        </div>
+        {/*
+          THE SCREENING IDENTIFIERS ARE NOT ON THIS SCREEN ANY MORE.
 
-        <Field name="mothersMaidenName" label="Mother's maiden name" required hint="A verification question, the same one a bank asks.">
+          Social Security Number, mother's maiden name and driver's licence
+          were all marked required HERE - the first screen of the first step,
+          before anybody had committed to anything. That is the single
+          highest-friction thing a form can do, and on a site whose whole
+          position is being the real one in a category full of fraud it is
+          also the exact shape of the thing it warns people about: a stranger
+          asking for your SSN before they have told you anything.
+
+          It was not even enforced. `validateStep('details')` requires five
+          fields - name, email, phone and date of birth - and never looked at
+          any of the identifiers, so the form was gating people out of a step
+          the system was happy to accept.
+
+          They now sit on the review step, immediately before payment, where
+          the person has seen the home, the fee and the criteria, and where
+          the reason to ask is self-evident. Same fields, same validation,
+          collected at the point they are actually used.
+        */}
+        <Field name="dateOfBirth" label="Date of birth" required error={errorFor(errors, 'dateOfBirth')}>
           {(p) => (
-            <TextInput {...p} name="mothersMaidenName" autoComplete="off" defaultValue={draft.mothersMaidenName ?? ''} />
+            <TextInput {...p} figure type="date" name="dateOfBirth" autoComplete="bday" max="2006-12-31" defaultValue={draft.dateOfBirth ?? ''} />
           )}
         </Field>
-
-        <div className={styles.pair}>
-          <Field name="driversLicense" label="Driver's licence or State ID" required>
-            {(p) => (
-              <TextInput {...p} name="driversLicense" autoComplete="off" defaultValue={draft.driversLicense ?? ''} />
-            )}
-          </Field>
-          <Field name="driversLicenseState" label="Issuing state" required>
-            {(p) => (
-              <Select {...p} name="driversLicenseState" defaultValue={draft.driversLicenseState ?? ''}>
-                <option value="" disabled>Select state…</option>
-                {US_STATES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </Select>
-            )}
-          </Field>
-        </div>
       </fieldset>
 
       {/* ---- Current address ----------------------------------------------- */}

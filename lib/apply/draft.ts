@@ -277,6 +277,41 @@ export function validateStep(draft: ApplicationDraft, step: StepSlug): FieldErro
     }
 
     case 'review': {
+      /*
+       * THE SCREENING IDENTIFIERS ARE ENFORCED HERE, not on step one.
+       *
+       * They were required by the FORM on the first screen and by nothing at
+       * all in this file - so the markup gated people out of a step the
+       * system was happy to accept, while an application could still reach
+       * staff with no way to screen it. Both halves are now in the same
+       * place: asked at review, immediately before payment, and checked here
+       * so nothing gets past without them.
+       */
+      if (!draft.ssn?.trim()) {
+        errors.push({
+          field: 'ssn',
+          message:
+            'Enter your Social Security Number. The screening report on our criteria page is run against it.',
+        });
+      }
+      if (!draft.mothersMaidenName?.trim()) {
+        errors.push({
+          field: 'mothersMaidenName',
+          message: "Enter your mother's maiden name - it is the identity check on the report.",
+        });
+      }
+      if (!draft.driversLicense?.trim()) {
+        errors.push({
+          field: 'driversLicense',
+          message: 'Enter your driver’s licence or state ID number.',
+        });
+      }
+      if (!draft.driversLicenseState?.trim()) {
+        errors.push({
+          field: 'driversLicenseState',
+          message: 'Choose the state that issued your ID.',
+        });
+      }
       if (!draft.disclosuresAcceptedAt) {
         errors.push({
           field: 'disclosures',

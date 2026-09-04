@@ -41,8 +41,29 @@ const filledHistory = {
   hasPriorEviction: false,
 };
 
+/**
+ * The screening identifiers belong to the REVIEW step now, not to details.
+ *
+ * They were required by the form on step one and by nothing in `draft.ts`,
+ * so an application could reach staff with no way to screen it while a
+ * would-be applicant was blocked on the first screen. Both halves moved to
+ * review, which is why they are here and not in `filledDetails`.
+ */
+const filledIdentifiers = {
+  ssn: '123-45-6789',
+  mothersMaidenName: 'Okafor',
+  driversLicense: 'D1234567',
+  driversLicenseState: 'NC',
+};
+
 const complete = () =>
-  draft({ ...filledDetails, ...filledIncome, ...filledHistory, disclosuresAcceptedAt: NOW.toISOString() });
+  draft({
+    ...filledDetails,
+    ...filledIncome,
+    ...filledHistory,
+    ...filledIdentifiers,
+    disclosuresAcceptedAt: NOW.toISOString(),
+  });
 
 describe('step registry', () => {
   test('steps are named, never numbered', () => {
@@ -188,6 +209,23 @@ describe('per-step validation', () => {
 
   test('a complete draft passes review', () => {
     assert.equal(isStepComplete(complete(), 'review'), true);
+  });
+
+  test('the screening identifiers are required at review, not on step one', () => {
+    // Step one must not gate on them - that was the drop-off.
+    const early = draft(filledDetails);
+    assert.equal(isStepComplete(early, 'details'), true);
+
+    // But nothing reaches screening without them.
+    for (const field of ['ssn', 'mothersMaidenName', 'driversLicense', 'driversLicenseState']) {
+      const d = complete();
+      (d as unknown as Record<string, unknown>)[field] = null;
+      const errors = validateStep(d, 'review');
+      assert.ok(
+        errors.some((e) => e.field === field),
+        `review should reject a draft with no ${field}`,
+      );
+    }
   });
 });
 

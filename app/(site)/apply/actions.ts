@@ -126,10 +126,16 @@ export async function applyStepUpdate(
     changes.phone = readString(formData, 'phone');
     changes.dateOfBirth = readString(formData, 'dateOfBirth');
     changes.maritalStatus = readString(formData, 'maritalStatus');
-    changes.mothersMaidenName = readString(formData, 'mothersMaidenName');
-    changes.ssn = readString(formData, 'ssn');
-    changes.driversLicense = readString(formData, 'driversLicense');
-    changes.driversLicenseState = readString(formData, 'driversLicenseState');
+    /*
+     * THE SCREENING IDENTIFIERS ARE READ ON THE REVIEW STEP, NOT HERE.
+     *
+     * They used to be inputs on this form and were read back here. Now that
+     * they live on the review step, reading them here would be actively
+     * destructive rather than merely useless: `readString` returns null for a
+     * field that is not in the submitted form, so every save of step one
+     * would blank an SSN the applicant had already entered at review, and it
+     * would do it silently.
+     */
     changes.currentAddress = readString(formData, 'currentAddress');
     changes.currentCity = readString(formData, 'currentCity');
     changes.currentState = readString(formData, 'currentState');
@@ -311,6 +317,11 @@ export async function applyStepUpdate(
   }
 
   if (step === 'review') {
+    // Asked here now - see the note on the details branch and on ReviewStep.
+    changes.ssn = readString(formData, 'ssn');
+    changes.mothersMaidenName = readString(formData, 'mothersMaidenName');
+    changes.driversLicense = readString(formData, 'driversLicense');
+    changes.driversLicenseState = readString(formData, 'driversLicenseState');
     changes.disclosuresAcceptedAt = formData.get('disclosures') === 'yes' ? new Date().toISOString() : null;
   }
 

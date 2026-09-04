@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { Checkbox } from '@/components/ui/Controls';
+import { Checkbox, TextInput, Select } from '@/components/ui/Controls';
+import { Field } from '@/components/ui/Field';
+import { US_STATES } from '@/lib/states';
 import { StepNav } from '@/components/apply/StepNav';
 import { formatUsd } from '@/lib/money';
 import { totalMonthlyIncomeCents, type ApplicationDraft, type FieldError } from '@/lib/apply/draft';
@@ -15,6 +17,9 @@ const INCOME_LABEL: Record<string, string> = {
   support: 'Support payments',
   other: 'Other',
 };
+
+const errorFor = (errors: FieldError[], field: string) =>
+  errors.find((e) => e.field === field)?.message;
 
 function Row({ label, value, href }: { label: string; value: React.ReactNode; href?: string }) {
   return (
@@ -155,6 +160,83 @@ export async function ReviewStep({ draft, errors }: { draft: ApplicationDraft; e
           href="/apply/household"
         />
       </dl>
+
+      {/* ---- Screening identifiers ------------------------------------------
+          ASKED HERE, NOT ON THE FIRST SCREEN.
+
+          These were required fields on step one, before anyone had committed
+          to anything - a stranger asking for a Social Security Number as its
+          opening question, which is the exact shape of the thing this site
+          exists to be the opposite of. They belong at the point they are used
+          and at the point the person has decided to go ahead: they have seen
+          the home, the fee and the criteria, and the next button charges
+          money.
+
+          Required from here on, and `validateStep('review')` enforces it, so
+          nothing reaches screening without them.
+          ------------------------------------------------------------------ */}
+      <fieldset className={styles.group}>
+        <legend className={styles.groupTitle}>What we run the screening with</legend>
+        <p className={styles.groupHint}>
+          The report described on our{' '}
+          <Link href="/qualifications">criteria page</Link> is run against these four.
+          They are stored with field-level encryption, never shown back to you, never
+          appear in a status view, and are not shared with the property owner.
+        </p>
+
+        <div className={styles.pair}>
+          <Field name="ssn" label="Social Security Number" required error={errorFor(errors, 'ssn')}>
+            {(p) => (
+              <TextInput
+                {...p}
+                figure
+                name="ssn"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="XXX-XX-XXXX"
+                defaultValue={draft.ssn ?? ''}
+              />
+            )}
+          </Field>
+          <Field
+            name="mothersMaidenName"
+            label="Mother's maiden name"
+            required
+            hint="A verification question, the same one a bank asks."
+            error={errorFor(errors, 'mothersMaidenName')}
+          >
+            {(p) => (
+              <TextInput {...p} name="mothersMaidenName" autoComplete="off" defaultValue={draft.mothersMaidenName ?? ''} />
+            )}
+          </Field>
+        </div>
+
+        <div className={styles.pair}>
+          <Field
+            name="driversLicense"
+            label="Driver's licence or State ID"
+            required
+            error={errorFor(errors, 'driversLicense')}
+          >
+            {(p) => (
+              <TextInput {...p} name="driversLicense" autoComplete="off" defaultValue={draft.driversLicense ?? ''} />
+            )}
+          </Field>
+          <Field
+            name="driversLicenseState"
+            label="Issuing state"
+            required
+            error={errorFor(errors, 'driversLicenseState')}
+          >
+            {(p) => (
+              <Select {...p} name="driversLicenseState" defaultValue={draft.driversLicenseState ?? ''}>
+                <option value="" disabled>Select state…</option>
+                {US_STATES.map((st) => <option key={st.value} value={st.value}>{st.label}</option>)}
+              </Select>
+            )}
+          </Field>
+        </div>
+      </fieldset>
 
       <section className={styles.disclosures} aria-labelledby="disclosures-heading">
         <h2 className={styles.disclosuresTitle} id="disclosures-heading">
