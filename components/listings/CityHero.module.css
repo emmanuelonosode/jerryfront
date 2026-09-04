@@ -1,0 +1,227 @@
+/* ---- The hero ------------------------------------------------------------
+   Full-bleed: it breaks out of the page container so the photograph runs edge
+   to edge, which is the entire point of having one.
+   ------------------------------------------------------------------------ */
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-end;
+  min-height: 26rem;
+  padding-block: var(--space-6);
+  overflow: hidden;
+  color: var(--color-text-inverse, #ffffff);
+  /* The floor under the photograph. Also the whole hero when a market has no
+     usable image, which is why it is a real colour and not transparent. */
+  background: var(--color-bg-inverse, #101418);
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The photograph is decoration behind text; muting it slightly is what buys
+     the contrast ratio back without a heavier scrim. */
+  filter: saturate(1.05);
+}
+
+/*
+  Two stops, not one. A flat overlay dims the picture everywhere equally,
+  which either washes the image out or leaves the text short of contrast; a
+  gradient keeps the top of the photograph bright and puts the weight exactly
+  where the type sits.
+*/
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgb(8 12 16 / 55%) 0%,
+      rgb(8 12 16 / 62%) 35%,
+      rgb(8 12 16 / 88%) 100%
+    );
+}
+
+/*
+  Matches `Container width="wide"` exactly - same max-width, same gutter, same
+  two breakpoints. The hero is full-bleed but its TEXT has to start on the same
+  vertical line as every section under it; a hero indented differently from the
+  page it introduces is the kind of misalignment that reads as sloppy without
+  anyone being able to say why.
+*/
+.inner {
+  width: 100%;
+  max-width: var(--max-width-wide);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.breadcrumb {
+  margin-bottom: var(--space-2);
+}
+
+.breadcrumbList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: rgb(255 255 255 / 78%);
+}
+
+.breadcrumbList a {
+  color: rgb(255 255 255 / 78%);
+  text-decoration: none;
+}
+
+.breadcrumbList a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.title {
+  max-width: 18ch;
+  font-size: clamp(var(--font-size-3xl), 6vw, var(--font-size-5xl));
+  line-height: var(--line-height-tight, 1.1);
+  letter-spacing: var(--letter-spacing-tight, -0.02em);
+  font-weight: var(--font-weight-bold);
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 54ch;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed, 1.6);
+  color: rgb(255 255 255 / 88%);
+}
+
+/* ---- Facts --------------------------------------------------------------
+   Three numbers, not a paragraph. These are the answers somebody is scanning
+   for before they decide to stay: how many homes, what they cost, when they
+   can move.
+   ----------------------------------------------------------------------- */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  margin-block: var(--space-2);
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.factLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 70%);
+}
+
+.factValue {
+  font-family: var(--font-family-figure, inherit);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: #ffffff;
+}
+
+/* ---- Search -------------------------------------------------------------
+   Stacked on a phone. A field and a button side by side at 375px leaves the
+   input about 180px wide, which cannot show a typed address.
+   ----------------------------------------------------------------------- */
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 34rem;
+  margin-top: var(--space-2);
+}
+
+.searchInput {
+  flex: 1;
+  min-height: 52px;
+  padding-inline: var(--space-4);
+  /* 16px minimum: anything smaller makes iOS zoom the page on focus. */
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: #ffffff;
+  border: 0;
+  border-radius: var(--radius-full, 100px);
+}
+
+.searchInput:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.searchButton {
+  min-height: 52px;
+  padding-inline: var(--space-6);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  color: var(--button-primary-text, #ffffff);
+  background: var(--button-primary-bg, var(--brand));
+  border: 0;
+  border-radius: var(--radius-full, 100px);
+  cursor: pointer;
+}
+
+.searchButton:hover {
+  background: var(--button-primary-bg-hover, var(--brand-hover));
+}
+
+.searchButton:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+@media (min-width: 640px) {
+  .hero {
+    min-height: 32rem;
+    padding-block: var(--space-8);
+  }
+
+  .inner {
+    padding-inline: var(--space-5);
+  }
+
+  .search {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px;
+    background: rgb(255 255 255 / 14%);
+    border-radius: var(--radius-full, 100px);
+    backdrop-filter: blur(6px);
+  }
+
+  .searchButton {
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 960px) {
+  .inner {
+    padding-inline: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero * {
+    transition: none !important;
+  }
+}

@@ -91,7 +91,31 @@ export function PropertyCardCarousel({
       <div className={styles.scrollContainer} ref={scrollRef}>
         {shown.map((photo, index) => (
           <div key={photo.id} className={styles.slide}>
-            <Link href={href} draggable={false} className={styles.imageLink}>
+            {/*
+              HIDDEN FROM ASSISTIVE TECH, ON PURPOSE.
+
+              The photo is wrapped in a link to the same home the card's
+              address link already points at, and the feed supplies no alt
+              text for most images - so a screen reader met a link with no
+              accessible name, once per visible slide, per card. The a11y
+              audit reported 20 serious findings on a page of 24 homes for
+              exactly this.
+
+              It is not removed, because a mouse user expects to click the
+              picture. It is taken out of the accessibility tree and out of
+              the tab order instead: the named link on the address goes to
+              the identical URL, so nothing is lost, and a keyboard user
+              stops having to tab past five nameless links to reach the next
+              card. `aria-hidden` without `tabIndex={-1}` would be the worse
+              bug - a focusable element that announces nothing.
+            */}
+            <Link
+              href={href}
+              draggable={false}
+              className={styles.imageLink}
+              aria-hidden
+              tabIndex={-1}
+            >
               <ListingImage
                 className={styles.photo}
                 src={photo.url}

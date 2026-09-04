@@ -40,6 +40,10 @@ function parseArgs(argv) {
     else if (a === '--out') args.out = argv[++i];
     else if (a === '--label') args.label = argv[++i];
     else if (a === '--full') args.full = true;
+    // Scroll to a selector before firing. Long pages - the city hubs run to
+    // 40,000px - cannot be reviewed from a viewport shot of the top or from a
+    // full-page capture squashed to thumbnail size.
+    else if (a === '--scroll') args.scroll = argv[++i];
     else if (a === '--scheme') args.schemes = [argv[++i]];
     else if (a === '--viewport') {
       const [w, h] = argv[++i].split('x').map(Number);
@@ -134,7 +138,7 @@ async function launchChrome(port) {
   throw new Error('Chrome did not expose a debugging port in time');
 }
 
-async function capture({ port, url, viewport, scheme, outFile, full }) {
+async function capture({ port, url, viewport, scheme, outFile, full, scroll }) {
   const target = await (
     await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })
   ).json();
@@ -161,6 +165,7 @@ async function capture({ port, url, viewport, scheme, outFile, full }) {
       awaitPromise: true,
     });
     await sleep(250);
+
 
     // Runs for every capture, not just --full. A viewport-sized shot still
     // contains lazy images (map tiles, the first card row), and firing the
@@ -215,10 +220,29 @@ async function capture({ port, url, viewport, scheme, outFile, full }) {
     });
     const metrics = JSON.parse(result.value);
 
+    /*
+      `clip.y` is a DOCUMENT coordinate, not a viewport one, so scrolling the
+      page before the shot moves nothing - the clip still starts at the top.
+      The offset has to be measured and passed in, which is what `--scroll`
+      does: it resolves a selector to its absolute Y and clips from there.
+    */
+    let clipY = 0;
+    if (scroll && !full) {
+      const { result: top } = await cdp.send('Runtime.evaluate', {
+        expression:
+          `(() => { const el = document.querySelector(${JSON.stringify(scroll)});` +
+          ` return el ? el.getBoundingClientRect().top + scrollY : 0; })()`,
+        returnByValue: true,
+      });
+      clipY = Math.max(0, Math.round(top.value ?? 0));
+    }
+
     const shot = await cdp.send('Page.captureScreenshot', {
       format: 'png',
-      captureBeyondViewport: full,
-      ...(full ? {} : { clip: { x: 0, y: 0, width: viewport.width, height: viewport.height, scale: 2 } }),
+      captureBeyondViewport: full || Boolean(scroll),
+      ...(full
+        ? {}
+        : { clip: { x: 0, y: clipY, width: viewport.width, height: viewport.height, scale: 2 } }),
     });
 
     await writeFile(outFile, Buffer.from(shot.data, 'base64'));
@@ -241,7 +265,10 @@ try {
   for (const viewport of viewports) {
     for (const scheme of args.schemes) {
       const file = path.join(args.out, `${args.label}-${viewport.name}-${scheme}.png`);
-      const m = await capture({ port, url: args.url, viewport, scheme, outFile: file, full: args.full });
+      const m = await capture({
+        port, url: args.url, viewport, scheme, outFile: file,
+        full: args.full, scroll: args.scroll,
+      });
       // scrollWidth > innerWidth means the page scrolls sideways: a hard fail
       // against the brief, which forbids horizontal scroll on the body.
       const bad = m.scroll > m.inner;

@@ -6,6 +6,7 @@ import { CallbackDialog } from './CallbackDialog';
 import { record } from '@/lib/analytics/client';
 import {
   DWELL_MS,
+  REQUIRE_DEPTH,
   hasScrolledEnough,
   isExcludedPath,
   isSuppressed,
@@ -29,10 +30,13 @@ import {
  * of the same session. Someone who said no is not asked again on the next
  * page, which is the behaviour that makes these things feel like malware.
  *
- * ONLY AFTER REAL ENGAGEMENT. It waits for BOTH depth and dwell: half a
- * viewport of scrolling AND twenty-five seconds. Depth alone fires on a fast
- * flick past the fold; time alone fires at someone who opened a tab and walked
- * away. The pair together describes somebody actually reading.
+ * TEN SECONDS, ON DWELL ALONE. It used to require BOTH twenty-five seconds
+ * AND half a viewport of scrolling, which reliably never fired: the common
+ * visit is somebody who lands on a city page, reads the price table near the
+ * top and leaves without scrolling far, and that person was never asked. Ten
+ * seconds is past a bounce and ahead of the competitor's tab. `REQUIRE_DEPTH`
+ * in `lib/callback/prompt.ts` puts the stricter rule back in one edit if this
+ * ever reads as pushy.
  *
  * NEVER WHILE THE PAGE IS HIDDEN. A modal opened in a background tab has spent
  * its one chance by the time anyone sees it, and it steals focus from whatever
@@ -75,7 +79,8 @@ export function CallbackPrompt() {
     if (suppressedNow()) return;
 
     let dwellMet = false;
-    let depthMet = false;
+    // Starts satisfied when depth is not required, so the timer alone opens it.
+    let depthMet = !REQUIRE_DEPTH;
 
     function maybeOpen() {
       if (!dwellMet || !depthMet) return;
@@ -87,6 +92,7 @@ export function CallbackPrompt() {
     }
 
     function onScroll() {
+      if (!REQUIRE_DEPTH) return;
       depthMet = hasScrolledEnough({
         scrollY: window.scrollY,
         scrollHeight: document.documentElement.scrollHeight,
@@ -100,8 +106,10 @@ export function CallbackPrompt() {
       maybeOpen();
     }, DWELL_MS);
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    if (REQUIRE_DEPTH) {
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
 
     return () => {
       window.clearTimeout(timer);

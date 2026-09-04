@@ -48,8 +48,22 @@ const ROUTES = [
   '/',
   '/homes-for-rent',
   
-  '/rentals/tn',
-  '/rentals/tn/memphis',
+  /*
+    REAL HUBS WITH REAL INVENTORY. This used to check `/rentals/tn/memphis`,
+    which 404s - Memphis has no homes - so the audit was scanning a not-found
+    page and passing on it. A 404 body is "substantive text", so the coverage
+    check did not catch it either.
+
+    These four exist and are the shape most at risk: every word of local copy
+    on a city hub is now GENERATED from inventory (`lib/listings/cityStats.ts`),
+    so no human reads it before it goes live on 681 URLs. This audit is that
+    reader. NC and GA are the two largest markets; Concord and Lawrenceville
+    are a small and a mid-sized city hub.
+  */
+  '/rentals/nc',
+  '/rentals/nc/concord',
+  '/rentals/nc/charlotte',
+  '/rentals/ga/lawrenceville',
   '/qualifications',
   '/fees',
   '/how-it-works',

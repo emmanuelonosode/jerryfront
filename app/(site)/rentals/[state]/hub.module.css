@@ -177,3 +177,224 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* ==========================================================================
+   City hub additions
+   ========================================================================== */
+
+/* Sits directly under the full-bleed hero. Stacked on a phone so both
+   buttons are full-width targets rather than two half-width ones. */
+.heroActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block: var(--space-5);
+}
+
+/* ---- Rent by size -------------------------------------------------------
+   The most valuable block on the page: the only answer to "what does a
+   3-bed cost in <city>" that comes from live local inventory. It has to
+   survive 375px, and a five-column table does not - so it scrolls inside its
+   own box rather than forcing the page sideways.
+   ----------------------------------------------------------------------- */
+.tableWrap {
+  overflow-x: auto;
+  border: var(--rule-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  -webkit-overflow-scrolling: touch;
+}
+
+.rentTable {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.rentTable thead th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border-bottom: var(--rule-width) solid var(--color-border-default);
+}
+
+.rentTable tbody th,
+.rentTable tbody td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: var(--rule-width) solid var(--color-border-subtle);
+  vertical-align: baseline;
+}
+
+.rentTable tbody tr:last-child th,
+.rentTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rentTable tbody th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.note {
+  max-width: 68ch;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+/* ---- Chips: ZIP codes and sibling cities --------------------------------
+   Real links, not filter buttons. Each one is a crawlable path into a
+   narrower set of homes, which is how a hub page passes authority down to
+   the searches under it instead of hoarding it.
+   ----------------------------------------------------------------------- */
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  /* 44px minimum target, met by padding rather than a fixed height so a
+     two-line chip grows instead of clipping. */
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-full, var(--radius-lg));
+  transition: border-color var(--duration-fast) var(--easing-default);
+}
+
+.chip:hover {
+  border-color: var(--color-border-interactive);
+}
+
+.chipName {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.chipCount {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ---- What you get ------------------------------------------------------- */
+.pointList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 68ch;
+}
+
+.pointList li {
+  padding-left: var(--space-4);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+  border-left: 3px solid var(--color-border-default);
+}
+
+.pointList strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ---- The agent ----------------------------------------------------------
+   A named person with a number that dials. The single strongest trust
+   signal available to a rental site, and the reason it sits above the
+   inventory rather than under it.
+   ----------------------------------------------------------------------- */
+.agentCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.agentBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.agentName {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.agentTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.agentNote {
+  max-width: 60ch;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.agentHours {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.agentActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .heroActions,
+  .agentActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .agentCard {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-5);
+  }
+
+  /* The text column takes the slack so the buttons stay hard right and the
+     photograph stays hard left, whatever the length of the coverage note. */
+  .agentBody {
+    flex: 1;
+  }
+
+  .agentActions {
+    flex-shrink: 0;
+  }
+}
+
+/* The named agent's photograph. Square, cropped to a circle, and given
+   explicit dimensions so it cannot shift the card as it loads. */
+.agentPhoto {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: var(--radius-full, 50%);
+  background: var(--color-bg-tertiary);
+}

@@ -1,0 +1,171 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---- Controls -----------------------------------------------------------
+   Mobile first: a two-column grid at 375px so the four controls are two
+   comfortable rows rather than a horizontal scroller, which is what a filter
+   bar becomes on a phone when it is built as a flex row and left there.
+   ----------------------------------------------------------------------- */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  align-items: end;
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.select {
+  width: 100%;
+  /* 44px: the minimum touch target, and the reason this is not `padding` on a
+     smaller line-height. */
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  /* 16px, so iOS does not zoom the viewport when the select is focused. */
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--input-radius, var(--radius-md));
+}
+
+.select:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-gap);
+}
+
+.checkbox {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand);
+}
+
+.reset {
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-link);
+  background: none;
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--button-radius, var(--radius-md));
+  cursor: pointer;
+}
+
+.reset:hover {
+  border-color: var(--color-border-interactive);
+}
+
+.count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.figure {
+  font-family: var(--font-family-figure, var(--font-family-mono));
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.empty {
+  max-width: 60ch;
+  padding: var(--space-6) 0;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+/* Zero height: it exists to be observed, never to be seen or to add space
+   under the last card. */
+.sentinel {
+  height: 1px;
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-4);
+}
+
+.moreButton {
+  min-height: 48px;
+  padding-inline: var(--space-6);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  color: var(--button-secondary-text, var(--color-text-primary));
+  background: var(--button-secondary-bg, transparent);
+  border: 2px solid var(--button-secondary-border, var(--color-border-strong));
+  border-radius: var(--button-radius, var(--radius-full));
+  cursor: pointer;
+}
+
+.moreButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.error {
+  font-size: var(--font-size-sm);
+  color: var(--color-status-error-text, var(--color-text-primary));
+}
+
+.retry {
+  font: inherit;
+  color: var(--color-text-link);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .controls {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto auto;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
