@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { PriceCardDisplay, PriceInline } from '@/components/pricing/PriceDisplay';
 import { ButtonLink } from '@/components/ui/Button';
+import buttonStyles from '@/components/ui/Button.module.css';
+import { BookTourButton } from '@/components/tours/BookTourButton';
 import { AvailabilityBadge } from './AvailabilityBadge';
 import { SaveButton } from './SaveButton';
 import { CARD_SIZES } from '@/lib/images/pipeline';
@@ -130,9 +132,17 @@ export function PropertyCard({
 
         {density !== 'compact' && (
           <div className={styles.actions}>
-            <ButtonLink href={`${href}#tour`} variant="secondary" size="md" className={styles.actionButton}>
+            {/* The card's whole job is to keep somebody in the results.
+                Sending them to a form page to ask about one home was the
+                opposite of that; this opens over the grid and closes back
+                onto it. */}
+            <BookTourButton
+              listingSlug={listing.slug}
+              listingLabel={listing.addressLine}
+              className={`${buttonStyles.button} ${buttonStyles.secondary} ${buttonStyles.md} ${styles.actionButton}`}
+            >
               Book Tour
-            </ButtonLink>
+            </BookTourButton>
             <ButtonLink href={`${href}#apply`} variant="primary" size="md" className={styles.actionButton}>
               Apply Now
             </ButtonLink>

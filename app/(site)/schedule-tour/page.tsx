@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
+import { BookTourButton } from '@/components/tours/BookTourButton';
 import { PropertyCard } from '@/components/listings/PropertyCard';
 import { TourForm } from './TourForm';
 import { visibilityOf } from '@/lib/listings/lifecycle';
@@ -44,6 +45,34 @@ export default async function ScheduleTourPage({
         {listing && !unavailable ? (
           <div className={styles.listingCard}>
             <PropertyCard listing={listing} density="compact" headingLevel="h2" />
+          </div>
+        ) : null}
+
+        {/*
+          THE QUICK PATH, OFFERED FIRST.
+
+          This page exists for the sitemap and for anyone without JavaScript,
+          and the full form below is what serves them. But someone who lands
+          here directly should not have to work through fourteen stacked
+          fields when three short questions will do, so the wizard is offered
+          at the top and the form stays underneath for whoever prefers it.
+
+          Every "Book a tour" button elsewhere on the site now opens that
+          wizard in place rather than sending anybody here at all.
+        */}
+        {!unavailable ? (
+          <div className={styles.quickStart}>
+            <BookTourButton
+              listingSlug={listing?.slug ?? null}
+              listingLabel={listing?.addressLine ?? null}
+              className={styles.quickStartButton}
+            >
+              Book in under a minute
+            </BookTourButton>
+            <p className={styles.quickStartNote}>
+              Three short questions. Or fill in the full form below - both reach the same
+              person.
+            </p>
           </div>
         ) : null}
 

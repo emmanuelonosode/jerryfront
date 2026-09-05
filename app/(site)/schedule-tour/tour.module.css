@@ -344,3 +344,42 @@
     align-items: start;
   }
 }
+
+/* ---- The quick path ------------------------------------------------------
+   Offered above the long form for anyone who lands on this page directly.
+   Every tour button elsewhere opens the wizard in place instead.
+   ------------------------------------------------------------------------ */
+.quickStart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-5);
+  margin-block: var(--space-5);
+  background: var(--color-bg-secondary);
+  border: var(--rule-width) solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.quickStartButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding-inline: var(--space-6);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  color: var(--button-primary-text, #fff);
+  background: var(--button-primary-bg, var(--brand));
+  border-radius: var(--button-radius, var(--radius-full));
+}
+
+.quickStartButton:hover {
+  background: var(--button-primary-bg-hover, var(--brand-hover));
+  color: var(--button-primary-text, #fff);
+}
+
+.quickStartNote {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

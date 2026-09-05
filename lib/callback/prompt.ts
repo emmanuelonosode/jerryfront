@@ -65,6 +65,33 @@ export const EXCLUDED_PREFIXES = [
   '/magic',
 ];
 
+/**
+ * The query parameter that forces the prompt to appear.
+ *
+ * WHY IT EXISTS. The suppression rules are correct and invisible, which is a
+ * bad combination for whoever has to check the thing works. A dismissal is
+ * remembered for thirty days and a submission for ever - both in localStorage,
+ * both silent - so anybody who has ever closed the prompt on their own browser
+ * will never see it again and has no way to tell that from it being broken.
+ * That is exactly what happened: the prompt was reported dead while it was
+ * firing correctly for every visitor who had not already answered it.
+ *
+ * `?callback=test` skips the suppression check for that one page load. It
+ * changes nothing for real traffic - nobody arrives with it by accident - and
+ * it does not clear the stored answer, so a genuine visitor's "no" still
+ * stands afterwards.
+ */
+export const FORCE_PARAM = 'callback';
+export const FORCE_VALUE = 'test';
+
+export function isForced(search: string): boolean {
+  try {
+    return new URLSearchParams(search).get(FORCE_PARAM) === FORCE_VALUE;
+  } catch {
+    return false;
+  }
+}
+
 export function isExcludedPath(pathname: string): boolean {
   return EXCLUDED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),

@@ -9,6 +9,7 @@ import {
   REQUIRE_DEPTH,
   hasScrolledEnough,
   isExcludedPath,
+  isForced,
   isSuppressed,
 } from '@/lib/callback/prompt';
 
@@ -76,16 +77,51 @@ export function CallbackPrompt() {
   useEffect(() => {
     if (spent) return;
     if (isExcludedPath(pathname)) return;
-    if (suppressedNow()) return;
+    /*
+     * `?callback=test` skips the suppression check so the prompt can be seen
+     * on demand. Without it, anyone who has ever dismissed it - which is
+     * everybody who has tested the site - has no way to distinguish "working
+     * and already answered" from "broken", and it was reported broken while
+     * working.
+     */
+    const forced = isForced(window.location.search);
+    if (!forced && suppressedNow()) return;
 
     let dwellMet = false;
     // Starts satisfied when depth is not required, so the timer alone opens it.
     let depthMet = !REQUIRE_DEPTH;
+    let retry = 0;
+
+    /**
+     * NEVER ON TOP OF ANOTHER DIALOG.
+     *
+     * The path exclusions stop this interrupting someone on `/apply` or
+     * `/schedule-tour`, but the tour wizard is a dialog that opens over ANY
+     * page - so somebody half way through booking a viewing on a city hub
+     * could have a second modal appear over the first asking for their phone
+     * number. Caught while testing the wizard: the callback prompt opened on
+     * top of it mid-booking.
+     *
+     * Checked at the moment of opening rather than up front, because the
+     * wizard can open at any point during the dwell.
+     */
+    function blockedByAnotherDialog() {
+      return document.querySelector('[role="dialog"][aria-modal="true"]') !== null;
+    }
 
     function maybeOpen() {
       if (!dwellMet || !depthMet) return;
       // A modal that opens in a hidden tab has wasted its only chance.
       if (document.visibilityState !== 'visible') return;
+      /*
+       * Deliberately does NOT set `spent`. Somebody who was busy when the
+       * timer fired has not declined anything, so the prompt stays eligible
+       * and the retry below asks again once they are free.
+       */
+      if (blockedByAnotherDialog()) {
+        retry = window.setTimeout(maybeOpen, 4000);
+        return;
+      }
       setOpen(true);
       setSpent(true);
       record({ event: 'callback_shown', path: window.location.pathname });
@@ -113,6 +149,7 @@ export function CallbackPrompt() {
 
     return () => {
       window.clearTimeout(timer);
+      window.clearTimeout(retry);
       window.removeEventListener('scroll', onScroll);
     };
   }, [pathname, spent]);

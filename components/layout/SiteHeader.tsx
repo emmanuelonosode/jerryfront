@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
+import { BookTourButton } from '@/components/tours/BookTourButton';
 import { PRIMARY_NAV, UTILITY_NAV, isGroup } from '@/lib/navigation';
 import { NavDisclosure } from './NavDisclosure';
 import { MobileNav } from './MobileNav';
@@ -95,9 +96,11 @@ export function SiteHeader() {
                 audience takes BEFORE they are ready to apply, so burying it
                 behind the harder commitment had the funnel backwards. Styled
                 secondary so it supports Apply rather than competing with it. */}
-            <Link className={styles.tourButton} href="/schedule-tour">
-              Book a tour
-            </Link>
+            {/* Opens the wizard over the current page rather than navigating
+                to the tour form. Someone half way down a search should not
+                lose it to book a viewing. Still an anchor to
+                `/schedule-tour`, so it works with no JavaScript. */}
+            <BookTourButton className={styles.tourButton}>Book a tour</BookTourButton>
 
             {/* Apply stays in the bar at every breakpoint. Primary conversion
                 is never one tap deeper than it has to be. */}

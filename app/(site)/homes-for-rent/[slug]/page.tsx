@@ -32,6 +32,7 @@ import { citySlug } from '@/lib/listings/hubs';
 import { cityCostContext } from '@/lib/listings/marketContext';
 import { buildListingFaq } from '@/lib/listings/faq';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { BookTourButton } from '@/components/tours/BookTourButton';
 import { breadcrumbJsonLd, faqJsonLd, listingJsonLd } from '@/lib/seo/structuredData';
 import { SITE_NAME, SITE_ORIGIN } from '@/lib/seo/site';
 import type { Listing } from '@/lib/listings/types';
@@ -359,10 +360,16 @@ export default async function PropertyDetailPage({
 
   const applyCta = canApply ? (
     <>
-      <Link href={`/schedule-tour?home=${listing.slug}`} className={styles.buttonSecondary}>
+      {/* Opens over the listing. Somebody deciding on this house should not
+          have to leave the photographs to ask to see it. */}
+      <BookTourButton
+        listingSlug={listing.slug}
+        listingLabel={listing.addressLine}
+        className={styles.buttonSecondary}
+      >
         <CalendarIcon className={styles.buttonIcon} />
         Tour
-      </Link>
+      </BookTourButton>
       <Link href={`/apply?home=${listing.slug}`} className={styles.button}>
         Apply now
       </Link>
@@ -1084,12 +1091,13 @@ export default async function PropertyDetailPage({
         <div className={styles.actionBarActions}>
           {canApply ? (
             <>
-              <Link
-                href={`/schedule-tour?home=${listing.slug}`}
+              <BookTourButton
+                listingSlug={listing.slug}
+                listingLabel={listing.addressLine}
                 className={`${styles.buttonSecondary} ${styles.actionBarSecondaryCta}`}
               >
                 Tour
-              </Link>
+              </BookTourButton>
               <Link
                 href={`/apply?home=${listing.slug}`}
                 className={`${styles.button} ${styles.actionBarCta}`}

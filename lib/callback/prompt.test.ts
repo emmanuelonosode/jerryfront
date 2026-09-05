@@ -4,6 +4,7 @@ import {
   DISMISS_DAYS,
   hasScrolledEnough,
   isExcludedPath,
+  isForced,
   isSuppressed,
 } from './prompt.ts';
 
@@ -115,5 +116,28 @@ describe('callback prompt: whether they have read enough', () => {
       hasScrolledEnough({ scrollY: 0, scrollHeight: 1000, innerHeight: 1000 }),
       true,
     );
+  });
+});
+
+describe('the test override', () => {
+  /**
+   * The suppression rules are correct and invisible, and that combination got
+   * the prompt reported dead while it was firing for every visitor who had not
+   * already answered it. These guard the escape hatch that makes it checkable.
+   */
+  it('?callback=test is recognised', () => {
+    assert.equal(isForced('?callback=test'), true);
+    assert.equal(isForced('?home=x&callback=test'), true);
+  });
+
+  it('anything else is not', () => {
+    assert.equal(isForced(''), false);
+    assert.equal(isForced('?callback=1'), false);
+    assert.equal(isForced('?callback'), false);
+    assert.equal(isForced('?other=test'), false);
+  });
+
+  it('a malformed query string is not an error', () => {
+    assert.equal(isForced('%%%'), false);
   });
 });

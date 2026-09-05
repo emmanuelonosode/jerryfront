@@ -1,0 +1,296 @@
+/* ---- Shell ---------------------------------------------------------------
+   A sheet on a phone, a centred card from 640px. Sliding up from the bottom
+   is what a mobile user expects from something that appeared over what they
+   were reading, and it keeps the controls under the thumb rather than at the
+   top of a tall screen.
+   ------------------------------------------------------------------------ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(8 12 16 / 55%);
+}
+
+.panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-2xl, 24px) var(--radius-2xl, 24px) 0 0;
+  box-shadow: var(--shadow-modal, 0 -8px 40px rgb(0 0 0 / 30%));
+  animation: rise var(--duration-normal, 220ms) var(--easing-out, ease-out);
+}
+
+@keyframes rise {
+  from { transform: translateY(16px); opacity: 0.6; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight, 1.2);
+  color: var(--color-text-primary);
+}
+
+.close {
+  flex-shrink: 0;
+  /* 44px: this is the control someone reaches for to get back to browsing,
+     so it is the last place to be stingy with the target. */
+  width: 44px;
+  height: 44px;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: 0;
+  border-radius: var(--radius-full, 50%);
+  cursor: pointer;
+}
+
+.close:hover { color: var(--color-text-primary); }
+
+/* ---- Progress ------------------------------------------------------------
+   Three dots, not "step 2 of 3" in words. The count is announced to screen
+   readers through the visually-hidden text inside each one; visually it just
+   needs to say "this is short".
+   ------------------------------------------------------------------------ */
+.progress {
+  display: flex;
+  gap: var(--space-2);
+  /* An ordered list for the semantics, not for the markers - without this the
+     browser prints "1. 2. 3." beside the bars. */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dot,
+.dotDone {
+  height: 4px;
+  flex: 1;
+  border-radius: var(--radius-full, 100px);
+  background: var(--color-border-default);
+}
+
+.dotDone { background: var(--brand); }
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.label + .input,
+.label + .textarea { margin-bottom: var(--space-2); }
+
+.input,
+.textarea,
+.file {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  /* 16px minimum, or iOS zooms the page when the field takes focus - which on
+     a dialog leaves the reader looking at a magnified corner of it. */
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--input-radius, var(--radius-md));
+}
+
+.textarea {
+  min-height: 64px;
+  resize: vertical;
+}
+
+.input:focus-visible,
+.textarea:focus-visible,
+.file:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-gap);
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-relaxed, 1.5);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-status-error-text, #b3261e);
+  background: var(--color-status-error-fill, #fdecea);
+  border-radius: var(--radius-md);
+}
+
+/* ---- Choice cards -------------------------------------------------------- */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 0;
+  margin-bottom: var(--space-2);
+}
+
+.choice,
+.choiceOn {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  min-height: 44px;
+  padding: var(--space-3);
+  font-size: var(--font-size-sm);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.choiceOn {
+  border-color: var(--brand);
+  background: var(--brand-tint, rgb(0 100 224 / 6%));
+}
+
+.choice input,
+.choiceOn input {
+  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand);
+}
+
+.choice span,
+.choiceOn span { display: flex; flex-direction: column; gap: 2px; }
+
+.choiceGloss {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ---- ID ------------------------------------------------------------------ */
+.idBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.optional {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-tertiary);
+}
+
+.file {
+  min-height: 44px;
+  padding: var(--space-2);
+  background: var(--color-bg-primary);
+}
+
+.fileName {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  word-break: break-all;
+}
+
+.doneLead {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed, 1.6);
+  color: var(--color-text-primary);
+}
+
+/* ---- Footer --------------------------------------------------------------
+   Sticky, so the action is reachable without scrolling the dialog on a short
+   screen - and the primary is last in source so it sits on the right, where a
+   forward action belongs.
+   ------------------------------------------------------------------------ */
+.foot {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  margin-top: auto;
+  background: var(--color-bg-primary);
+}
+
+.primary,
+.secondary {
+  flex: 1;
+  min-height: 48px;
+  padding-inline: var(--space-5);
+  font: inherit;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--button-radius, var(--radius-full));
+  cursor: pointer;
+}
+
+.primary {
+  color: var(--button-primary-text, #fff);
+  background: var(--button-primary-bg, var(--brand));
+  border: 0;
+}
+
+.primary:hover { background: var(--button-primary-bg-hover, var(--brand-hover)); }
+.primary:disabled { opacity: 0.65; cursor: default; }
+
+.secondary {
+  flex: 0 0 auto;
+  color: var(--button-secondary-text, var(--color-text-primary));
+  background: transparent;
+  border: 2px solid var(--button-secondary-border, var(--color-border-strong));
+}
+
+@media (min-width: 640px) {
+  .overlay { align-items: center; }
+
+  .panel {
+    max-width: 30rem;
+    padding: var(--space-6);
+    border-radius: var(--radius-2xl, 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+}
