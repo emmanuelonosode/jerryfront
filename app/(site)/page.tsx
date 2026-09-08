@@ -21,6 +21,22 @@ import { localBusinessJsonLd, organizationJsonLd } from '@/lib/seo/structuredDat
  */
 export const revalidate = 300;
 
+/**
+ * A self-canonical on the one page that had none.
+ *
+ * Every other page sets `alternates.canonical`; the home page inherited the
+ * root layout's title template and nothing else, so it shipped no
+ * `<link rel="canonical">` at all. That is the page with the most inbound
+ * links and the most query-string variants pointed at it - utm tags from any
+ * campaign, `?ref=`, a trailing `?` from a badly written link - and with no
+ * canonical, each of those is a separate URL Google has to decide about
+ * unaided. On a three-week-old domain with barely any crawl budget, spending
+ * it deciding that `/?utm_source=x` and `/` are the same page is waste.
+ */
+export const metadata = {
+  alternates: { canonical: '/' },
+};
+
 export default function HomePage() {
   return (
     <main id="main">

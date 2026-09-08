@@ -431,6 +431,40 @@ export async function fetchCities(): Promise<CityCount[]> {
  */
 export type SitemapEntry = { slug: string; updatedAt: string | null };
 
+/** One home, as just enough to render a crawlable link to it. */
+export type CityLink = { slug: string; address: string; beds: number };
+
+/**
+ * Every home in one city, as a slug and an address.
+ *
+ * WHY A HUB NEEDS THIS. The hub server-renders 48 cards and loads the rest as
+ * the reader scrolls, which is right for a person and invisible to a crawler
+ * following links. Measured against live inventory, 473 homes - 9% of the
+ * catalogue, 114 of them in Charlotte alone - had no crawlable link from
+ * anywhere on the site. They existed in the sitemap and nowhere else, which on
+ * a three-week-old domain with almost no crawl budget is close to not existing.
+ *
+ * Deliberately NOT `searchListings`. Rendering a list of addresses does not
+ * need photographs, fee schedules or descriptions for 162 homes.
+ */
+export async function fetchCityLinks(city: string, state: string): Promise<CityLink[]> {
+  const query = new URLSearchParams({ city, state });
+  try {
+    const rows = await fetchJson<{ slug: string; address?: string; bedrooms?: number }[]>(
+      `/properties/sitemap/?${query}`,
+    );
+    return rows.map((r) => ({
+      slug: r.slug,
+      address: r.address ?? r.slug,
+      beds: r.bedrooms ?? 0,
+    }));
+  } catch {
+    // The hub is complete without this section; it must never take the page
+    // down with it.
+    return [];
+  }
+}
+
 export async function fetchSitemapSlugs(): Promise<SitemapEntry[]> {
   try {
     const rows = await fetchJson<{ slug: string; updated_at: string | null }[]>(

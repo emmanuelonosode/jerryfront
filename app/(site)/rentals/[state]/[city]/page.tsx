@@ -22,7 +22,7 @@ import { buildCityFaq } from '@/lib/listings/cityFaq';
 import { LEAD_AGENT, coverageNote } from '@/lib/content/staff';
 import { formatUsd } from '@/lib/money';
 import styles from '../hub.module.css';
-import { fetchCities, searchListings } from '@/lib/listings/source';
+import { fetchCities, fetchCityLinks, searchListings } from '@/lib/listings/source';
 import { DEFAULT_FILTERS } from '@/lib/listings/search';
 
 /**
@@ -149,9 +149,11 @@ export default async function CityHubPage({
    * page can say "all 155 homes" while the server renders 24 and the client
    * appends the rest as somebody scrolls.
    */
-  const [{ results: available, total }, stats] = await Promise.all([
+  const [{ results: available, total }, stats, cityLinks] = await Promise.all([
     searchListings({ ...DEFAULT_FILTERS, city: hub.city, state: hub.state }),
     fetchCityStats(hub.city, hub.state),
+    // Slugs and addresses only - the crawlable index below the cards.
+    fetchCityLinks(hub.city, hub.state),
   ]);
 
   /*
@@ -454,6 +456,46 @@ export default async function CityHubPage({
               initial={available}
               total={total}
             />
+
+            {/*
+              EVERY HOME, AS PLAIN LINKS.
+
+              The cards above stop at 48 and the rest arrive on scroll, which
+              a crawler following links never sees. Measured against live
+              inventory that left 473 homes - 9% of the catalogue, 114 of them
+              in Charlotte - with no internal link from anywhere on the site,
+              reachable only by whichever sitemap entry Google got round to.
+              On a domain registered three weeks ago, with almost no crawl
+              budget to spend, a page nothing links to is close to a page that
+              does not exist.
+
+              Rendered only when there is more inventory than the cards show,
+              so a small market does not repeat itself. Visible, not hidden: a
+              list of addresses somebody might genuinely scan, and hiding it
+              would make it cloaking rather than navigation.
+            */}
+            {cityLinks.length > available.length ? (
+              <nav className={styles.allHomes} aria-labelledby="all-homes-heading">
+                <h3 className={styles.allHomesTitle} id="all-homes-heading">
+                  Every home we list in {hub.city}
+                </h3>
+                <ul className={styles.allHomesList} role="list">
+                  {cityLinks.map((home) => (
+                    <li key={home.slug}>
+                      <Link href={`/homes-for-rent/${home.slug}`}>
+                        {home.address}
+                        {home.beds > 0 ? (
+                          <span className={styles.allHomesBeds}>
+                            {' '}
+                            · {home.beds} bed
+                          </span>
+                        ) : null}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ) : null}
           </section>
         ) : (
           <section className={styles.section} id="homes" aria-labelledby="nearby-heading">
