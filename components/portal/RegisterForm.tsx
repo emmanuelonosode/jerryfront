@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { OtpInput } from '@/components/ui/OtpInput';
 import controls from '@/components/ui/controls.module.css';
 import { ApiError, login } from '@/lib/portal/api';
 import styles from './LoginForm.module.css';
@@ -156,13 +157,10 @@ export function RegisterForm() {
           </form>
         ) : (
           <form className={styles.form} onSubmit={onVerify} noValidate>
-            <Field label="Six-digit code" name="code" required>
-              {(props) => (
-                <input {...props} className={controls.control} inputMode="numeric"
-                  autoComplete="one-time-code" maxLength={6}
-                  value={code} onChange={(e) => setCode(e.target.value)} />
-              )}
-            </Field>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>Six-digit code</label>
+              <OtpInput value={code} onChange={setCode} disabled={busy} />
+            </div>
 
             <Button type="submit" fullWidth loading={busy} loadingLabel="Checking…">
               Verify and sign in

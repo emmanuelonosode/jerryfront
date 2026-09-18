@@ -132,6 +132,10 @@ export function LoginForm() {
           </Button>
         </form>
 
+        <p className={styles.help} style={{ marginBottom: '0.5rem' }}>
+          Don't have an account?{' '}
+          <Link href="/portal/register">Sign up</Link>.
+        </p>
         <p className={styles.help}>
           Applying for a home rather than signing in?{' '}
           <Link href="/apply">Start an application</Link>.
