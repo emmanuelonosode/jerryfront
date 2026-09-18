@@ -16,27 +16,8 @@ import { isStepSlug, stepIndex, type StepSlug, STEP_SLUGS } from './steps.ts';
  *   requires everything.
  */
 
-export type IncomeSource = {
-  kind: 'employment' | 'self-employment' | 'benefits' | 'voucher' | 'support' | 'other';
-  monthlyCents: number | null;
-  description: string | null;
-};
-
-export type PriorAddress = {
-  line: string | null;
-  city: string | null;
-  state: string | null;
-  fromYear: number | null;
-  toYear: number | null;
-  landlordName: string | null;
-  landlordPhone: string | null;
-  /** Non-punitive: someone can say what happened without it reading as a confession. */
-  endedEarly: boolean;
-  endedEarlyNote: string | null;
-};
-
-export type Occupant = { name: string | null; age: number | null; relationship: string | null };
-export type Pet = { kind: string | null; weightLb: number | null; isAssistanceAnimal: boolean };
+export type Vehicle = { makeModel: string | null; color: string | null; licensePlate: string | null; state: string | null };
+export type Pet = { animalType: string | null; breed: string | null; weightLbs: number | null; name: string | null; isServiceAnimal: boolean };
 
 export type ApplicationDraft = {
   id: string;
@@ -49,41 +30,47 @@ export type ApplicationDraft = {
   lastName: string | null;
   email: string | null;
   phone: string | null;
-  dateOfBirth: string | null;
-  maritalStatus: string | null;
-  mothersMaidenName: string | null;
+  phoneType: string | null;
+  preferredContactMethod: string | null;
   
-  // address
-  currentAddress: string | null;
-  currentCity: string | null;
-  currentState: string | null;
-  currentZip: string | null;
-  currentResidenceMonths: number | null;
+  emergencyContactName: string | null;
+  emergencyContactRelationship: string | null;
+  emergencyContactPhone: string | null;
+  emergencyContactPhoneType: string | null;
+  
+  preferredMoveInDate: string | null;
 
   // background
+  dateOfBirth: string | null;
+  idType: string | null;
   ssn: string | null;
+  ein: string | null;
+
+  hasLicense: boolean | null;
   driversLicense: string | null;
   driversLicenseState: string | null;
 
-  // income
-  incomeSources: IncomeSource[];
-  employerName: string | null;
-  employerAddress: string | null;
-  jobTitle: string | null;
-  employerPhone: string | null;
+  hasEviction: boolean | null;
+  hasFelony: boolean | null;
+  hasBankruptcy: boolean | null;
+  backgroundExplanation: string | null;
+  isActiveMilitary: boolean | null;
+  receivesHousingAssistance: boolean | null;
 
-  // history
-  previousAddress: string | null;
-  previousCity: string | null;
-  previousState: string | null;
-  previousZip: string | null;
-  previousResidenceMonths: number | null;
-  priorAddresses: PriorAddress[];
-  hasPriorEviction: boolean | null;
-  priorEvictionNote: string | null;
+  // income
+  grossMonthlyCents: number | null;
+  grossAnnualCents: number | null;
+  incomeSource: string | null;
+  employerName: string | null;
+  durationMonths: number | null;
 
   // household
-  occupants: Occupant[];
+  hasMinorsOrDependents: boolean | null;
+  dependentCount: number | null;
+  hasMotorVehicles: boolean | null;
+  vehicles: Vehicle[];
+  hasAnimals: boolean | null;
+  adultCount: number | null;
   pets: Pet[];
 
   // review
@@ -143,39 +130,47 @@ export function emptyDraft(id: string, listingSlug: string | null, now: Date): A
     lastName: null,
     email: null,
     phone: null,
-    dateOfBirth: null,
-    maritalStatus: null,
-    mothersMaidenName: null,
-
-    // address
-    currentAddress: null,
-    currentCity: null,
-    currentState: null,
-    currentZip: null,
-    currentResidenceMonths: null,
+    phoneType: null,
+    preferredContactMethod: null,
+    
+    emergencyContactName: null,
+    emergencyContactRelationship: null,
+    emergencyContactPhone: null,
+    emergencyContactPhoneType: null,
+    
+    preferredMoveInDate: null,
 
     // background
+    dateOfBirth: null,
+    idType: null,
     ssn: null,
+    ein: null,
+
+    hasLicense: null,
     driversLicense: null,
     driversLicenseState: null,
 
-    // income
-    incomeSources: [],
-    employerName: null,
-    employerAddress: null,
-    jobTitle: null,
-    employerPhone: null,
+    hasEviction: null,
+    hasFelony: null,
+    hasBankruptcy: null,
+    backgroundExplanation: null,
+    isActiveMilitary: null,
+    receivesHousingAssistance: null,
 
-    // history
-    previousAddress: null,
-    previousCity: null,
-    previousState: null,
-    previousZip: null,
-    previousResidenceMonths: null,
-    priorAddresses: [],
-    hasPriorEviction: null,
-    priorEvictionNote: null,
-    occupants: [],
+    // income
+    grossMonthlyCents: null,
+    grossAnnualCents: null,
+    incomeSource: null,
+    employerName: null,
+    durationMonths: null,
+
+    // household
+    hasMinorsOrDependents: null,
+    dependentCount: null,
+    hasMotorVehicles: null,
+    vehicles: [],
+    hasAnimals: null,
+    adultCount: 1,
     pets: [],
 
     disclosuresAcceptedAt: null,
@@ -224,108 +219,78 @@ export function validateStep(draft: ApplicationDraft, step: StepSlug): FieldErro
       if (!draft.phone?.trim() || !PHONE_DIGITS.test(draft.phone.replace(/[^\d+]/g, ''))) {
         errors.push({ field: 'phone', message: 'Enter a ten-digit phone number we can reach you on.' });
       }
+      if (!draft.preferredContactMethod) {
+        errors.push({ field: 'preferredContactMethod', message: 'Select your preferred contact method.' });
+      }
+      if (!draft.emergencyContactName?.trim()) {
+        errors.push({ field: 'emergencyContactName', message: 'Provide an emergency contact name.' });
+      }
+      if (!draft.emergencyContactPhone?.trim() || !PHONE_DIGITS.test(draft.emergencyContactPhone.replace(/[^\d+]/g, ''))) {
+        errors.push({ field: 'emergencyContactPhone', message: 'Enter a valid emergency contact phone number.' });
+      }
+      if (!draft.preferredMoveInDate) {
+        errors.push({ field: 'preferredMoveInDate', message: 'Enter your preferred move-in date.' });
+      }
+      break;
+    }
+
+    case 'background': {
       if (!draft.dateOfBirth) {
-        errors.push({
-          field: 'dateOfBirth',
-          message: 'Enter your date of birth. We need it to run the screening report described on our criteria page.',
-        });
+        errors.push({ field: 'dateOfBirth', message: 'Enter your date of birth.' });
+      }
+      if (!draft.idType) {
+        errors.push({ field: 'idType', message: 'Select an ID type.' });
+      }
+      if (draft.idType === 'SSN' && !draft.ssn?.trim()) {
+        errors.push({ field: 'ssn', message: 'Enter your SSN.' });
+      }
+      if (draft.idType === 'EIN' && !draft.ein?.trim()) {
+        errors.push({ field: 'ein', message: 'Enter your EIN.' });
+      }
+      if (draft.hasLicense === true && !draft.driversLicense?.trim()) {
+        errors.push({ field: 'driversLicense', message: 'Enter your driver\'s license number.' });
+      }
+      if (draft.hasEviction === null || draft.hasFelony === null || draft.hasBankruptcy === null) {
+        errors.push({ field: 'questionnaires', message: 'Please answer all questionnaire questions.' });
       }
       break;
     }
 
     case 'income': {
-      const stated = draft.incomeSources.filter((s) => (s.monthlyCents ?? 0) > 0);
-      if (stated.length === 0) {
-        errors.push({
-          field: 'incomeSources',
-          message: 'Add at least one source of income. Wages, self-employment, benefits, and vouchers all count.',
-        });
+      if (!draft.grossMonthlyCents) {
+        errors.push({ field: 'grossMonthlyCents', message: 'Enter your gross monthly income.' });
       }
-      break;
-    }
-
-    case 'history': {
-      if (draft.priorAddresses.length === 0) {
-        errors.push({
-          field: 'priorAddresses',
-          message: 'Add where you have been living. If this is your first rental, add your current address and say so.',
-        });
+      if (!draft.incomeSource) {
+        errors.push({ field: 'incomeSource', message: 'Select your primary source of income.' });
       }
-      if (draft.hasPriorEviction === null) {
-        errors.push({
-          field: 'hasPriorEviction',
-          message: 'Let us know either way. Answering yes routes you to individual review, not an automatic decline.',
-        });
+      if (!draft.employerName?.trim()) {
+        errors.push({ field: 'employerName', message: 'Enter your employer name.' });
+      }
+      if (!draft.durationMonths) {
+        errors.push({ field: 'durationMonths', message: 'Enter how long you have worked there.' });
       }
       break;
     }
 
     case 'household': {
-      // Zero occupants and zero pets is a valid answer - a single person with
-      // no animals should not have to invent an entry to proceed.
-      for (const [i, occupant] of draft.occupants.entries()) {
-        if (!occupant.name?.trim()) {
-          errors.push({ field: `occupants.${i}.name`, message: 'Enter this occupant’s name, or remove them.' });
-        }
+      if (!draft.adultCount || draft.adultCount < 1) {
+        errors.push({
+          field: 'adultCount',
+          message: 'Tell us how many adults will live here.',
+        });
+      }
+      if (draft.hasMinorsOrDependents === true && !draft.dependentCount) {
+        errors.push({ field: 'dependentCount', message: 'Enter the number of dependents.' });
       }
       for (const [i, pet] of draft.pets.entries()) {
-        if (!pet.kind?.trim()) {
-          errors.push({ field: `pets.${i}.kind`, message: 'Say what kind of animal this is, or remove it.' });
+        if (!pet.animalType?.trim()) {
+          errors.push({ field: `pets.${i}.animalType`, message: 'Say what kind of animal this is, or remove it.' });
         }
       }
       break;
     }
 
-    case 'review': {
-      /*
-       * THE SCREENING IDENTIFIERS ARE ENFORCED HERE, not on step one.
-       *
-       * They were required by the FORM on the first screen and by nothing at
-       * all in this file - so the markup gated people out of a step the
-       * system was happy to accept, while an application could still reach
-       * staff with no way to screen it. Both halves are now in the same
-       * place: asked at review, immediately before payment, and checked here
-       * so nothing gets past without them.
-       */
-      if (!draft.ssn?.trim()) {
-        errors.push({
-          field: 'ssn',
-          message:
-            'Enter your Social Security Number. The screening report on our criteria page is run against it.',
-        });
-      }
-      if (!draft.mothersMaidenName?.trim()) {
-        errors.push({
-          field: 'mothersMaidenName',
-          message: "Enter your mother's maiden name - it is the identity check on the report.",
-        });
-      }
-      if (!draft.driversLicense?.trim()) {
-        errors.push({
-          field: 'driversLicense',
-          message: 'Enter your driver’s licence or state ID number.',
-        });
-      }
-      if (!draft.driversLicenseState?.trim()) {
-        errors.push({
-          field: 'driversLicenseState',
-          message: 'Choose the state that issued your ID.',
-        });
-      }
-      if (!draft.disclosuresAcceptedAt) {
-        errors.push({
-          field: 'disclosures',
-          message: 'Confirm you have read the disclosures before we take a payment.',
-        });
-      }
-      // Everything earlier must hold too - this is the last gate before money.
-      for (const earlier of ['details', 'income', 'history', 'household'] as StepSlug[]) {
-        for (const error of validateStep(draft, earlier)) {
-          errors.push({ field: `${earlier}.${error.field}`, message: error.message });
-        }
-      }
-      break;
-    }
+
 
     case 'payment': {
       if (!draft.paymentMethod) {
@@ -361,6 +326,9 @@ export function validateStep(draft: ApplicationDraft, step: StepSlug): FieldErro
       break;
     }
 
+    case 'account_creation':
+      break;
+
     case 'confirmation':
       break;
   }
@@ -383,10 +351,10 @@ export function isStepComplete(draft: ApplicationDraft, step: StepSlug): boolean
 export function resumeStep(draft: ApplicationDraft): StepSlug {
   if (draft.submittedAt) return 'confirmation';
   for (const slug of STEP_SLUGS) {
-    if (slug === 'payment' || slug === 'confirmation') break;
+    if (slug === 'payment' || slug === 'account_creation' || slug === 'confirmation') break;
     if (!isStepComplete(draft, slug)) return slug;
   }
-  return 'review';
+  return 'payment';
 }
 
 /**
@@ -400,14 +368,15 @@ export function resumeStep(draft: ApplicationDraft): StepSlug {
 export function canEnterStep(draft: ApplicationDraft, step: StepSlug): boolean {
   if (!isStepSlug(step)) return false;
   if (step === 'confirmation') return draft.submittedAt !== null;
-  if (step === 'payment') return isStepComplete(draft, 'review');
+  if (step === 'payment') return isStepComplete(draft, 'household');
+  if (step === 'account_creation') return isStepComplete(draft, 'payment');
   return stepIndex(step) <= stepIndex(resumeStep(draft));
 }
 
 export type Progress = { completed: number; total: number; percent: number };
 
 export function progressOf(draft: ApplicationDraft): Progress {
-  const steps: StepSlug[] = ['details', 'income', 'history', 'household', 'review'];
+  const steps: StepSlug[] = ['details', 'background', 'income', 'household'];
 
   /**
    * Counted as "steps behind you", not "steps that happen to validate".
@@ -428,13 +397,6 @@ export function progressOf(draft: ApplicationDraft): Progress {
   };
 }
 
-/**
- * Total household income, for display and for the screening decision.
- *
- * Sums every stated source rather than only employment - the whole point of
- * the income step is that a 1099, a benefit award, and a voucher are all real
- * money.
- */
 export function totalMonthlyIncomeCents(draft: ApplicationDraft): number {
-  return draft.incomeSources.reduce((sum, source) => sum + (source.monthlyCents ?? 0), 0);
+  return draft.grossMonthlyCents ?? 0;
 }

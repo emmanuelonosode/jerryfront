@@ -1,111 +1,103 @@
 /* -----------------------------------------------------------------------------
-   Paying the application fee.
-
-   This is the page where money either arrives or does not, so it is set larger
-   than the rest of the form and structured as numbered steps. The old version
-   listed every method's account details at once at 12-14px, which is both
-   overwhelming and easy to misread - and a misread account number on an
-   irreversible rail is money nobody gets back.
+   Paying the application fee - Apple Design System Multi-Step Wizard
    -------------------------------------------------------------------------- */
+
+.wizardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.introBox {
+  text-align: center;
+  margin-bottom: var(--space-4);
+  padding: var(--space-5);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.introTitle {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #1d1d1f;
+  margin-bottom: var(--space-2);
+}
+
+.introText {
+  font-size: 15px;
+  line-height: 1.4;
+  color: #515154;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ---- Step 1: Select Method ---------------------------------------------- */
 
 .picker {
   margin: 0;
   padding: 0;
   border: 0;
-}
-
-.pickerLegend {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: 0;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--letter-spacing-tight);
-  color: var(--color-text-primary);
+  flex-direction: column;
+  gap: var(--space-6);
 }
-
-/* The numbered marker. Not a list, because a fieldset legend cannot be one. */
-.stepNumber {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: var(--button-primary-bg);
-  color: var(--button-primary-text);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-}
-
-.pickerHint {
-  margin-top: var(--space-3);
-  max-width: 62ch;
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-relaxed);
-  color: var(--color-text-secondary);
-}
-
-/* ---- Families ------------------------------------------------------------ */
 
 .family {
-  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .familyTitle {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #86868b;
+  margin-left: var(--space-3);
 }
 
-.familyNote {
-  margin-top: var(--space-1);
-  max-width: 68ch;
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-relaxed);
-  color: var(--color-text-secondary);
+.familyList {
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* ---- One method ---------------------------------------------------------- */
-
-/* COMPACT, because there are thirteen of these.
-   At `--space-4` padding with the arrival time on its own line, each card was
-   about 200px tall on a phone - so simply choosing how to pay was 2,600px of
-   scrolling before the applicant reached the part where they send anything.
-   Name and arrival time share a line, and the padding drops a step: same
-   information, roughly a third of the height, and the card is still a 68px
-   target rather than a radio dot. */
 .card {
   display: block;
-  padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-primary);
+  padding: var(--space-4);
+  background: transparent;
   cursor: pointer;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.card:last-child {
+  border-bottom: none;
 }
 
 .card:hover {
-  border-color: var(--color-border-strong);
+  background-color: #f5f5f7;
 }
 
-/* The radio is the accessible control and the styling hook; it is not drawn,
-   because the card itself is the affordance. Kept in the layout rather than
-   `display: none` so it can still receive focus. */
+.card:has(.radio:checked) {
+  background-color: #f0f4ff;
+}
+
 .radio {
   position: absolute;
   width: 1px;
@@ -114,14 +106,9 @@
   pointer-events: none;
 }
 
-.card:has(.radio:checked) {
-  border-color: var(--button-primary-bg);
-  background: var(--brand-tint);
-}
-
 .card:has(.radio:focus-visible) {
-  outline: var(--focus-ring-width) solid var(--color-focus);
-  outline-offset: var(--focus-ring-gap);
+  outline: 2px solid #0066cc;
+  outline-offset: -2px;
 }
 
 .cardHead {
@@ -130,172 +117,194 @@
   gap: var(--space-3);
 }
 
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
 .logo {
-  width: auto;
-  height: 26px;
-  max-width: 92px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  padding: 6px;
 }
 
 .logoFallback {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-secondary);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-secondary);
+  font-size: 20px;
+  font-weight: 600;
+  color: #86868b;
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .cardName {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-}
-
-.tick {
-  display: none;
-  margin-left: auto;
-  color: var(--button-primary-bg);
-}
-
-.card:has(.radio:checked) .tick {
-  display: inline-flex;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #1d1d1f;
 }
 
 .cardMeta {
-  display: block;
-  margin-top: 2px;
-  /* Aligned under the name rather than under the logo, which varies in width
-     from a 26px glyph to a 92px wordmark. */
-  padding-left: calc(26px + var(--space-3));
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  font-size: 14px;
+  color: #515154;
+  margin-top: 4px;
 }
 
-/* ---- The details, revealed for the chosen method only -------------------- */
-
-.reveal {
-  display: none;
+.tick {
+  color: #0066cc;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.card:has(.radio:checked) .reveal {
-  display: block;
+.tick svg {
+  width: 24px;
+  height: 24px;
+}
+
+.card:has(.radio:checked) .tick {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.actionRow {
+  display: flex;
+  justify-content: center;
   margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: var(--rule-width) solid var(--color-border-default);
 }
 
-.revealTitle {
-  display: block;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
+.primaryButton {
+  background: #0071e3;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 32px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+}
+
+.primaryButton:hover {
+  background: #0077ed;
+  transform: scale(1.02);
+}
+
+.primaryButton:disabled {
+  background: #e5e5ea;
+  color: #aeaeb2;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ---- Step 2: Pay & Instructions ----------------------------------------- */
+
+.navHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #0071e3;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+.backButton:hover {
+  color: #0077ed;
+  text-decoration: underline;
+}
+
+.instructionsBox {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: var(--space-5);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.selectedMethodHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .fields {
-  display: block;
-  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .revealNote {
   display: block;
-  margin-top: var(--space-3);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-relaxed);
-  color: var(--color-text-secondary);
-}
-
-.warning {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #86868b;
+  text-align: center;
+  background: #f5f5f7;
   padding: var(--space-3);
-  border: var(--rule-width) solid var(--color-status-soon-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-status-soon-fill);
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-relaxed);
-  color: var(--color-status-soon-text);
+  border-radius: 12px;
 }
 
-.warning svg {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-}
+/* ---- Step 3: Receipt Upload -------------------------------------------- */
 
-/* ---- Anti-fraud notice ----------------------------------------------------
-   Set at body size, not small print. It is the paragraph an applicant measures
-   a later fraudulent message against, so it has to be readable on a phone at
-   arm's length - and it sits above the account details, not below them.
-   -------------------------------------------------------------------------- */
-
-.trust {
-  margin-bottom: var(--space-6);
+.receiptSection {
+  background: #ffffff;
+  border-radius: 16px;
   padding: var(--space-5);
-  border: 2px solid var(--color-status-soon-border);
-  border-radius: var(--radius-md);
-  background: var(--color-status-soon-fill);
-}
-
-.trustTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-status-soon-text);
-}
-
-.trustTitle svg {
-  flex: none;
-  width: 22px;
-  height: 22px;
-}
-
-.trustList {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin: var(--space-4) 0 0;
-  padding-left: var(--space-5);
-  max-width: 72ch;
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-relaxed);
-  color: var(--color-text-primary);
+  gap: var(--space-4);
 }
 
-.sampleBanner {
-  margin-bottom: var(--space-5);
-  padding: var(--space-3) var(--space-4);
-  border: var(--rule-width) solid var(--color-status-error-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-status-error-fill);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-status-error-text);
+.receiptTitle {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: #1d1d1f;
+  margin-bottom: var(--space-1);
 }
 
-.laterStep {
+.receiptHint {
+  font-size: 15px;
+  line-height: 1.4;
+  color: #515154;
+}
+
+.sensitiveBlock {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-7);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--letter-spacing-tight);
-  color: var(--color-text-primary);
-}
-
-.laterHint {
-  margin-top: var(--space-3);
-  max-width: 62ch;
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-relaxed);
-  color: var(--color-text-secondary);
+  flex-direction: column;
+  gap: var(--space-4);
 }

@@ -45,6 +45,8 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
   const dates = selectableDates();
   const [issues, setIssues] = useState<RequestIssue[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
+  const [idBackFile, setIdBackFile] = useState<File | null>(null);
   const [submittedSummary, setSubmittedSummary] = useState<SubmittedSummary | null>(null);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -71,6 +73,10 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
       },
       new Date(),
     );
+
+    if (!idFrontFile || !idBackFile) {
+      found.push({ field: 'idFile', message: 'To keep everyone safe, we require a photo of both the front and back of your ID to book a tour.' });
+    }
 
     setIssues(found);
     if (found.length > 0) return;
@@ -101,11 +107,25 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestData),
-    }).catch(() => {
-      // Deliberately not surfaced as a failure to the person: the request is
-      // also reachable by phone, and an error here after they have filled in
-      // the form loses us the lead entirely.
-    });
+    })
+      .then(async (r) => {
+        if (!r.ok) return;
+        const body = (await r.json()) as { id?: string };
+        if (idFrontFile && idBackFile && body.id) {
+          const form = new FormData();
+          form.append('idFront', idFrontFile);
+          form.append('idBack', idBackFile);
+          await fetch(`${API_BASE}/viewings/${body.id}/id/`, {
+            method: 'POST',
+            body: form,
+          });
+        }
+      })
+      .catch(() => {
+        // Deliberately not surfaced as a failure to the person: the request is
+        // also reachable by phone, and an error here after they have filled in
+        // the form loses us the lead entirely.
+      });
     
     // Trigger internal alert
     void fetch('/api/alerts', {
@@ -321,6 +341,48 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
       <Field name="note" label="Anything else" note="Optional">
         {(p) => <Textarea {...p} name="note" rows={2} />}
       </Field>
+
+      <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+          Photo of your ID
+        </label>
+        <p style={{ color: 'var(--color-ink-light)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+          To keep everyone safe, we require a photo of the front and back of your ID before you can book a tour. 
+          It is stored securely and deleted automatically once your tour request is reviewed.
+        </p>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }} htmlFor="tf-id-front">
+              Front of ID
+            </label>
+            <input
+              id="tf-id-front"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf"
+              onChange={(e) => setIdFrontFile(e.target.files?.[0] ?? null)}
+              style={{ display: 'block', width: '100%' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }} htmlFor="tf-id-back">
+              Back of ID
+            </label>
+            <input
+              id="tf-id-back"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf"
+              onChange={(e) => setIdBackFile(e.target.files?.[0] ?? null)}
+              style={{ display: 'block', width: '100%' }}
+            />
+          </div>
+        </div>
+        {errorFor(issues, 'idFile') ? (
+          <p className={styles.formError} role="alert" style={{ marginTop: '0.5rem' }}>
+            {errorFor(issues, 'idFile')}
+          </p>
+        ) : null}
+      </div>
 
       <div className={styles.actions}>
         <Button type="submit" size="lg">

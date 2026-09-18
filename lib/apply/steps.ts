@@ -15,11 +15,11 @@
 
 export type StepSlug =
   | 'details'
+  | 'background'
   | 'income'
-  | 'history'
   | 'household'
-  | 'review'
   | 'payment'
+  | 'account_creation'
   | 'confirmation';
 
 export type StepDefinition = {
@@ -47,15 +47,15 @@ export const STEPS: StepDefinition[] = [
     revisitable: true,
   },
   {
-    slug: 'income',
-    label: 'Income',
-    purpose: 'What you earn and how you can show it. Every kind of income counts.',
+    slug: 'background',
+    label: 'Background',
+    purpose: 'Identification and standard screening questions.',
     revisitable: true,
   },
   {
-    slug: 'history',
-    label: 'Rental history',
-    purpose: 'Where you have lived. Answering honestly here helps you.',
+    slug: 'income',
+    label: 'Income',
+    purpose: 'Your primary source of income and employment details.',
     revisitable: true,
   },
   {
@@ -65,15 +65,15 @@ export const STEPS: StepDefinition[] = [
     revisitable: true,
   },
   {
-    slug: 'review',
-    label: 'Review',
-    purpose: 'Check everything before you pay anything.',
-    revisitable: true,
-  },
-  {
     slug: 'payment',
     label: 'Payment',
     purpose: 'The application fee, at the amount you have already seen.',
+    revisitable: false,
+  },
+  {
+    slug: 'account_creation',
+    label: 'Create Account',
+    purpose: 'Verify your email to create your account and track your application.',
     revisitable: false,
   },
   {

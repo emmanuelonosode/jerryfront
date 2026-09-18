@@ -124,6 +124,11 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
       setError('Leave an email or a phone number - either one is enough.');
       return;
     }
+    if (!idFile) {
+      setStep('extras');
+      setError('A photo of your ID is required to book a tour.');
+      return;
+    }
 
     setSending(true);
     try {
@@ -150,10 +155,8 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
       const body = (await response.json()) as { id?: string };
 
       /*
-       * The ID goes up SEPARATELY, AFTER the request exists, and a failure
-       * here never fails the booking. The tour is what they came for; losing
-       * it because an optional photo would not upload is a far worse outcome
-       * than not having the photo.
+       * The ID is uploaded securely after the request is created.
+       * If this fails, the request still exists but the admin will see it's missing.
        */
       if (idFile && body.id) {
         const form = new FormData();
@@ -362,12 +365,11 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
 
             <div className={styles.idBlock}>
               <label className={styles.label} htmlFor="tw-id">
-                Photo of your ID <span className={styles.optional}>Optional</span>
+                Photo of your ID
               </label>
               <p className={styles.hint}>
-                Sending it now means a self-guided visit can be unlocked for you straight away.
-                Skip it and we will check ID at the door instead. It is deleted once the
-                viewing has been reviewed.
+                To keep everyone safe, we require a photo of your ID before you can book a tour. 
+                It is stored securely and deleted automatically once your tour request is reviewed.
               </p>
               <input
                 id="tw-id"

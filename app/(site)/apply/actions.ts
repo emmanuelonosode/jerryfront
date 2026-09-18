@@ -116,6 +116,12 @@ export async function applyStepUpdate(
   step: StepSlug,
   formData: FormData,
 ): Promise<ApplicationDraft> {
+  // A submitted draft is locked. Attempting to patch it will yield a 409 Conflict
+  // from the backend. If the user hits "Back" and re-submits, just advance them.
+  if (draft.submittedAt) {
+    return draft;
+  }
+
   const changes: Partial<ApplicationDraft> = {};
 
   if (step === 'details') {
@@ -124,87 +130,79 @@ export async function applyStepUpdate(
     changes.lastName = readString(formData, 'lastName');
     changes.email = readString(formData, 'email');
     changes.phone = readString(formData, 'phone');
+    changes.phoneType = readString(formData, 'phoneType');
+    changes.preferredContactMethod = readString(formData, 'preferredContactMethod');
+    changes.emergencyContactName = readString(formData, 'emergencyContactName');
+    changes.emergencyContactRelationship = readString(formData, 'emergencyContactRelationship');
+    changes.emergencyContactPhone = readString(formData, 'emergencyContactPhone');
+    changes.emergencyContactPhoneType = readString(formData, 'emergencyContactPhoneType');
+    changes.preferredMoveInDate = readString(formData, 'preferredMoveInDate');
+  }
+
+  if (step === 'background') {
     changes.dateOfBirth = readString(formData, 'dateOfBirth');
-    changes.maritalStatus = readString(formData, 'maritalStatus');
-    /*
-     * THE SCREENING IDENTIFIERS ARE READ ON THE REVIEW STEP, NOT HERE.
-     *
-     * They used to be inputs on this form and were read back here. Now that
-     * they live on the review step, reading them here would be actively
-     * destructive rather than merely useless: `readString` returns null for a
-     * field that is not in the submitted form, so every save of step one
-     * would blank an SSN the applicant had already entered at review, and it
-     * would do it silently.
-     */
-    changes.currentAddress = readString(formData, 'currentAddress');
-    changes.currentCity = readString(formData, 'currentCity');
-    changes.currentState = readString(formData, 'currentState');
-    changes.currentZip = readString(formData, 'currentZip');
-    const curMonths = readString(formData, 'currentResidenceMonths');
-    changes.currentResidenceMonths = curMonths ? parseInt(curMonths, 10) : null;
-    changes.previousAddress = readString(formData, 'previousAddress');
-    changes.previousCity = readString(formData, 'previousCity');
-    changes.previousState = readString(formData, 'previousState');
-    changes.previousZip = readString(formData, 'previousZip');
-    const prevMonths = readString(formData, 'previousResidenceMonths');
-    changes.previousResidenceMonths = prevMonths ? parseInt(prevMonths, 10) : null;
+    changes.idType = readString(formData, 'idType');
+    changes.ssn = readString(formData, 'ssn');
+    changes.ein = readString(formData, 'ein');
+    
+    changes.hasLicense = formData.get('hasLicense') === 'yes';
+    changes.driversLicense = readString(formData, 'driversLicense');
+    changes.driversLicenseState = readString(formData, 'driversLicenseState');
+    
+    const getBool = (key: string) => {
+      const val = formData.get(key);
+      if (val === 'yes') return true;
+      if (val === 'no') return false;
+      return null;
+    };
+    
+    changes.hasEviction = getBool('hasEviction');
+    changes.hasFelony = getBool('hasFelony');
+    changes.hasBankruptcy = getBool('hasBankruptcy');
+    changes.backgroundExplanation = readString(formData, 'backgroundExplanation');
+    changes.isActiveMilitary = getBool('isActiveMilitary');
+    changes.receivesHousingAssistance = getBool('receivesHousingAssistance');
   }
 
   if (step === 'income') {
-    const kinds = formData.getAll('incomeKind') as string[];
-    const amounts = formData.getAll('incomeAmount') as string[];
-    const notes = formData.getAll('incomeNote') as string[];
-    changes.incomeSources = kinds
-      .map((kind, i) => ({
-        kind: kind as ApplicationDraft['incomeSources'][number]['kind'],
-        monthlyCents: Math.round(Number((amounts[i] ?? '').replace(/[$,]/g, '')) * 100) || null,
-        description: notes[i]?.trim() || null,
-      }))
-      .filter((source) => (source.monthlyCents ?? 0) > 0);
+    const monthlyStr = readString(formData, 'grossMonthlyCents');
+    changes.grossMonthlyCents = monthlyStr ? parseInt(monthlyStr.replace(/,/g, ''), 10) * 100 : null;
+    changes.grossAnnualCents = changes.grossMonthlyCents ? changes.grossMonthlyCents * 12 : null;
+    changes.incomeSource = readString(formData, 'incomeSource');
     changes.employerName = readString(formData, 'employerName');
-    changes.employerAddress = readString(formData, 'employerAddress');
-    changes.jobTitle = readString(formData, 'jobTitle');
-    changes.employerPhone = readString(formData, 'employerPhone');
-  }
-
-  if (step === 'history') {
-    const lines = formData.getAll('addressLine') as string[];
-    changes.priorAddresses = lines
-      .map((line, i) => ({
-        line: line.trim() || null,
-        city: ((formData.getAll('addressCity')[i] as string) ?? '').trim() || null,
-        state: ((formData.getAll('addressState')[i] as string) ?? '').trim() || null,
-        fromYear: Number(formData.getAll('addressFrom')[i]) || null,
-        toYear: Number(formData.getAll('addressTo')[i]) || null,
-        landlordName: ((formData.getAll('landlordName')[i] as string) ?? '').trim() || null,
-        landlordPhone: ((formData.getAll('landlordPhone')[i] as string) ?? '').trim() || null,
-        endedEarly: formData.getAll('endedEarly')[i] === 'yes',
-        endedEarlyNote: ((formData.getAll('endedEarlyNote')[i] as string) ?? '').trim() || null,
-      }))
-      .filter((address) => address.line !== null);
-
-    const eviction = readString(formData, 'hasPriorEviction');
-    changes.hasPriorEviction = eviction === null ? null : eviction === 'yes';
-    changes.priorEvictionNote = readString(formData, 'priorEvictionNote');
+    const durationStr = readString(formData, 'durationMonths');
+    changes.durationMonths = durationStr ? parseInt(durationStr, 10) : null;
   }
 
   if (step === 'household') {
-    const names = formData.getAll('occupantName') as string[];
-    changes.occupants = names
-      .filter((n) => n.trim() !== '')
-      .map((name, i) => ({
-        name: name.trim(),
-        age: Number(formData.getAll('occupantAge')[i]) || null,
-        relationship: ((formData.getAll('occupantRelationship')[i] as string) ?? '').trim() || null,
+    const countStr = readString(formData, 'adultCount');
+    changes.adultCount = countStr ? parseInt(countStr, 10) : 1;
+
+    changes.hasMinorsOrDependents = formData.get('hasMinorsOrDependents') === 'yes';
+    const depStr = readString(formData, 'dependentCount');
+    changes.dependentCount = depStr ? parseInt(depStr, 10) : null;
+    
+    changes.hasMotorVehicles = formData.get('hasMotorVehicles') === 'yes';
+    const makes = formData.getAll('makeModel') as string[];
+    changes.vehicles = makes
+      .filter((k) => k.trim() !== '')
+      .map((makeModel, i) => ({
+        makeModel: makeModel.trim(),
+        color: (formData.getAll('color')[i] as string) || null,
+        licensePlate: (formData.getAll('licensePlate')[i] as string) || null,
+        state: (formData.getAll('vehicleState')[i] as string) || null,
       }));
 
-    const petKinds = formData.getAll('petKind') as string[];
+    changes.hasAnimals = formData.get('hasAnimals') === 'yes';
+    const petKinds = formData.getAll('animalType') as string[];
     changes.pets = petKinds
       .filter((k) => k.trim() !== '')
-      .map((kind, i) => ({
-        kind: kind.trim(),
-        weightLb: Number(formData.getAll('petWeight')[i]) || null,
-        isAssistanceAnimal: formData.getAll('petAssistance')[i] === 'yes',
+      .map((animalType, i) => ({
+        animalType: animalType.trim(),
+        breed: (formData.getAll('breed')[i] as string) || null,
+        weightLbs: Number(formData.getAll('weightLbs')[i]) || null,
+        name: (formData.getAll('petName')[i] as string) || null,
+        isServiceAnimal: formData.getAll('isServiceAnimal')[i] === 'yes',
       }));
   }
 
@@ -307,7 +305,7 @@ export async function applyStepUpdate(
      * created - a payment must have a positive amount. This is the only place
      * that knows both the per-adult fee and the household.
      */
-    const adults = 1 + draft.occupants.filter((o) => (o.age ?? 0) >= 18).length;
+    const adults = draft.adultCount ?? 1;
     changes.applicationFeeCents = adults * APPLICATION_FEE_CENTS;
 
     if (reported && !draft.paymentReportedAt) {
@@ -316,13 +314,8 @@ export async function applyStepUpdate(
     }
   }
 
-  if (step === 'review') {
-    // Asked here now - see the note on the details branch and on ReviewStep.
-    changes.ssn = readString(formData, 'ssn');
-    changes.mothersMaidenName = readString(formData, 'mothersMaidenName');
-    changes.driversLicense = readString(formData, 'driversLicense');
-    changes.driversLicenseState = readString(formData, 'driversLicenseState');
-    changes.disclosuresAcceptedAt = formData.get('disclosures') === 'yes' ? new Date().toISOString() : null;
+  if (step === 'account_creation') {
+    // OTP handling will be verified separately, we just need to pass validation 
   }
 
 

@@ -196,7 +196,7 @@ export function documentsFor(draft: ApplicationDraft): RequestedDocument[] {
     },
   ];
 
-  if (draft.incomeSources.some((s) => s.kind === 'voucher')) {
+  if (draft.incomeSource === 'voucher') {
     docs.push({
       kind: 'voucher',
       label: 'Voucher award letter',
@@ -205,7 +205,7 @@ export function documentsFor(draft: ApplicationDraft): RequestedDocument[] {
     });
   }
 
-  if (draft.hasPriorEviction) {
+  if (draft.hasEviction) {
     docs.push({
       kind: 'rental-history',
       label: 'Anything about the prior filing',

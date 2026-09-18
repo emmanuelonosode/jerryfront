@@ -87,7 +87,7 @@ describe('documents', () => {
   });
 
   test('a voucher holder is asked for the award letter and caseworker', () => {
-    const d = draft({ incomeSources: [{ kind: 'voucher', monthlyCents: dollars(1100), description: null }] });
+    const d = draft({ incomeSource: 'voucher' });
     const voucher = documentsFor(d).find((x) => x.kind === 'voucher');
     assert.ok(voucher);
     assert.match(voucher.why, /caseworker/);
@@ -96,7 +96,7 @@ describe('documents', () => {
   test('eviction paperwork is requested but NOT required', () => {
     // Requiring someone to produce court documents to be considered is the
     // barrier the individual review track exists to remove.
-    const d = draft({ hasPriorEviction: true });
+    const d = draft({ hasEviction: true });
     const doc = documentsFor(d).find((x) => x.kind === 'rental-history')!;
     assert.equal(doc.required, false);
     assert.match(doc.why, /helps your case/i);

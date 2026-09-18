@@ -1,8 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { NextResponse, type NextRequest } from 'next/server';
 import { clientIp } from '@/lib/analytics/request';
-import { sendAlert } from '@/lib/mailer';
 
 /**
  * Telemetry intake - a thin forwarder to the Python backend.
@@ -59,47 +56,6 @@ export async function POST(request: NextRequest) {
     });
   } catch {
     // Analytics must never surface as a broken page.
-  }
-
-  // --- Alert System: Unique Visitor Tracking ---
-  if (ip) {
-    try {
-      /**
-       * NOT UNDER `public/`. This wrote raw visitor IP addresses to
-       * `public/data/visitors.json`, which Next serves - so every visitor's IP
-       * was readable by anyone who guessed the URL. An IP is personal data
-       * under GDPR and CCPA, and the analytics pipeline in this same codebase
-       * truncates it before storage for exactly that reason; this bypassed it.
-       */
-      const trackingFile = path.join(process.cwd(), '.private-data', 'visitor-alert-counter.json');
-      // Ensure directory exists
-      fs.mkdirSync(path.dirname(trackingFile), { recursive: true });
-      
-      let visitors: string[] = [];
-      if (fs.existsSync(trackingFile)) {
-        try {
-          visitors = JSON.parse(fs.readFileSync(trackingFile, 'utf8'));
-        } catch {
-          // A corrupt counter file is not worth failing telemetry over.
-        }
-      }
-
-      if (!visitors.includes(ip)) {
-        visitors.push(ip);
-        
-        if (visitors.length >= 20) {
-          // Trigger alert
-          sendAlert('20 New Unique Visitors', `The site has received 20 new unique visitors. Total tracked in this batch: ${visitors.length}.`);
-          // Reset tracker
-          visitors = [];
-        }
-        
-        fs.writeFileSync(trackingFile, JSON.stringify(visitors));
-      }
-    } catch (error) {
-      // Ignore tracking errors so it doesn't break telemetry
-      console.error('Failed to track visitors for alerts:', error);
-    }
   }
 
   return new NextResponse(null, { status: 204 });

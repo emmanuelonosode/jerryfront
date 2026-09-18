@@ -5,11 +5,11 @@ import { draftForRender } from '../actions';
 import { canEnterStep, progressOf, resumeStep, validateStep } from '@/lib/apply/draft';
 import { isStepSlug, type StepSlug } from '@/lib/apply/steps';
 import { DetailsStep } from './steps/DetailsStep';
+import { BackgroundStep } from './steps/BackgroundStep';
 import { IncomeStep } from './steps/IncomeStep';
-import { HistoryStep } from './steps/HistoryStep';
 import { HouseholdStep } from './steps/HouseholdStep';
-import { ReviewStep } from './steps/ReviewStep';
 import { PaymentStep } from './steps/PaymentStep';
+import { AccountCreationStep } from './steps/AccountCreationStep';
 import { ConfirmationStep } from './steps/ConfirmationStep';
 import { methodsForDraft } from '@/lib/payments/source';
 
@@ -99,13 +99,13 @@ export default async function ApplyStepPage({
       savedAt={draft.id === 'unsaved' ? null : draft.updatedAt}
     >
       {step === 'details' ? <DetailsStep draft={draft} errors={errors} /> : null}
+      {step === 'background' ? <BackgroundStep draft={draft} errors={errors} /> : null}
       {step === 'income' ? <IncomeStep draft={draft} errors={errors} /> : null}
-      {step === 'history' ? <HistoryStep draft={draft} errors={errors} /> : null}
       {step === 'household' ? <HouseholdStep draft={draft} errors={errors} /> : null}
-      {step === 'review' ? <ReviewStep draft={draft} errors={errors} /> : null}
       {step === 'payment' ? (
         <PaymentStep draft={draft} errors={errors} liveMethods={liveMethods} />
       ) : null}
+      {step === 'account_creation' ? <AccountCreationStep draft={draft} /> : null}
       {step === 'confirmation' ? <ConfirmationStep draft={draft} /> : null}
     </StepShell>
   );

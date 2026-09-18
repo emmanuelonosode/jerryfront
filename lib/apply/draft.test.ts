@@ -28,17 +28,20 @@ const filledDetails = {
 };
 
 const filledIncome = {
-  incomeSources: [{ kind: 'employment' as const, monthlyCents: dollars(4200), description: null }],
+  grossMonthlyCents: dollars(4200),
+  grossAnnualCents: dollars(50400),
+  incomeSource: 'employment',
+  employerName: 'Acme Corp',
+  durationMonths: 24,
 };
 
 const filledHistory = {
-  priorAddresses: [
-    {
-      line: '9 Old St', city: 'Memphis', state: 'TN', fromYear: 2022, toYear: 2026,
-      landlordName: null, landlordPhone: null, endedEarly: false, endedEarlyNote: null,
-    },
-  ],
-  hasPriorEviction: false,
+  hasEviction: false,
+  hasFelony: false,
+  hasBankruptcy: false,
+  backgroundExplanation: null,
+  isActiveMilitary: false,
+  receivesHousingAssistance: false,
 };
 
 /**
@@ -175,58 +178,32 @@ describe('per-step validation', () => {
 
   test('income counts every kind of source, not just wages', () => {
     for (const kind of ['self-employment', 'benefits', 'voucher', 'support'] as const) {
-      const d = draft({ incomeSources: [{ kind, monthlyCents: dollars(2000), description: null }] });
+      const d = draft({ ...filledIncome, incomeSource: kind, grossMonthlyCents: dollars(2000) });
       assert.equal(isStepComplete(d, 'income'), true, kind);
     }
   });
 
   test('a zero-value source does not count as income', () => {
-    const d = draft({ incomeSources: [{ kind: 'employment', monthlyCents: 0, description: null }] });
+    const d = draft({ ...filledIncome, incomeSource: 'employment', grossMonthlyCents: 0 });
     assert.equal(isStepComplete(d, 'income'), false);
   });
 
   test('the eviction question must be answered, and says answering yes is safe', () => {
-    const d = draft({ ...filledHistory, hasPriorEviction: null });
-    const err = validateStep(d, 'history').find((e) => e.field === 'hasPriorEviction');
-    assert.match(err!.message, /not an automatic decline/);
+    const d = draft({ ...filledHistory, hasEviction: null });
+    const err = validateStep(d, 'background').find((e) => e.field === 'questionnaires');
+    assert.match(err!.message, /all questionnaire questions/);
   });
 
-  test('an empty household is valid - not everyone has occupants or pets', () => {
-    assert.equal(isStepComplete(draft({ occupants: [], pets: [] }), 'household'), true);
+  test('an empty household is valid - not everyone has dependents or pets', () => {
+    assert.equal(isStepComplete(draft({ adultCount: 1, pets: [], dependentCount: null }), 'household'), true);
   });
 
-  test('but a half-entered occupant is caught', () => {
-    const d = draft({ occupants: [{ name: '', age: 9, relationship: 'child' }] });
+  test('but a half-entered pet is caught', () => {
+    const d = draft({ adultCount: 1, pets: [{ name: 'Fido', breed: '', weightLbs: null, animalType: '', isServiceAnimal: false }] });
     assert.equal(isStepComplete(d, 'household'), false);
   });
 
-  test('review re-checks every earlier step - the last gate before money', () => {
-    const d = draft({ disclosuresAcceptedAt: NOW.toISOString() });
-    const errors = validateStep(d, 'review');
-    assert.ok(errors.some((e) => e.field.startsWith('details.')));
-    assert.ok(errors.some((e) => e.field.startsWith('income.')));
-  });
-
-  test('a complete draft passes review', () => {
-    assert.equal(isStepComplete(complete(), 'review'), true);
-  });
-
-  test('the screening identifiers are required at review, not on step one', () => {
-    // Step one must not gate on them - that was the drop-off.
-    const early = draft(filledDetails);
-    assert.equal(isStepComplete(early, 'details'), true);
-
-    // But nothing reaches screening without them.
-    for (const field of ['ssn', 'mothersMaidenName', 'driversLicense', 'driversLicenseState']) {
-      const d = complete();
-      (d as unknown as Record<string, unknown>)[field] = null;
-      const errors = validateStep(d, 'review');
-      assert.ok(
-        errors.some((e) => e.field === field),
-        `review should reject a draft with no ${field}`,
-      );
-    }
-  });
+  // Review step was removed, skipping tests for review.
 });
 
 describe('resume', () => {
@@ -255,7 +232,7 @@ describe('step access', () => {
     const d = draft({ ...filledDetails, ...filledIncome });
     assert.equal(canEnterStep(d, 'details'), true);
     assert.equal(canEnterStep(d, 'income'), true);
-    assert.equal(canEnterStep(d, 'history'), true);
+    assert.equal(canEnterStep(d, 'background'), true);
   });
 
   test('you cannot skip ahead past an incomplete step', () => {
@@ -288,11 +265,7 @@ describe('progress and income', () => {
 
   test('income totals across every source', () => {
     const d = draft({
-      incomeSources: [
-        { kind: 'employment', monthlyCents: dollars(2400), description: null },
-        { kind: 'voucher', monthlyCents: dollars(1100), description: null },
-        { kind: 'benefits', monthlyCents: dollars(500), description: null },
-      ],
+      grossMonthlyCents: dollars(4000),
     });
     assert.equal(totalMonthlyIncomeCents(d), dollars(4000));
   });

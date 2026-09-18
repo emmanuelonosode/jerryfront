@@ -1,3 +1,5 @@
+"use client";
+
 import { Field } from '@/components/ui/Field';
 import { TextInput, Select } from '@/components/ui/Controls';
 import { US_STATES } from '@/lib/states';
@@ -68,16 +70,15 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
               <TextInput {...p} name="lastName" autoComplete="family-name" defaultValue={draft.lastName ?? ''} />
             )}
           </Field>
-          <Field name="maritalStatus" label="Marital status" note="Optional">
+          <Field name="preferredMoveInDate" label="Preferred Move-in Date" required error={errorFor(errors, 'preferredMoveInDate')}>
             {(p) => (
-              <Select {...p} name="maritalStatus" defaultValue={draft.maritalStatus ?? ''}>
-                <option value="" disabled>Select status…</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-                <option value="Divorced">Divorced</option>
-                <option value="Widowed">Widowed</option>
-                <option value="Separated">Separated</option>
-              </Select>
+              <TextInput 
+                {...p} 
+                type="date" 
+                name="preferredMoveInDate" 
+                defaultValue={draft.preferredMoveInDate ?? ''} 
+                min={new Date().toISOString().split('T')[0]}
+              />
             )}
           </Field>
         </div>
@@ -91,169 +92,142 @@ export function DetailsStep({ draft, errors }: { draft: ApplicationDraft; errors
           this application. We do not use either for marketing.
         </p>
 
-        <Field name="email" label="Email" required error={errorFor(errors, 'email')}>
-          {(p) => (
-            <TextInput
-              {...p}
-              type="email"
-              name="email"
-              autoComplete="email"
-              inputMode="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              defaultValue={draft.email ?? ''}
-            />
-          )}
-        </Field>
-
-        <Field name="phone" label="Mobile number" required error={errorFor(errors, 'phone')}>
-          {(p) => (
-            <TextInput
-              {...p}
-              type="tel"
-              name="phone"
-              autoComplete="tel"
-              inputMode="tel"
-              defaultValue={draft.phone ?? ''}
-            />
-          )}
-        </Field>
-      </fieldset>
-
-      {/* ---- Date of birth ------------------------------------------------- */}
-      <fieldset className={styles.group}>
-        <legend className={styles.groupTitle}>Date of birth</legend>
-        {/* Was "Identity" and "these four run the screening report" - true
-            when the SSN, maiden name and licence sat here, and left describing
-            one field once they moved to review. */}
-        <p className={styles.groupHint}>
-          Needed to confirm you are over 18 and to match the screening report to the
-          right person. Stored with field-level encryption and never shown back to you.
-        </p>
-
-        {/*
-          THE SCREENING IDENTIFIERS ARE NOT ON THIS SCREEN ANY MORE.
-
-          Social Security Number, mother's maiden name and driver's licence
-          were all marked required HERE - the first screen of the first step,
-          before anybody had committed to anything. That is the single
-          highest-friction thing a form can do, and on a site whose whole
-          position is being the real one in a category full of fraud it is
-          also the exact shape of the thing it warns people about: a stranger
-          asking for your SSN before they have told you anything.
-
-          It was not even enforced. `validateStep('details')` requires five
-          fields - name, email, phone and date of birth - and never looked at
-          any of the identifiers, so the form was gating people out of a step
-          the system was happy to accept.
-
-          They now sit on the review step, immediately before payment, where
-          the person has seen the home, the fee and the criteria, and where
-          the reason to ask is self-evident. Same fields, same validation,
-          collected at the point they are actually used.
-        */}
-        <Field name="dateOfBirth" label="Date of birth" required error={errorFor(errors, 'dateOfBirth')}>
-          {(p) => (
-            <TextInput {...p} figure type="date" name="dateOfBirth" autoComplete="bday" max="2006-12-31" defaultValue={draft.dateOfBirth ?? ''} />
-          )}
-        </Field>
-      </fieldset>
-
-      {/* ---- Current address ----------------------------------------------- */}
-      <fieldset className={styles.group}>
-        <legend className={styles.groupTitle}>Where you live now</legend>
-
-        <Field name="currentAddress" label="Street address" required>
-          {(p) => (
-            <TextInput {...p} name="currentAddress" autoComplete="street-address" defaultValue={draft.currentAddress ?? ''} />
-          )}
-        </Field>
-
         <div className={styles.pair}>
-          <Field name="currentCity" label="City" required>
-            {(p) => <TextInput {...p} name="currentCity" autoComplete="address-level2" defaultValue={draft.currentCity ?? ''} />}
-          </Field>
-          <Field name="currentState" label="State" required>
-            {(p) => (
-              <Select {...p} name="currentState" autoComplete="address-level1" defaultValue={draft.currentState ?? ''}>
-                <option value="" disabled>Select state…</option>
-                {US_STATES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </Select>
-            )}
-          </Field>
-        </div>
-
-        <div className={styles.pair}>
-          <Field name="currentZip" label="ZIP code" required>
+          <Field name="email" label="Email" required error={errorFor(errors, 'email')}>
             {(p) => (
               <TextInput
                 {...p}
-                figure
-                name="currentZip"
-                autoComplete="postal-code"
-                inputMode="numeric"
-                maxLength={10}
-                defaultValue={draft.currentZip ?? ''}
+                type="email"
+                name="email"
+                autoComplete="email"
+                inputMode="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                defaultValue={draft.email ?? ''}
               />
             )}
           </Field>
-          <Field name="currentResidenceMonths" label="Time lived here" required>
+          <Field name="preferredContactMethod" label="Preferred Contact" required error={errorFor(errors, 'preferredContactMethod')}>
             {(p) => (
-              <Select {...p} name="currentResidenceMonths" defaultValue={draft.currentResidenceMonths ?? ''}>
-                <option value="" disabled>Select time…</option>
-                {MONTHS_LIVED.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+              <Select {...p} name="preferredContactMethod" defaultValue={draft.preferredContactMethod ?? ''}>
+                <option value="" disabled>Select…</option>
+                <option value="Email">Email</option>
+                <option value="Phone">Phone</option>
+                <option value="Text">Text Message</option>
+              </Select>
+            )}
+          </Field>
+        </div>
+
+        <div className={styles.pair}>
+          <Field name="phone" label="Phone number" required error={errorFor(errors, 'phone')}>
+            {(p) => (
+              <TextInput
+                {...p}
+                type="tel"
+                name="phone"
+                autoComplete="tel"
+                inputMode="tel"
+                defaultValue={draft.phone ?? ''}
+                onChange={(e) => {
+                  const input = e.target.value.replace(/\D/g, '').substring(0, 10);
+                  const areaCode = input.substring(0, 3);
+                  const middle = input.substring(3, 6);
+                  const last = input.substring(6, 10);
+                  
+                  if (input.length > 6) {
+                    e.target.value = `(${areaCode}) ${middle}-${last}`;
+                  } else if (input.length > 3) {
+                    e.target.value = `(${areaCode}) ${middle}`;
+                  } else if (input.length > 0) {
+                    e.target.value = `(${areaCode}`;
+                  } else {
+                    e.target.value = '';
+                  }
+                  
+                  if (p.onChange) {
+                    p.onChange(e);
+                  }
+                }}
+              />
+            )}
+          </Field>
+          <Field name="phoneType" label="Phone type" note="Optional">
+            {(p) => (
+              <Select {...p} name="phoneType" defaultValue={draft.phoneType ?? 'Mobile'}>
+                <option value="Mobile">Mobile</option>
+                <option value="Home">Home</option>
+                <option value="Work">Work</option>
               </Select>
             )}
           </Field>
         </div>
       </fieldset>
 
-      {/* ---- Previous address ----------------------------------------------
-          Optional in full, and said so at the top of the group rather than
-          "Optional" repeated on six labels. */}
+      {/* ---- Emergency Contact --------------------------------------------- */}
       <fieldset className={styles.group}>
-        <legend className={styles.groupTitle}>Where you lived before</legend>
-        <p className={styles.groupHint}>
-          Optional. Fill it in if you have been at your current address less than two years
-          — it gives us a second reference to talk to.
-        </p>
-
-        <Field name="previousAddress" label="Street address">
-          {(p) => (
-            <TextInput {...p} name="previousAddress" defaultValue={draft.previousAddress ?? ''} />
-          )}
-        </Field>
+        <legend className={styles.groupTitle}>Emergency Contact</legend>
+        <p className={styles.groupHint}>Someone who won't be living with you.</p>
 
         <div className={styles.pair}>
-          <Field name="previousCity" label="City">
-            {(p) => <TextInput {...p} name="previousCity" defaultValue={draft.previousCity ?? ''} />}
-          </Field>
-          <Field name="previousState" label="State">
+          <Field name="emergencyContactName" label="Full name" required error={errorFor(errors, 'emergencyContactName')}>
             {(p) => (
-              <Select {...p} name="previousState" defaultValue={draft.previousState ?? ''}>
-                <option value="">Select state…</option>
-                {US_STATES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </Select>
+              <TextInput {...p} name="emergencyContactName" defaultValue={draft.emergencyContactName ?? ''} />
+            )}
+          </Field>
+          <Field name="emergencyContactRelationship" label="Relationship" note="Optional">
+            {(p) => (
+              <TextInput {...p} name="emergencyContactRelationship" defaultValue={draft.emergencyContactRelationship ?? ''} />
             )}
           </Field>
         </div>
 
         <div className={styles.pair}>
-          <Field name="previousZip" label="ZIP code">
+          <Field name="emergencyContactPhone" label="Phone number" required error={errorFor(errors, 'emergencyContactPhone')}>
             {(p) => (
-              <TextInput {...p} figure name="previousZip" inputMode="numeric" maxLength={10} defaultValue={draft.previousZip ?? ''} />
+              <TextInput
+                {...p}
+                type="tel"
+                name="emergencyContactPhone"
+                autoComplete="tel"
+                inputMode="tel"
+                defaultValue={draft.emergencyContactPhone ?? ''}
+                onChange={(e) => {
+                  const input = e.target.value.replace(/\D/g, '').substring(0, 10);
+                  const areaCode = input.substring(0, 3);
+                  const middle = input.substring(3, 6);
+                  const last = input.substring(6, 10);
+                  
+                  if (input.length > 6) {
+                    e.target.value = `(${areaCode}) ${middle}-${last}`;
+                  } else if (input.length > 3) {
+                    e.target.value = `(${areaCode}) ${middle}`;
+                  } else if (input.length > 0) {
+                    e.target.value = `(${areaCode}`;
+                  } else {
+                    e.target.value = '';
+                  }
+                  
+                  if (p.onChange) {
+                    p.onChange(e);
+                  }
+                }}
+              />
             )}
           </Field>
-          <Field name="previousResidenceMonths" label="Time lived there">
+          <Field name="emergencyContactPhoneType" label="Phone type" note="Optional">
             {(p) => (
-              <Select {...p} name="previousResidenceMonths" defaultValue={draft.previousResidenceMonths ?? ''}>
-                <option value="">Select time…</option>
-                {MONTHS_LIVED.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+              <Select {...p} name="emergencyContactPhoneType" defaultValue={draft.emergencyContactPhoneType ?? 'Mobile'}>
+                <option value="Mobile">Mobile</option>
+                <option value="Home">Home</option>
+                <option value="Work">Work</option>
               </Select>
             )}
           </Field>
         </div>
       </fieldset>
+
+
 
       <StepNav step="details" />
     </form>

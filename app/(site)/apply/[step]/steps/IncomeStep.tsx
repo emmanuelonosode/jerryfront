@@ -1,109 +1,73 @@
+"use client";
+
 import { Field } from '@/components/ui/Field';
 import { Select, TextInput } from '@/components/ui/Controls';
 import { StepNav } from '@/components/apply/StepNav';
 import type { ApplicationDraft, FieldError } from '@/lib/apply/draft';
 import styles from './steps.module.css';
 
-const KINDS: { value: string; label: string }[] = [
-  { value: 'employment', label: 'A job (wages or salary)' },
-  { value: 'self-employment', label: 'Self-employment, contract, or gig work' },
-  { value: 'benefits', label: 'Benefits - Social Security, disability, or similar' },
-  { value: 'voucher', label: 'A housing voucher' },
-  { value: 'support', label: 'Child support or alimony' },
-  { value: 'other', label: 'Something else' },
-];
+const errorFor = (errors: FieldError[], field: string) =>
+  errors.find((e) => e.field === field)?.message;
 
-/**
- * Step 2 - income.
- *
- * ALTERNATIVE SOURCES ARE OFFERED, NOT BURIED. The brief is explicit, and it
- * is the difference between this page and every form that has a box for
- * "employer" and nothing else. Three rows render by default with the same
- * prominence, and the first dropdown lists self-employment second - above
- * benefits, above everything except a conventional job.
- *
- * Someone whose income is three 1099s and a benefit award should be able to
- * describe that without hunting for an "other" link.
- */
 export function IncomeStep({ draft, errors }: { draft: ApplicationDraft; errors: FieldError[] }) {
-  const rows = [0, 1, 2];
-  const error = errors.find((e) => e.field === 'incomeSources')?.message;
-
   return (
     <form className={styles.form} method="post" action="/apply/income/save">
-      <div className={styles.explainer}>
-        <p>
-          List everything you want counted. We accept tax returns, 1099s, and bank
-          statements showing deposits in place of pay stubs - not fitting a standard
-          employment form is a documentation question, not a disqualification.
-        </p>
-        <p className={styles.explainerNote}>
-          If you have a voucher, put the portion it covers here too. We only measure our
-          income requirement against the part you pay yourself.
-        </p>
-      </div>
+      <fieldset className={styles.group}>
+        <legend className={styles.groupTitle}>Primary Income</legend>
+        <p className={styles.groupHint}>Provide details about your main source of income.</p>
 
-      {error ? (
-        <p className={styles.formError} role="alert">
-          {error}
-        </p>
-      ) : null}
+        <div className={styles.pair}>
+          <Field name="grossMonthlyCents" label="Gross Monthly Income ($)" required error={errorFor(errors, 'grossMonthlyCents')}>
+            {(p) => (
+              <TextInput
+                {...p}
+                figure
+                name="grossMonthlyCents"
+                inputMode="numeric"
+                placeholder="0"
+                defaultValue={draft.grossMonthlyCents ? (draft.grossMonthlyCents / 100).toLocaleString('en-US') : ''}
+                onChange={(e) => {
+                  const input = e.target.value.replace(/\D/g, '');
+                  if (input) {
+                    e.target.value = Number(input).toLocaleString('en-US');
+                  } else {
+                    e.target.value = '';
+                  }
+                  if (p.onChange) p.onChange(e);
+                }}
+              />
+            )}
+          </Field>
+          <Field name="incomeSource" label="Income Source" required error={errorFor(errors, 'incomeSource')}>
+            {(p) => (
+              <Select {...p} name="incomeSource" defaultValue={draft.incomeSource ?? ''}>
+                <option value="" disabled>Select source…</option>
+                <option value="Employment">Employment</option>
+                <option value="Self-Employment">Self-Employment</option>
+                <option value="Benefits">Benefits</option>
+                <option value="Other">Other</option>
+              </Select>
+            )}
+          </Field>
+        </div>
 
-      <fieldset className={styles.fieldset}>
-        <legend className={styles.legend}>Sources of income</legend>
-        {rows.map((i) => {
-          const source = draft.incomeSources[i];
-          return (
-            <div className={styles.sourceRow} key={i}>
-              <Field name="incomeKind" idSuffix={i} label={`Source ${i + 1}`} note={i === 0 ? undefined : 'Optional'}>
-                {(p) => (
-                  <Select {...p} name="incomeKind" defaultValue={source?.kind ?? 'employment'}>
-                    {KINDS.map((kind) => (
-                      <option key={kind.value} value={kind.value}>
-                        {kind.label}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </Field>
-              <Field name="incomeAmount" idSuffix={i} label="Monthly amount before tax">
-                {(p) => (
-                  <TextInput
-                    {...p}
-                    figure
-                    name="incomeAmount"
-                    inputMode="numeric"
-                    placeholder="0"
-                    defaultValue={source?.monthlyCents ? String(source.monthlyCents / 100) : ''}
-                  />
-                )}
-              </Field>
-              <Field name="incomeNote" idSuffix={i} label="Who pays it" note="Optional">
-                {(p) => (
-                  <TextInput {...p} name="incomeNote" defaultValue={source?.description ?? ''} />
-                )}
-              </Field>
-            </div>
-          );
-        })}
+        <div className={styles.pair}>
+          <Field name="employerName" label="Employer Name" required error={errorFor(errors, 'employerName')}>
+            {(p) => <TextInput {...p} name="employerName" defaultValue={draft.employerName ?? ''} />}
+          </Field>
+          <Field name="durationMonths" label="Duration (Months)" required error={errorFor(errors, 'durationMonths')}>
+            {(p) => (
+              <TextInput
+                {...p}
+                figure
+                name="durationMonths"
+                inputMode="numeric"
+                defaultValue={draft.durationMonths ? String(draft.durationMonths) : ''}
+              />
+            )}
+          </Field>
+        </div>
       </fieldset>
-
-      <div className={styles.pair}>
-        <Field name="employerName" label="Employer name" note="If you have one">
-          {(p) => <TextInput {...p} name="employerName" defaultValue={draft.employerName ?? ''} />}
-        </Field>
-        <Field name="jobTitle" label="Job Title" note="Optional">
-          {(p) => <TextInput {...p} name="jobTitle" defaultValue={draft.jobTitle ?? ''} />}
-        </Field>
-      </div>
-      <div className={styles.pair}>
-        <Field name="employerAddress" label="Employer address" note="Optional">
-          {(p) => <TextInput {...p} name="employerAddress" defaultValue={draft.employerAddress ?? ''} />}
-        </Field>
-        <Field name="employerPhone" label="Supervisor phone" note="Optional">
-          {(p) => <TextInput {...p} type="tel" name="employerPhone" defaultValue={draft.employerPhone ?? ''} />}
-        </Field>
-      </div>
 
       <StepNav step="income" />
     </form>

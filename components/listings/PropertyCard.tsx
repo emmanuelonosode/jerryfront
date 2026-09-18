@@ -143,7 +143,7 @@ export function PropertyCard({
             >
               Book Tour
             </BookTourButton>
-            <ButtonLink href={`${href}#apply`} variant="primary" size="md" className={styles.actionButton}>
+            <ButtonLink href={`/apply/start?home=${listing.slug}`} variant="primary" size="md" className={styles.actionButton}>
               Apply Now
             </ButtonLink>
           </div>

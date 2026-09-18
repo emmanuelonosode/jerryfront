@@ -35,9 +35,8 @@ export function normaliseDraft(draft: ApplicationDraft): ApplicationDraft {
     paymentProofPath: draft.paymentProofPath ?? null,
     paymentProofRejected: draft.paymentProofRejected ?? null,
     paymentVerifiedAt: draft.paymentVerifiedAt ?? null,
-    incomeSources: draft.incomeSources ?? [],
-    priorAddresses: draft.priorAddresses ?? [],
-    occupants: draft.occupants ?? [],
+    incomeSource: draft.incomeSource ?? null,
+    vehicles: draft.vehicles ?? [],
     pets: draft.pets ?? [],
   };
 }
