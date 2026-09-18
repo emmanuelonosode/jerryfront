@@ -23,12 +23,10 @@ function fromEnv(raw: string | undefined, fallback: string): string {
 const LOCAL_API_DEFAULT = 'http://127.0.0.1:8000/api/v1';
 
 /** Django's REST root. Trailing slashes are stripped so callers can own them. */
-const ABSOLUTE_API_BASE = fromEnv(
+export const API_BASE = fromEnv(
   process.env.NEXT_PUBLIC_API_BASE_URL,
   LOCAL_API_DEFAULT,
 ).replace(/\/+$/, '');
-
-export const API_BASE = typeof window === 'undefined' ? ABSOLUTE_API_BASE : '/proxy/api';
 
 /**
  * A loopback API URL cannot be right in production, and fails in two ways.
