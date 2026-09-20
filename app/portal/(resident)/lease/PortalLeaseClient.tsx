@@ -259,7 +259,7 @@ export function PortalLeaseClient() {
               onClick={() => setShowQuestionnaire(true)}
               className={styles.questionnaireBtn}
             >
-              📋 Confirm Occupants &amp; Move-In
+              Confirm Occupants &amp; Move-In
             </button>
           )}
 
@@ -269,12 +269,12 @@ export function PortalLeaseClient() {
               onClick={() => setShowSignModal(true)}
               className={styles.signButton}
             >
-              ✍️ Sign Agreement Now
+              Sign Agreement Now
             </button>
           )}
 
           <button type="button" onClick={handlePrint} className={styles.printButton}>
-            🖨️ Print / Download PDF
+            Print / Download PDF
           </button>
         </div>
       </div>

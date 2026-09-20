@@ -644,7 +644,7 @@ export function LeaseAgreementDocument({
 
           {signedAt && (
             <div className={styles.verifiedAuditBadge}>
-              <span className={styles.verifiedIcon}>🔒</span>
+              <span className={styles.verifiedTag}>VERIFIED</span>
               <div>
                 <strong>Electronically Signed &amp; Timestamped:</strong> {signedAt}
                 <br />

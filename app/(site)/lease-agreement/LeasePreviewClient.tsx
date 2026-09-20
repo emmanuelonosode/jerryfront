@@ -284,7 +284,7 @@ function LeasePreviewContent() {
                 onClick={() => setShowQuestionnaire(true)}
                 className={styles.secondaryBtn}
               >
-                📋 Confirm Occupants &amp; Move-In
+                Confirm Occupants &amp; Move-In
               </button>
             )}
 
@@ -294,7 +294,7 @@ function LeasePreviewContent() {
                 onClick={() => setShowCustomizer(!showCustomizer)}
                 className={styles.secondaryBtn}
               >
-                ⚙️ {showCustomizer ? 'Hide Editor' : 'Customize Template'}
+                {showCustomizer ? 'Hide Editor' : 'Customize Template'}
               </button>
             )}
 
@@ -303,15 +303,15 @@ function LeasePreviewContent() {
               onClick={() => setShowSignModal(true)}
               className={styles.signBtn}
             >
-              ✍️ {signatureUrl ? 'Re-sign Agreement' : 'Sign Agreement Electronically'}
+              {signatureUrl ? 'Re-sign Agreement' : 'Sign Agreement Electronically'}
             </button>
 
             <button type="button" onClick={handlePrint} className={styles.primaryBtn}>
-              🖨️ Print / Save as PDF
+              Print / Save as PDF
             </button>
 
             <Link href="/homes-for-rent" className={styles.applyLink}>
-              View Available Homes →
+              View Available Homes
             </Link>
           </div>
         </div>
@@ -321,7 +321,6 @@ function LeasePreviewContent() {
       {isPersonalized && (
         <div className={styles.personalizedBanner}>
           <div className={styles.personalizedInner}>
-            <div className={styles.personalizedIcon}>🏡</div>
             <div className={styles.personalizedText}>
               <strong>Official Lease for {propertyAddress}</strong>
               <p>
@@ -329,7 +328,7 @@ function LeasePreviewContent() {
               </p>
             </div>
             {signatureUrl ? (
-              <div className={styles.signedBadge}>✓ Signed Electronically</div>
+              <div className={styles.signedBadge}>Signed Electronically</div>
             ) : (
               <div className={styles.pendingBadge}>Signature Pending</div>
             )}

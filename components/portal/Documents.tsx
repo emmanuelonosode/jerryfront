@@ -100,7 +100,9 @@ export function Documents() {
       {(tab === 'all' || tab === 'lease') && (
         <div className={own.leaseFeaturedCard}>
           <div className={own.leaseFeaturedContent}>
-            <div className={own.leaseFeaturedIcon}>📄</div>
+            <div className={own.leaseFeaturedIcon}>
+              <DocumentIcon className={own.docIcon} />
+            </div>
             <div>
               <div className={own.leaseFeaturedTitleRow}>
                 <h2 className={own.leaseFeaturedTitle}>Residential Lease Agreement</h2>

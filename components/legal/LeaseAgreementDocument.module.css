@@ -290,8 +290,14 @@
   margin-top: 16px;
 }
 
-.verifiedIcon {
-  font-size: 1.25rem;
+.verifiedTag {
+  background: #166534;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 6px;
+  border-radius: 4px;
 }
 
 .verifiedId {
