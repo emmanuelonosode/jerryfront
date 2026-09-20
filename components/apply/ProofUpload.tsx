@@ -40,12 +40,15 @@ export function ProofUpload({
   name = 'paymentProof',
   savedFilename,
   error,
+  onFileSelect,
 }: {
   name?: string;
   /** Set once a file has been stored for this draft. */
   savedFilename?: string | null;
   /** Server-side rejection or validation message. */
   error?: string;
+  /** Optional callback when a valid file is selected or cleared */
+  onFileSelect?: (file: File | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [picked, setPicked] = useState<{ name: string; size: number } | null>(null);
@@ -60,6 +63,7 @@ export function ProofUpload({
     if (!file) {
       setPicked(null);
       setLocalError(null);
+      onFileSelect?.(null);
       return;
     }
 
@@ -72,12 +76,14 @@ export function ProofUpload({
         `That file is ${readableSize(file.size)}, and the limit is 10 MB. A screenshot is usually far smaller than a full-resolution photo.`,
       );
       event.target.value = '';
+      onFileSelect?.(null);
       return;
     }
 
     setLocalError(null);
     setPicked({ name: file.name, size: file.size });
     if (file.type.startsWith('image/')) setPreview(URL.createObjectURL(file));
+    onFileSelect?.(file);
   }
 
   const shown = localError ?? error;

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { Illustration } from '@/components/brand/Illustration';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { CopyField } from '@/components/apply/CopyField';
+import { ProofUpload } from '@/components/apply/ProofUpload';
 import controls from '@/components/ui/controls.module.css';
 import { formatUsd } from '@/lib/money';
 import { ApiError, apiFetch } from '@/lib/portal/api';
@@ -63,27 +65,71 @@ type Summary = {
   last_payment: Payment | null;
 };
 
-function CopyButton({ value, label }: { value: string; label: string }) {
-  const [copied, setCopied] = useState(false);
+const LOGOS: Partial<Record<string, string>> = {
+  zelle: '/paymentLogos/Zelle_id9UrjyZ9y_1.svg',
+  paypal: '/paymentLogos/PayPal_Logo_Alternative_2.webp',
+  cashapp: '/paymentLogos/Cash_App_Logo_1.png',
+  'apple-pay': '/paymentLogos/Apple_Logo_2.webp',
+  venmo: '/paymentLogos/Venmo_idYMSlb9QP_1.png',
+  solana: '/paymentLogos/Solana_idN473ehUb_1.png',
+  chime: '/paymentLogos/chime.png',
+  litecoin: '/paymentLogos/litecoin.jpeg',
+};
+
+const FAMILIES: { id: 'app' | 'bank' | 'crypto'; title: string; badge: string }[] = [
+  { id: 'app', title: 'Payment Apps', badge: 'Fastest' },
+  { id: 'bank', title: 'Bank Transfer', badge: 'Safest' },
+  { id: 'crypto', title: 'Crypto', badge: 'Irreversible' },
+];
+
+function getMethodKey(method: Method): string {
+  return (method.method || '').toLowerCase().replace(/_/g, '-');
+}
+
+function getMethodFamily(method: Method): 'app' | 'bank' | 'crypto' {
+  const key = getMethodKey(method);
+  if (['litecoin', 'solana'].includes(key)) return 'crypto';
+  if (['ach', 'wire', 'direct-deposit', 'bank-transfer', 'check'].includes(key)) return 'bank';
+  return 'app';
+}
+
+function getMethodFriendlyName(method: Method): string {
+  const key = getMethodKey(method);
+  const FRIENDLY_NAMES: Record<string, string> = {
+    venmo: 'Venmo',
+    chime: 'Chime',
+    wire: 'Wire Transfer',
+    'direct-deposit': 'Direct Deposit',
+    ach: 'ACH Bank Transfer',
+    litecoin: 'Litecoin (LTC)',
+    solana: 'Solana (SOL)',
+    zelle: 'Zelle',
+    cashapp: 'Cash App',
+    paypal: 'PayPal',
+    'apple-pay': 'Apple Pay',
+  };
+  if (FRIENDLY_NAMES[key]) return FRIENDLY_NAMES[key];
+  if (method.display_name && method.display_name !== 'Jerry Micheal Skelton') {
+    return method.display_name;
+  }
+  if (method.method_display && method.method_display.trim()) {
+    return method.method_display;
+  }
+  return 'Manual Payment';
+}
+
+function getMethodSubtitle(method: Method): string {
+  if (method.bank_name) return method.bank_name;
+  if (method.handle) return method.handle;
+  if (method.clearing_time) return method.clearing_time;
+  return 'Direct rail';
+}
+
+function BankIcon() {
   return (
-    <button
-      type="button"
-      className={own.copy}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        } catch {
-          // Clipboard access can be refused; the value is on screen either way,
-          // so this fails quietly rather than throwing an error at someone
-          // halfway through paying their rent.
-        }
-      }}
-      aria-label={`Copy ${label}`}
-    >
-      {copied ? 'Copied' : 'Copy'}
-    </button>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2 2 7h20L12 2z" />
+    </svg>
   );
 }
 
@@ -97,16 +143,14 @@ export function Payments() {
 
   const [paying, setPaying] = useState<Invoice | null>(null);
   const [chosen, setChosen] = useState<Method | null>(null);
+  const [wizardStep, setWizardStep] = useState<'select' | 'details'>('select');
   const [reference, setReference] = useState('');
-  const [proofUrl, setProofUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
-  // Bumped from event handlers to re-run the fetch below. The fetch lives in
-  // the effect and only touches state in its continuation: calling a
-  // setState-bearing helper from an effect body cascades renders.
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -123,8 +167,6 @@ export function Payments() {
       if (pay.status === 'fulfilled') setPayments(pay.value);
       if (cfg.status === 'fulfilled') setMethods(cfg.value);
       if (sum.status === 'fulfilled') setSummary(sum.value);
-      // Only a total failure is worth an error banner; one dead widget should
-      // not hide the three that loaded.
       setError(
         [inv, pay, cfg, sum].every((r) => r.status === 'rejected')
           ? 'We could not load your billing just now.'
@@ -141,9 +183,16 @@ export function Payments() {
   function startPayment(invoice: Invoice) {
     setPaying(invoice);
     setChosen(null);
+    setWizardStep('select');
     setReference('');
-    setProofUrl('');
+    setSelectedFile(null);
     setAmount((invoice.balance_cents / 100).toFixed(2));
+    setFormError(null);
+  }
+
+  function handleSelectRail(method: Method) {
+    setChosen(method);
+    setWizardStep('details');
     setFormError(null);
   }
 
@@ -153,27 +202,48 @@ export function Payments() {
 
     const cents = Math.round(Number(amount) * 100);
     if (!Number.isFinite(cents) || cents <= 0) {
-      setFormError('Enter the amount you sent.');
+      setFormError('Please enter a valid amount.');
       return;
     }
 
     setBusy(true);
     setFormError(null);
     try {
+      let finalProofUrl = '';
+      if (selectedFile) {
+        const uploadData = new FormData();
+        uploadData.append('file', selectedFile);
+        const res = await fetch('/api/portal/upload-proof', {
+          method: 'POST',
+          body: uploadData,
+        });
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          setFormError(errJson.error || 'Failed to upload receipt image. Please try again.');
+          setBusy(false);
+          return;
+        }
+        const data = await res.json();
+        finalProofUrl = data.filename;
+      }
+
       await apiFetch('/billing/my-payments/submit-proof/', {
         method: 'POST',
         body: {
           invoice: paying.id,
           amount_cents: cents,
           payment_method: chosen.method,
-          reference_id: reference,
-          proof_image_url: proofUrl,
+          reference_id: reference.trim(),
+          proof_image_url: finalProofUrl,
         },
       });
+
       setPaying(null);
+      setChosen(null);
+      setWizardStep('select');
+      setSelectedFile(null);
       setConfirmation(
-        'Thanks - we have recorded that. Staff check payments against the bank before marking ' +
-          'an invoice paid, so the status stays "awaiting verification" until then.',
+        'Thank you! Your payment confirmation and receipt have been recorded. Our accounting department will verify the funds with the bank and mark your invoice as paid.',
       );
       setReloadKey((key) => key + 1);
     } catch (err) {
@@ -229,11 +299,11 @@ export function Payments() {
         </div>
       </div>
 
-      {/* ---- Pay flow ---- */}
+      {/* ---- Interactive Pay Flow ---- */}
       {paying ? (
-        <section className={styles.card} aria-labelledby="pay-heading">
-          <div className={styles.cardHead}>
-            <h2 className={styles.cardTitle} id="pay-heading">
+        <section className={own.payCard} aria-labelledby="pay-heading">
+          <div className={own.payCardHead}>
+            <h2 className={own.payCardTitle} id="pay-heading">
               Pay {paying.invoice_number} · {formatUsd(paying.balance_cents)}
             </h2>
             <Button type="button" variant="secondary" onClick={() => setPaying(null)}>
@@ -241,115 +311,173 @@ export function Payments() {
             </Button>
           </div>
 
-          {methods.length === 0 ? (
-            <div className={styles.cardPad}>
+          <div className={own.payCardBody}>
+            {methods.length === 0 ? (
               <p className={styles.muted}>
                 No payment methods are switched on right now. Contact us and we will take it from
-                there - please do not send money to any account you were given by email or text.
+                there — please do not send money to any account you were given by email or text.
               </p>
-            </div>
-          ) : (
-            <>
-              <div className={own.methods}>
-                {methods.map((method) => (
-                  <button
-                    key={method.id}
-                    type="button"
-                    className={chosen?.id === method.id ? own.methodActive : own.method}
-                    aria-pressed={chosen?.id === method.id}
-                    onClick={() => setChosen(method)}
-                  >
-                    <span className={own.methodName}>{method.display_name}</span>
-                    {method.clearing_time ? (
-                      <span className={styles.muted}>{method.clearing_time}</span>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
+            ) : wizardStep === 'select' || !chosen ? (
+              <>
+                <div className={own.introBox}>
+                  <p className={own.introAmount}>{formatUsd(paying.balance_cents)}</p>
+                  <p className={own.introText}>
+                    Select your preferred payment method below to view instructions and submit your payment confirmation for <strong>{paying.invoice_number}</strong>.
+                  </p>
+                </div>
 
-              {chosen ? (
-                <>
-                  {/* Was "cannot be reversed" plus "we will never send you
-                      account details by email or text" - a warning about being
-                      defrauded, shown to an existing resident paying their
-                      rent. The practical half survives without the alarm. */}
+                {FAMILIES.map((family) => {
+                  const inFamily = methods.filter((m) => getMethodFamily(m) === family.id);
+                  if (inFamily.length === 0) return null;
+
+                  return (
+                    <div className={own.familyGroup} key={family.id}>
+                      <div className={own.familyHeader}>
+                        <h3 className={own.familyTitle}>{family.title}</h3>
+                        <span className={own.familyBadge}>{family.badge}</span>
+                      </div>
+
+                      <div className={own.familyList}>
+                        {inFamily.map((method) => {
+                          const key = getMethodKey(method);
+                          const logoSrc = LOGOS[key];
+                          const friendlyName = getMethodFriendlyName(method);
+                          const subtitle = getMethodSubtitle(method);
+
+                          return (
+                            <button
+                              key={method.id}
+                              type="button"
+                              className={own.railCard}
+                              onClick={() => handleSelectRail(method)}
+                            >
+                              <div className={own.railHead}>
+                                <div className={own.logoWrapper}>
+                                  {logoSrc ? (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img className={own.logo} src={logoSrc} alt={friendlyName} />
+                                  ) : family.id === 'bank' ? (
+                                    <span className={own.bankIconWrapper}>
+                                      <BankIcon />
+                                    </span>
+                                  ) : (
+                                    <span className={styles.figure}>{friendlyName.slice(0, 1)}</span>
+                                  )}
+                                </div>
+                                <div className={own.railInfo}>
+                                  <span className={own.railName}>{friendlyName}</span>
+                                  <span className={own.railMeta}>
+                                    {subtitle}
+                                    {method.clearing_time ? ` · ${method.clearing_time}` : ''}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className={own.railChevron} aria-hidden="true">&rsaquo;</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <>
+                <div className={own.navHeader}>
+                  <button
+                    type="button"
+                    className={own.backButton}
+                    onClick={() => setWizardStep('select')}
+                  >
+                    &lsaquo; Choose a different payment method
+                  </button>
+                </div>
+
+                <div className={own.instructionsBox}>
+                  <div className={own.selectedMethodHeader}>
+                    <div className={own.logoWrapper}>
+                      {LOGOS[getMethodKey(chosen)] ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img className={own.logo} src={LOGOS[getMethodKey(chosen)]} alt="" />
+                      ) : getMethodFamily(chosen) === 'bank' ? (
+                        <span className={own.bankIconWrapper}>
+                          <BankIcon />
+                        </span>
+                      ) : (
+                        <span className={styles.figure}>{getMethodFriendlyName(chosen).slice(0, 1)}</span>
+                      )}
+                    </div>
+                    <div className={own.railInfo}>
+                      <span className={own.railName}>{getMethodFriendlyName(chosen)}</span>
+                      <span className={own.railMeta}>
+                        Send exactly {formatUsd(paying.balance_cents)} · {chosen.clearing_time ? `Arrives ${chosen.clearing_time.toLowerCase()}` : 'Business collection'}
+                      </span>
+                    </div>
+                  </div>
+
                   {chosen.irreversible ? (
                     <p className={own.warning} role="note">
-                      {chosen.display_name} sends instantly, so it is worth a quick check of
-                      the details below before you confirm.
+                      {getMethodFriendlyName(chosen)} transfers process directly through your banking or payment app. Please double-check the recipient details below before confirming.
                     </p>
                   ) : null}
 
-                  <div className={own.details}>
+                  <div className={own.fieldsList}>
                     {chosen.handle ? (
-                      <div className={styles.row}>
-                        <span className={styles.rowLabel}>Send to</span>
-                        <span className={own.detailValue}>
-                          <span className={styles.figure}>{chosen.handle}</span>
-                          <CopyButton value={chosen.handle} label="handle" />
-                        </span>
-                      </div>
+                      <CopyField label="Handle / Account ID" value={chosen.handle} />
                     ) : null}
                     {chosen.recipient_name ? (
-                      <div className={styles.row}>
-                        <span className={styles.rowLabel}>Recipient</span>
-                        <span className={styles.rowValue}>{chosen.recipient_name}</span>
-                      </div>
+                      <CopyField label="Recipient Name" value={chosen.recipient_name} />
                     ) : null}
                     {chosen.bank_name ? (
-                      <div className={styles.row}>
-                        <span className={styles.rowLabel}>Bank</span>
-                        <span className={styles.rowValue}>
-                          {chosen.bank_name}
-                          {chosen.account_type ? ` · ${chosen.account_type}` : ''}
-                        </span>
-                      </div>
+                      <CopyField label="Bank Name" value={chosen.bank_name} />
+                    ) : null}
+                    {chosen.account_type ? (
+                      <CopyField label="Account Type" value={chosen.account_type} />
                     ) : null}
                     {chosen.account_number ? (
-                      <div className={styles.row}>
-                        <span className={styles.rowLabel}>Account number</span>
-                        <span className={own.detailValue}>
-                          <span className={styles.figure}>{chosen.account_number}</span>
-                          <CopyButton value={chosen.account_number} label="account number" />
-                        </span>
-                      </div>
+                      <CopyField label="Account Number" value={chosen.account_number} />
                     ) : null}
                     {chosen.routing_number ? (
-                      <div className={styles.row}>
-                        <span className={styles.rowLabel}>Routing number</span>
-                        <span className={own.detailValue}>
-                          <span className={styles.figure}>{chosen.routing_number}</span>
-                          <CopyButton value={chosen.routing_number} label="routing number" />
-                        </span>
-                      </div>
-                    ) : null}
-                    <div className={styles.row}>
-                      <span className={styles.rowLabel}>Put this in the note</span>
-                      <span className={own.detailValue}>
-                        <span className={styles.figure}>{paying.invoice_number}</span>
-                        <CopyButton value={paying.invoice_number} label="invoice number" />
-                      </span>
-                    </div>
-                    {chosen.extra_instructions ? (
-                      <div className={styles.row}>
-                        <span className={styles.rowLabel}>Also</span>
-                        <span className={styles.rowValue}>{chosen.extra_instructions}</span>
-                      </div>
+                      <CopyField label="Routing Number" value={chosen.routing_number} />
                     ) : null}
                   </div>
 
-                  <form className={styles.form} onSubmit={submitProof} noValidate>
-                    <h3 className={styles.cardTitle}>Once you have sent it</h3>
-                    <p className={styles.muted}>
-                      Tell us the reference so staff can match your payment. Nothing is marked
-                      paid until a person has checked it against the bank.
+                  {/* Memo Highlight Box */}
+                  <div className={own.memoBox}>
+                    <div className={own.memoLabel}>Payment Note / Memo (Required)</div>
+                    <div className={own.memoContent}>
+                      <span className={own.memoNumber}>{paying.invoice_number}</span>
+                      <CopyField label="Invoice Number" value={paying.invoice_number} />
+                    </div>
+                    <p className={own.memoHelp}>
+                      Please put this invoice number into the transfer note or payment memo. It ensures our staff matches and credits your account immediately.
                     </p>
+                  </div>
 
-                    {formError ? (
-                      <p className={styles.error} role="alert">{formError}</p>
-                    ) : null}
+                  {chosen.extra_instructions ? (
+                    <div className={own.extraInstructions}>
+                      <strong>Instructions:</strong> {chosen.extra_instructions}
+                    </div>
+                  ) : null}
+                </div>
 
-                    <div className={styles.formGrid}>
+                <form onSubmit={submitProof} noValidate>
+                  <div className={own.receiptSection}>
+                    <div className={own.receiptHead}>
+                      <h3 className={own.receiptTitle}>Show Us Your Receipt</h3>
+                      <p className={own.receiptHint}>
+                        Attach a photo or screenshot of your confirmation from your banking or payment app. It helps our staff verify and mark your invoice as paid faster.
+                      </p>
+                    </div>
+
+                    {formError ? <p className={styles.error} role="alert">{formError}</p> : null}
+
+                    <ProofUpload
+                      name="paymentReceipt"
+                      onFileSelect={(file) => setSelectedFile(file)}
+                    />
+
+                    <div className={own.formGrid}>
                       <Field label="Amount you sent" name="amount" required>
                         {(props) => (
                           <input
@@ -368,8 +496,8 @@ export function Payments() {
                       <Field
                         label="Reference or transaction ID"
                         name="reference"
-                        required
-                        hint="From your banking or payment app - whatever it called the transfer."
+                        note="Optional"
+                        hint="From your banking or payment app (if available)."
                       >
                         {(props) => (
                           <input
@@ -377,48 +505,28 @@ export function Payments() {
                             className={controls.control}
                             value={reference}
                             onChange={(e) => setReference(e.target.value)}
-                          />
-                        )}
-                      </Field>
-
-                      <Field
-                        label="Screenshot of your receipt"
-                        name="proof"
-                        note="Optional"
-                        hint="A photo or screenshot of the confirmation. It helps us match your payment faster."
-                      >
-                        {(props) => (
-                          <input
-                            {...props}
-                            className={controls.control}
-                            type="url"
-                            inputMode="url"
-                            placeholder="Paste a link to the image"
-                            value={proofUrl}
-                            onChange={(e) => setProofUrl(e.target.value)}
+                            placeholder="e.g. TRX-984210"
                           />
                         )}
                       </Field>
                     </div>
 
-                    <div className={styles.actions}>
-                      <Button type="submit" variant="transactional" loading={busy} loadingLabel="Recording…">
-                        I have sent this payment
-                      </Button>
-                    </div>
-                  </form>
-                </>
-              ) : (
-                <div className={styles.cardPad}>
-                  <p className={styles.muted}>Choose how you want to pay.</p>
-                </div>
-              )}
-            </>
-          )}
+                    <button
+                      type="submit"
+                      className={own.submitBtn}
+                      disabled={busy}
+                    >
+                      {busy ? 'Submitting payment...' : 'I Have Sent This Payment'}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
         </section>
       ) : null}
 
-      {/* ---- Invoices ---- */}
+      {/* ---- Invoices List ---- */}
       <section className={styles.card} aria-labelledby="invoices-heading">
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle} id="invoices-heading">Invoices</h2>
@@ -448,17 +556,21 @@ export function Payments() {
               </span>
               <span className={own.invoiceEnd}>
                 <span className={`${styles.rowLabel} ${styles.figure}`}>
-                  {formatUsd(invoice.balance_cents > 0 ? invoice.balance_cents : invoice.total_cents)}
+                  {formatUsd(invoice.balance_cents)}
                 </span>
                 <StatusBadge status={invoice.status} label={invoice.status_display} />
                 {invoice.balance_cents > 0 && invoice.status === 'SENT' ? (
-                  <Button type="button" onClick={() => startPayment(invoice)}>
-                    Pay
+                  <Button
+                    type="button"
+                    variant={paying?.id === invoice.id ? 'secondary' : 'transactional'}
+                    onClick={() => (paying?.id === invoice.id ? setPaying(null) : startPayment(invoice))}
+                  >
+                    {paying?.id === invoice.id ? 'Close' : 'Pay'}
                   </Button>
                 ) : null}
                 {invoice.pdf_url ? (
-                  <a className={own.pdf} href={invoice.pdf_url} target="_blank" rel="noopener noreferrer">
-                    PDF
+                  <a className={own.pdf} href={invoice.pdf_url} download>
+                    Download PDF
                   </a>
                 ) : null}
               </span>
@@ -467,31 +579,33 @@ export function Payments() {
         )}
       </section>
 
-      {/* ---- Payment history ---- */}
-      <section className={styles.card} aria-labelledby="history-heading">
+      {/* ---- Payment History ---- */}
+      <section className={styles.card} aria-labelledby="payments-heading">
         <div className={styles.cardHead}>
-          <h2 className={styles.cardTitle} id="history-heading">Payment history</h2>
+          <h2 className={styles.cardTitle} id="payments-heading">Payment history</h2>
         </div>
 
         {loading ? (
           <div className={styles.cardPad}><p className={styles.muted}>Loading…</p></div>
         ) : payments.length === 0 ? (
-          <div className={styles.cardPad}>
-            <p className={styles.muted}>No payments recorded yet.</p>
+          <div className={styles.empty}>
+            <Illustration name="decision" label="No payments" className={styles.emptyArt} />
+            <h3 className={styles.cardTitle}>No payments recorded yet</h3>
+            <p className={styles.muted}>Payments you make and proofs you submit appear here.</p>
           </div>
         ) : (
           payments.map((payment) => (
             <div className={styles.row} key={payment.id}>
               <span className={own.invoiceMain}>
                 <span className={styles.rowLabel}>
-                  {formatUsd(payment.amount_cents)} · {payment.method_display}
+                  {formatUsd(payment.amount_cents)} via {payment.method_display}
                 </span>
                 <span className={styles.muted}>
-                  {payment.invoice_number ? `${payment.invoice_number} · ` : ''}
                   {new Date(payment.created_at).toLocaleDateString('en-US', {
                     month: 'short', day: 'numeric', year: 'numeric',
                   })}
-                  {payment.reference_id ? ` · ref ${payment.reference_id}` : ''}
+                  {payment.invoice_number ? ` · ${payment.invoice_number}` : ''}
+                  {payment.reference_id ? ` · Ref: ${payment.reference_id}` : ''}
                 </span>
                 {payment.rejection_reason ? (
                   <span className={own.rejected}>{payment.rejection_reason}</span>
