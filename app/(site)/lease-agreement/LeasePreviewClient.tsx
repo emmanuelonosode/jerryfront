@@ -72,26 +72,26 @@ function LeasePreviewContent() {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
 
   // Form parameters
-  const [stateName, setStateName] = useState('State of Michigan');
+  const [stateName, setStateName] = useState('State of Texas');
   const [agreementDate, setAgreementDate] = useState('24th of July, 2024');
   const [landlordName, setLandlordName] = useState('Kenneth Hensley Jr');
   const [landlordCompany, setLandlordCompany] = useState('Skelton Realty Group');
   const [landlordAddress, setLandlordAddress] = useState('213 Bob Ln, Virginia Beach, VA 23454');
   const [landlordEmail, setLandlordEmail] = useState('kenneth@skeltonrealtygroup.com');
-  const [tenantName, setTenantName] = useState('Jeremy Shiner');
-  const [tenantAddress, setTenantAddress] = useState('200 Cleveland Ave, Kingsford, MI 49802');
-  const [tenantEmail, setTenantEmail] = useState('jjshiner@gmail.com');
+  const [tenantName, setTenantName] = useState('Resident');
+  const [tenantAddress, setTenantAddress] = useState('745 Academy Ln, Deer Park, TX 77536');
+  const [tenantEmail, setTenantEmail] = useState('resident@example.com');
   const [propertyType] = useState('house');
-  const [bedrooms, setBedrooms] = useState('two (2)');
+  const [bedrooms, setBedrooms] = useState('three (3)');
   const [bathrooms, setBathrooms] = useState('two (2)');
-  const [parkingSpaces, setParkingSpaces] = useState('one (1)');
-  const [propertyAddress, setPropertyAddress] = useState('200 Cleveland Ave, Kingsford, MI 49802');
+  const [parkingSpaces, setParkingSpaces] = useState('two (2)');
+  const [propertyAddress, setPropertyAddress] = useState('745 Academy Ln, Deer Park, TX 77536');
   const [termStartDate, setTermStartDate] = useState('6th of September, 2024');
   const [termEndDate, setTermEndDate] = useState('31st of August, 2025');
-  const [annualRent, setAnnualRent] = useState('$12,000.00');
-  const [monthlyRent, setMonthlyRent] = useState('$1,000.00');
-  const [securityDeposit, setSecurityDeposit] = useState('$1,000.00');
-  const [petDeposit, setPetDeposit] = useState('$100.00');
+  const [annualRent, setAnnualRent] = useState('$19,152.00');
+  const [monthlyRent, setMonthlyRent] = useState('$1,596.00');
+  const [securityDeposit, setSecurityDeposit] = useState('$1,596.00');
+  const [petDeposit, setPetDeposit] = useState('$0.00');
 
   // Questionnaire / verification values
   const [occupants, setOccupants] = useState('');
@@ -102,23 +102,26 @@ function LeasePreviewContent() {
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [signedAt, setSignedAt] = useState<string | null>(null);
 
-  // Fetch personalized data if app_id is in query
+  // Fetch personalized data if app_id is in query or latest
   useEffect(() => {
-    if (!appId) return;
-
     let cancelled = false;
     setIsLoading(true);
     setLoadError(null);
 
-    fetch(`${API_BASE}/crm/lease/${appId}/`)
+    const targetUrl = appId
+      ? `${API_BASE}/crm/lease/${appId}/`
+      : `${API_BASE}/crm/lease/latest/`;
+
+    fetch(targetUrl)
       .then(async (res) => {
         if (!res.ok) {
+          if (!appId) return null;
           throw new Error(`Could not load personalized lease (${res.status})`);
         }
         return res.json() as Promise<PersonalizedLeaseResponse>;
       })
       .then((data) => {
-        if (cancelled) return;
+        if (cancelled || !data) return;
         setIsPersonalized(true);
 
         // Landlord of record for this specific home
@@ -130,22 +133,22 @@ function LeasePreviewContent() {
         // Tenant info
         setTenantName(data.tenant?.name || 'Resident');
         setTenantEmail(data.tenant?.email || '');
-        setTenantAddress(data.tenant?.address || data.property?.full_address || '');
+        setTenantAddress(data.tenant?.address || data.property?.full_address || '745 Academy Ln, Deer Park, TX 77536');
 
         // Property info
-        setPropertyAddress(data.property?.full_address || data.property?.address || '200 Cleveland Ave');
-        setBedrooms(data.property?.bedrooms || 'two (2)');
+        setPropertyAddress(data.property?.full_address || data.property?.address || '745 Academy Ln, Deer Park, TX 77536');
+        setBedrooms(data.property?.bedrooms || 'three (3)');
         setBathrooms(data.property?.bathrooms || 'two (2)');
-        setParkingSpaces(data.property?.parking_spaces || 'one (1)');
+        setParkingSpaces(data.property?.parking_spaces || 'two (2)');
 
         // Financials
-        setMonthlyRent(data.financials?.monthly_rent || '$1,000.00');
-        setAnnualRent(data.financials?.annual_rent || '$12,000.00');
-        setSecurityDeposit(data.financials?.security_deposit || '$1,000.00');
-        setPetDeposit(data.financials?.pet_deposit || '$100.00');
+        setMonthlyRent(data.financials?.monthly_rent || '$1,596.00');
+        setAnnualRent(data.financials?.annual_rent || '$19,152.00');
+        setSecurityDeposit(data.financials?.security_deposit || '$1,596.00');
+        setPetDeposit(data.financials?.pet_deposit || '$0.00');
 
         // Dates
-        setStateName(data.dates?.state_name || 'State of Michigan');
+        setStateName(data.dates?.state_name || 'State of Texas');
         setAgreementDate(data.dates?.agreement_date || '24th of July, 2024');
         setTermStartDate(data.dates?.term_start_date || 'September 6, 2024');
         setTermEndDate(data.dates?.term_end_date || 'August 31, 2025');
@@ -159,7 +162,7 @@ function LeasePreviewContent() {
         if (data.is_signed && data.signature_url) {
           setSignatureUrl(data.signature_url);
           setSignedAt(data.signed_at);
-        } else {
+        } else if (appId) {
           // Open the questionnaire for the applicant if not yet verified
           if (!data.occupants && !data.vehicles) {
             setShowQuestionnaire(true);
@@ -167,9 +170,7 @@ function LeasePreviewContent() {
         }
       })
       .catch((err) => {
-        if (!cancelled) {
-          setLoadError(err.message || 'Failed to load personalized lease agreement.');
-        }
+        if (!cancelled && appId) setLoadError(err.message);
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);

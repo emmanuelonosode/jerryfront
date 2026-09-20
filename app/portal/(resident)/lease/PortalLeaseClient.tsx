@@ -63,9 +63,53 @@ export function PortalLeaseClient() {
         const me = await apiFetch<PortalUser>('/auth/me/');
         if (!cancelled) setUser(me);
 
-        const apps = await apiFetch<ApplicationData[]>('/apply/my-applications/').catch(() => []);
-        if (!cancelled && apps && apps.length > 0) {
-          const activeApp = apps[0];
+        let apps: ApplicationData[] = [];
+        try {
+          apps = await apiFetch<ApplicationData[]>('/leads/apply/my-applications/');
+        } catch {
+          try {
+            apps = await apiFetch<ApplicationData[]>('/crm/apply/my-applications/');
+          } catch {
+            apps = await apiFetch<ApplicationData[]>('/apply/my-applications/').catch(() => []);
+          }
+        }
+
+        let activeApp = apps && apps.length > 0 ? apps[0] : null;
+
+        // If no direct application from list, check for active lease agreement directly
+        if (!activeApp) {
+          try {
+            const latestRes = await fetch(`${API_BASE}/crm/lease/latest/`);
+            if (latestRes.ok) {
+              const leaseData = await latestRes.json();
+              if (leaseData.application_id) {
+                activeApp = {
+                  id: leaseData.application_id,
+                  status: leaseData.status,
+                  status_display: 'Approved',
+                  move_in_date: leaseData.dates?.term_start_date || null,
+                  security_deposit_cents: null,
+                  property: leaseData.property ? {
+                    id: leaseData.property.id || '',
+                    title: leaseData.property.title || 'Deer Park Single Family Home',
+                    address: leaseData.property.address || '745 Academy Ln',
+                    city: leaseData.property.city || 'Deer Park',
+                    state: leaseData.property.state || 'TX',
+                    zip_code: leaseData.property.zip_code || '77536',
+                    full_address: leaseData.property.full_address || '745 Academy Ln, Deer Park, TX 77536',
+                    bedrooms: 3,
+                    bathrooms: 2,
+                    price_cents: 159600,
+                  } : null,
+                };
+              }
+            }
+          } catch {
+            // ignore fallback error
+          }
+        }
+
+        if (!cancelled && activeApp) {
           setApplication(activeApp);
 
           // Fetch personalized lease details for this specific application
@@ -189,11 +233,11 @@ export function PortalLeaseClient() {
   const tenantPhone = user?.phone || '';
 
   const property = application?.property;
-  const propAddress = property?.full_address || property?.address || '200 Cleveland Ave, Kingsford, MI 49802';
-  const beds = property?.bedrooms ? `${property.bedrooms} (${property.bedrooms})` : 'two (2)';
+  const propAddress = property?.full_address || property?.address || '745 Academy Ln, Deer Park, TX 77536';
+  const beds = property?.bedrooms ? `${property.bedrooms} (${property.bedrooms})` : 'three (3)';
   const baths = property?.bathrooms ? `${property.bathrooms} (${property.bathrooms})` : 'two (2)';
 
-  const rentMonthlyCents = property?.price_cents || 100000;
+  const rentMonthlyCents = property?.price_cents || 159600;
   const rentMonthly = `$${(rentMonthlyCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
   const rentAnnual = `$${((rentMonthlyCents * 12) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
@@ -315,7 +359,7 @@ export function PortalLeaseClient() {
       ) : (
         <div className={styles.docWrapper}>
           <LeaseAgreementDocument
-            stateName={property?.state ? `State of ${property.state}` : 'State of Michigan'}
+            stateName={property?.state ? `State of ${property.state}` : 'State of Texas'}
             agreementDate={agreementDate}
             landlordName={landlordName}
             landlordCompany={landlordCompany}
