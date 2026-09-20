@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { API_BASE } from '@/lib/env';
 import { apiFetch, type PortalUser } from '@/lib/portal/api';
 import { LeaseAgreementDocument } from '@/components/legal/LeaseAgreementDocument';
 import { SignaturePad } from '@/components/legal/SignaturePad';
+import { TenantQuestionnaireModal, type QuestionnaireData } from '@/components/legal/TenantQuestionnaireModal';
 import styles from './PortalLease.module.css';
 
 interface ApplicationData {
@@ -31,10 +33,27 @@ export function PortalLeaseClient() {
   const [user, setUser] = useState<PortalUser | null>(null);
   const [application, setApplication] = useState<ApplicationData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showSignModal, setShowSignModal] = useState(false);
 
+  // Modals
+  const [showSignModal, setShowSignModal] = useState(false);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+
+  // Signature state
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [signedAt, setSignedAt] = useState<string | null>(null);
+
+  // Landlord of record for this house
+  const [landlordName, setLandlordName] = useState('Kenneth Hensley Jr');
+  const [landlordCompany, setLandlordCompany] = useState('Skelton Realty Group');
+  const [landlordAddress, setLandlordAddress] = useState('213 Bob Ln, Virginia Beach, VA 23454');
+  const [landlordEmail, setLandlordEmail] = useState('kenneth@skeltonrealtygroup.com');
+  const [landlordPhone, setLandlordPhone] = useState('(800) 555-0198');
+
+  // Questionnaire values
+  const [occupants, setOccupants] = useState('');
+  const [vehicles, setVehicles] = useState('');
+  const [emergencyContact, setEmergencyContact] = useState('');
+  const [confirmedStartDate, setConfirmedStartDate] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -46,22 +65,35 @@ export function PortalLeaseClient() {
 
         const apps = await apiFetch<ApplicationData[]>('/apply/my-applications/').catch(() => []);
         if (!cancelled && apps && apps.length > 0) {
-          // Select the most recent application
-          setApplication(apps[0]);
+          const activeApp = apps[0];
+          setApplication(activeApp);
 
-          // Check if there is already a saved signature in localStorage for this user/application
-          const stored = localStorage.getItem(`skelton_lease_sig_${apps[0].id}`);
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored);
-              setSignatureUrl(parsed.signatureUrl);
-              setSignedAt(parsed.signedAt);
-            } catch {
-              // ignore parse errors
+          // Fetch personalized lease details for this specific application
+          try {
+            const leaseRes = await fetch(`${API_BASE}/crm/lease/${activeApp.id}/`);
+            if (leaseRes.ok) {
+              const leaseData = await leaseRes.json();
+              if (leaseData.landlord) {
+                setLandlordName(leaseData.landlord.name || 'Kenneth Hensley Jr');
+                setLandlordCompany(leaseData.landlord.company || 'Skelton Realty Group');
+                setLandlordAddress(leaseData.landlord.address || '213 Bob Ln, Virginia Beach, VA 23454');
+                setLandlordEmail(leaseData.landlord.email || 'kenneth@skeltonrealtygroup.com');
+                setLandlordPhone(leaseData.landlord.phone || '(800) 555-0198');
+              }
+              if (leaseData.occupants) setOccupants(leaseData.occupants);
+              if (leaseData.vehicles) setVehicles(leaseData.vehicles);
+              if (leaseData.emergency_contact) setEmergencyContact(leaseData.emergency_contact);
+              if (leaseData.is_signed && leaseData.signature_url) {
+                setSignatureUrl(leaseData.signature_url);
+                setSignedAt(leaseData.signed_at);
+              }
             }
+          } catch {
+            // Ignore fetch error and fall back to application data
           }
-        } else {
-          const stored = localStorage.getItem('skelton_lease_sig_general');
+
+          // Check localStorage as well
+          const stored = localStorage.getItem(`skelton_lease_sig_${activeApp.id}`);
           if (stored) {
             try {
               const parsed = JSON.parse(stored);
@@ -92,7 +124,15 @@ export function PortalLeaseClient() {
     }
   };
 
-  const handleSignatureSave = (data: { type: 'draw' | 'type'; dataUrl: string; signerName: string }) => {
+  const handleQuestionnaireConfirm = (data: QuestionnaireData) => {
+    setConfirmedStartDate(data.moveInDate);
+    setOccupants(data.occupants);
+    setVehicles(data.vehicles);
+    setEmergencyContact(data.emergencyContact);
+    setShowQuestionnaire(false);
+  };
+
+  const handleSignatureSave = async (data: { type: 'draw' | 'type'; dataUrl: string; signerName: string }) => {
     const now = new Date();
     const timestamp = now.toLocaleDateString('en-US', {
       month: 'long',
@@ -106,7 +146,7 @@ export function PortalLeaseClient() {
     setSignedAt(timestamp);
     setShowSignModal(false);
 
-    // Persist
+    // Persist locally
     const storageKey = application ? `skelton_lease_sig_${application.id}` : 'skelton_lease_sig_general';
     localStorage.setItem(
       storageKey,
@@ -116,9 +156,34 @@ export function PortalLeaseClient() {
         signerName: data.signerName,
       }),
     );
+
+    // Persist to backend if application id exists
+    if (application?.id) {
+      try {
+        const res = await fetch(`${API_BASE}/crm/lease/${application.id}/sign/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            signature_url: data.dataUrl,
+            signer_name: data.signerName,
+            occupants,
+            vehicles,
+            emergency_contact: emergencyContact,
+          }),
+        });
+        if (res.ok) {
+          const body = await res.json();
+          if (body.signed_at) {
+            setSignedAt(body.signed_at);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to post signature to backend', err);
+      }
+    }
   };
 
-  // Derive document values from application or smart defaults
+  // Derive document values
   const tenantName = user?.full_name || 'Resident';
   const tenantEmail = user?.email || 'resident@example.com';
   const tenantPhone = user?.phone || '';
@@ -135,15 +200,14 @@ export function PortalLeaseClient() {
   const depositCents = application?.security_deposit_cents || rentMonthlyCents;
   const depositFormatted = `$${(depositCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
-  const startDate = application?.move_in_date
+  const startDate = confirmedStartDate || (application?.move_in_date
     ? new Date(application.move_in_date).toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
       })
-    : 'September 6, 2024';
+    : 'September 6, 2024');
 
-  // End date is 1 year minus 1 day from start date
   const startObj = application?.move_in_date ? new Date(application.move_in_date) : new Date(2024, 8, 6);
   const endObj = new Date(startObj);
   endObj.setFullYear(endObj.getFullYear() + 1);
@@ -171,7 +235,7 @@ export function PortalLeaseClient() {
           <div className={styles.docMeta}>
             <h1 className={styles.pageTitle}>Residential Lease Agreement</h1>
             <p className={styles.pageSubtitle}>
-              {property ? property.title || propAddress : 'Official Lease Document'}
+              {property ? property.title || propAddress : 'Official Lease Document'} · Landlord: {landlordName} ({landlordCompany})
             </p>
           </div>
         </div>
@@ -192,6 +256,16 @@ export function PortalLeaseClient() {
           {!signatureUrl && (
             <button
               type="button"
+              onClick={() => setShowQuestionnaire(true)}
+              className={styles.questionnaireBtn}
+            >
+              📋 Confirm Occupants &amp; Move-In
+            </button>
+          )}
+
+          {!signatureUrl && (
+            <button
+              type="button"
               onClick={() => setShowSignModal(true)}
               className={styles.signButton}
             >
@@ -204,6 +278,21 @@ export function PortalLeaseClient() {
           </button>
         </div>
       </div>
+
+      {/* Tenant Questionnaire Modal */}
+      {showQuestionnaire && (
+        <TenantQuestionnaireModal
+          propertyName={propAddress}
+          initialData={{
+            moveInDate: startDate,
+            occupants,
+            vehicles,
+            emergencyContact,
+          }}
+          onConfirm={handleQuestionnaireConfirm}
+          onClose={() => setShowQuestionnaire(false)}
+        />
+      )}
 
       {/* Signature Modal */}
       {showSignModal && (
@@ -228,10 +317,11 @@ export function PortalLeaseClient() {
           <LeaseAgreementDocument
             stateName={property?.state ? `State of ${property.state}` : 'State of Michigan'}
             agreementDate={agreementDate}
-            landlordName="Kenneth Hensley Jr"
-            landlordCompany="Skelton Realty Group"
-            landlordAddress="213 Bob Ln, Virginia Beach, VA 23454"
-            landlordEmail="kenneth@skeltonrealtygroup.com"
+            landlordName={landlordName}
+            landlordCompany={landlordCompany}
+            landlordAddress={landlordAddress}
+            landlordEmail={landlordEmail}
+            landlordPhone={landlordPhone}
             tenantName={tenantName}
             tenantAddress={propAddress}
             tenantEmail={tenantEmail}
@@ -246,6 +336,9 @@ export function PortalLeaseClient() {
             annualRent={rentAnnual}
             monthlyRent={rentMonthly}
             securityDeposit={depositFormatted}
+            occupants={occupants}
+            vehicles={vehicles}
+            emergencyContact={emergencyContact}
             tenantSignatureUrl={signatureUrl}
             signedAt={signedAt}
             isSample={false}

@@ -95,6 +95,23 @@
   border-radius: 50%;
 }
 
+.questionnaireBtn {
+  padding: 8px 14px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.questionnaireBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
 .signButton {
   padding: 8px 16px;
   background: #1d4ed8;

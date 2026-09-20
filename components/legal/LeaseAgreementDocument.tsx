@@ -32,6 +32,9 @@ export interface LeaseAgreementProps {
   lateFeeGraceDays?: number | string;
   lateFeePercent?: string;
   petDeposit?: string;
+  occupants?: string;
+  vehicles?: string;
+  emergencyContact?: string;
   tenantSignatureUrl?: string | null;
   tenantSignatureType?: 'draw' | 'type';
   signedAt?: string | null;
@@ -64,6 +67,9 @@ export function LeaseAgreementDocument({
   lateFeeGraceDays = 5,
   lateFeePercent = '5%',
   petDeposit = '$100.00',
+  occupants = '',
+  vehicles = '',
+  emergencyContact = '',
   tenantSignatureUrl = null,
   signedAt = null,
   isSample = false,
@@ -121,7 +127,10 @@ export function LeaseAgreementDocument({
             <p>
               The premises leased is a {propertyType} with {bedrooms} bedroom(s) and {bathrooms} bathroom(s)
               and {parkingSpaces} parking space(s) located at{' '}
-              <strong className={styles.fillIn}>{propertyAddress}</strong> (the &ldquo;Premises&rdquo;).
+              <strong className={styles.fillIn}>{propertyAddress}</strong> (the &ldquo;Premises&rdquo;)
+              {vehicles ? (
+                <>, with designated parking assigned to vehicle(s): <strong className={styles.fillIn}>{vehicles}</strong></>
+              ) : null}.
             </p>
           </section>
 
@@ -239,8 +248,11 @@ export function LeaseAgreementDocument({
           <section className={styles.clause}>
             <h2 className={styles.clauseTitle}>11. Use of Premises</h2>
             <p>
-              The Premises will be occupied only by Tenant and Tenant&rsquo;s immediate family and used only for
-              residential purposes. Tenant will not engage in any objectionable conduct, including behavior which
+              The Premises will be occupied only by Tenant and Tenant&rsquo;s immediate family
+              {occupants ? (
+                <> (authorized occupants: <strong className={styles.fillIn}>{occupants}</strong>)</>
+              ) : null}
+              {' '}and used only for residential purposes. Tenant will not engage in any objectionable conduct, including behavior which
               will make the Premises less fit to live in, will cause dangerous, hazardous or unsanitary conditions
               or will interfere with the rights of others to enjoy their property. Tenant will be liable for any
               damage occurring to the Premises and any damage to or loss of the contents thereof which is done by
@@ -490,6 +502,12 @@ export function LeaseAgreementDocument({
                   {tenantAddress}
                   <br />
                   Email: <span className={styles.fillIn}>{tenantEmail}</span>
+                  {emergencyContact ? (
+                    <>
+                      <br />
+                      Emergency: <span className={styles.fillIn}>{emergencyContact}</span>
+                    </>
+                  ) : null}
                 </p>
               </div>
             </div>
