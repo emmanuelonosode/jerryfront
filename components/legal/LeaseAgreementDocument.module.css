@@ -1,0 +1,370 @@
+.documentWrapper {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #1a202c;
+  line-height: 1.6;
+}
+
+.sampleBanner {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sampleBadge {
+  background: #1d4ed8;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.sampleText {
+  font-size: 0.8125rem;
+  color: #1e40af;
+  margin: 0;
+}
+
+.legalPaper {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 56px 48px;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.headerBrandRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.brandLogo {
+  object-fit: contain;
+}
+
+.headerMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.8125rem;
+  color: #475569;
+}
+
+.stateLabel {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.revLabel {
+  color: #64748b;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.06em;
+  margin: 16px 0 12px 0;
+  color: #0f172a;
+}
+
+.divider {
+  height: 2px;
+  background: #0f172a;
+  margin: 0 auto 20px auto;
+  width: 100%;
+}
+
+.preamble {
+  font-size: 0.9375rem;
+  text-align: justify;
+  margin-bottom: 28px;
+  color: #1e293b;
+}
+
+.fillIn {
+  color: #0f172a;
+  text-decoration: underline text-decoration-color #94a3b8;
+  font-weight: 600;
+}
+
+.clauses {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.clause {
+  font-size: 0.875rem;
+  color: #1e293b;
+  text-align: justify;
+  page-break-inside: avoid;
+}
+
+.clauseTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #0f172a;
+}
+
+.clause p {
+  margin: 0 0 6px 0;
+}
+
+.subList {
+  margin: 4px 0 6px 20px;
+  padding: 0;
+}
+
+.subList li {
+  margin-bottom: 4px;
+}
+
+.noticesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.noticeBox {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 0.8125rem;
+}
+
+.noticeHeading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: #0f172a;
+}
+
+.noticeBox p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.signaturesSection {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #cbd5e1;
+  page-break-inside: avoid;
+}
+
+.witnessClause {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 32px;
+  color: #0f172a;
+}
+
+.signatureGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 24px;
+}
+
+.signatureBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.sigLine {
+  margin-bottom: 8px;
+}
+
+.landlordSigImageWrapper {
+  height: 52px;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+.landlordCursive {
+  font-family: 'Brush Script MT', 'Caveat', 'Dancing Script', cursive;
+  font-size: 2.2rem;
+  color: #1e3a8a;
+  transform: rotate(-3deg);
+  display: inline-block;
+}
+
+.tenantSigImageWrapper {
+  height: 52px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.tenantSigImg {
+  max-height: 50px;
+  max-width: 220px;
+  object-fit: contain;
+}
+
+.sigEmptySlot {
+  height: 52px;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 6px;
+}
+
+.awaitingSigText {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.sigUnderline {
+  height: 1px;
+  background: #0f172a;
+  width: 100%;
+}
+
+.sigCaption {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+  display: block;
+}
+
+.sigDetails {
+  font-size: 0.8125rem;
+  color: #334155;
+}
+
+.sigPrintedName {
+  font-weight: 700;
+  margin: 4px 0 2px 0;
+}
+
+.sigRole {
+  color: #64748b;
+  margin: 0 0 2px 0;
+}
+
+.sigDate {
+  color: #64748b;
+  margin: 0;
+}
+
+.verifiedAuditBadge {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8125rem;
+  color: #166534;
+  margin-top: 16px;
+}
+
+.verifiedIcon {
+  font-size: 1.25rem;
+}
+
+.verifiedId {
+  font-size: 0.75rem;
+  color: #15803d;
+}
+
+.footer {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.footerInner {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: #94a3b8;
+}
+
+/* ================= PRINT MEDIA RULES ================= */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .documentWrapper {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .sampleBanner {
+    display: none !important;
+  }
+
+  .legalPaper {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .clause {
+    page-break-inside: avoid;
+  }
+
+  .signaturesSection {
+    page-break-inside: avoid;
+  }
+}
+
+@media (max-width: 640px) {
+  .legalPaper {
+    padding: 24px 16px;
+  }
+
+  .headerBrandRow {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .headerMeta {
+    align-items: flex-start;
+  }
+
+  .noticesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .signatureGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

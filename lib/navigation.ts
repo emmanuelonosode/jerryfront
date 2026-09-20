@@ -108,6 +108,7 @@ export const FOOTER_NAV: NavGroup[] = [
     links: [
       { label: 'Privacy', href: '/privacy' },
       { label: 'Terms', href: '/terms' },
+      { label: 'Sample lease agreement', href: '/lease-agreement' },
       { label: 'Accessibility', href: '/accessibility' },
       { label: 'Fair housing', href: '/fair-housing' },
     ],

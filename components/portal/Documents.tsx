@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Illustration } from '@/components/brand/Illustration';
 import { DocumentIcon } from '@/components/ui/Icons';
 import { ApiError, apiFetch } from '@/lib/portal/api';
@@ -95,6 +96,28 @@ export function Documents() {
           </button>
         ))}
       </div>
+
+      {(tab === 'all' || tab === 'lease') && (
+        <div className={own.leaseFeaturedCard}>
+          <div className={own.leaseFeaturedContent}>
+            <div className={own.leaseFeaturedIcon}>📄</div>
+            <div>
+              <div className={own.leaseFeaturedTitleRow}>
+                <h2 className={own.leaseFeaturedTitle}>Residential Lease Agreement</h2>
+                <span className={own.leaseBadgeOfficial}>Official Template</span>
+              </div>
+              <p className={own.leaseFeaturedDesc}>
+                Review your official 41-clause residential lease terms, view customized property &amp; move-in financials, or sign electronically with your digital signature.
+              </p>
+            </div>
+          </div>
+          <div className={own.leaseFeaturedActions}>
+            <Link href="/portal/lease" className={own.leaseSignBtn}>
+              View &amp; Sign Lease Agreement →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {error ? (
         <p className={styles.error} role="alert">

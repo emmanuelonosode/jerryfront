@@ -4,6 +4,94 @@
   gap: var(--space-moderate);
 }
 
+.leaseFeaturedCard {
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #1d4ed8;
+  border-radius: var(--card-radius, 8px);
+  padding: 20px 24px;
+  margin-bottom: var(--space-moderate);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.06);
+}
+
+.leaseFeaturedContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 680px;
+}
+
+.leaseFeaturedIcon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.leaseFeaturedTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.leaseFeaturedTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.leaseBadgeOfficial {
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.leaseFeaturedDesc {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.leaseFeaturedActions {
+  display: flex;
+  align-items: center;
+}
+
+.leaseSignBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1d4ed8;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(29, 78, 216, 0.2);
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.leaseSignBtn:hover {
+  background: #1e40af;
+  color: #ffffff;
+}
+
+
 .doc {
   gap: var(--space-compact);
   padding: var(--space-moderate);
