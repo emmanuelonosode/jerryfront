@@ -139,7 +139,7 @@
 
 .tab,
 .tabActive {
-  min-height: 36px;
+  min-height: var(--size-tap);
   padding-inline: var(--space-compact);
   border: var(--rule-width) solid var(--color-border-strong);
   border-radius: var(--radius-md);

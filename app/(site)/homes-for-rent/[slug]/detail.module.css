@@ -234,6 +234,9 @@
   font-size: var(--text-sm);
   letter-spacing: var(--meta-track-sm);
   color: var(--color-text-tertiary);
+  min-height: var(--size-tap);
+  display: inline-flex;
+  align-items: center;
 }
 
 /* A lead line under a section heading, where the section is a picture and the
@@ -292,6 +295,9 @@
   min-height: 24px;
   color: var(--color-text-tertiary);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .breadcrumbList a:hover {
@@ -501,6 +507,7 @@
   transition: background-color var(--duration-fast) var(--easing-default),
     color var(--duration-fast) var(--easing-default),
     border-color var(--duration-fast) var(--easing-default);
+  min-height: var(--size-tap);
 }
 
 /* Active fill replaces the border, per the spec's pill-tab-active. */

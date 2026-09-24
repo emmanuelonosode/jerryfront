@@ -12,6 +12,9 @@
 
 .breadcrumbList a {
   color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .header {

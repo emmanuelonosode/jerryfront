@@ -62,6 +62,8 @@
   background: none;
   color: var(--color-text-secondary);
   cursor: pointer;
+  min-width: var(--size-tap);
+  min-height: var(--size-tap);
 }
 
 .activeChips {

@@ -2,10 +2,9 @@
 
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
+import { ProofUpload } from '@/components/apply/ProofUpload';
 import { API_BASE } from '@/lib/env';
 import styles from './tourId.module.css';
-
-const ACCEPT = 'image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf';
 
 type State =
   | { kind: 'idle' }
@@ -64,31 +63,18 @@ export function IdUpload({ tourId }: { tourId: string }) {
 
   return (
     <form className={styles.form} onSubmit={submit} noValidate>
-      <div className={styles.fileField}>
-        <label className={styles.label} htmlFor="tid-front">
-          Front of your ID
-        </label>
-        <input
-          id="tid-front"
-          className={styles.file}
-          type="file"
-          accept={ACCEPT}
-          required
-          onChange={(e) => setFront(e.target.files?.[0] ?? null)}
-        />
-      </div>
-      <div className={styles.fileField}>
-        <label className={styles.label} htmlFor="tid-back">
-          Back of your ID <span className={styles.optional}>Optional</span>
-        </label>
-        <input
-          id="tid-back"
-          className={styles.file}
-          type="file"
-          accept={ACCEPT}
-          onChange={(e) => setBack(e.target.files?.[0] ?? null)}
-        />
-      </div>
+      <ProofUpload
+        name="tid-front"
+        prompt="Front of your ID"
+        help="A clear photo with all four corners in view."
+        onFileSelect={setFront}
+      />
+      <ProofUpload
+        name="tid-back"
+        prompt="Back of your ID (optional)"
+        help="The side with the barcode, if your ID has one."
+        onFileSelect={setBack}
+      />
       <p className={styles.hint}>A phone photo works. PNG, JPG, HEIC or a PDF scan, up to 10MB.</p>
 
       {state.kind === 'error' ? (

@@ -88,7 +88,7 @@
 }
 
 .familyBadge {
-  font-size: 0.6875rem;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;

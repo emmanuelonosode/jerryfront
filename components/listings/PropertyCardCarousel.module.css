@@ -110,3 +110,10 @@
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* The arrow stays 28px to the eye; its hit area is 44px. */
+.arrow::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}

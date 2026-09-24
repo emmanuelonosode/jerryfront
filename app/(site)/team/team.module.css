@@ -99,6 +99,9 @@
   text-decoration: none;
   font-size: var(--font-size-xs);
   transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .contactLink:hover {
@@ -108,6 +111,9 @@
 .figure {
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 @media (min-width: 640px) {

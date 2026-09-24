@@ -158,12 +158,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  /* The links carry their own height now. */
+  gap: 0;
 }
 
 .columnLink {
   font-size: var(--font-size-sm);
   color: var(--footer-text);
   text-decoration: none;
+  /* A full-height row per link, so a thumb never lands on the neighbour. */
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .columnLink:hover {
@@ -201,12 +207,18 @@
 .address a {
   color: var(--footer-text);
   width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .figure,
 .figureLink {
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .figureLink {

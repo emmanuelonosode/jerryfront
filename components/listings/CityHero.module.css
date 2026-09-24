@@ -81,6 +81,9 @@
 .breadcrumbList a {
   color: rgb(255 255 255 / 78%);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .breadcrumbList a:hover {

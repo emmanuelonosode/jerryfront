@@ -32,35 +32,10 @@
   max-width: 40rem;
 }
 
-.fileField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
 
-.label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
 
-.optional {
-  font-weight: var(--font-weight-normal);
-  color: var(--color-text-secondary);
-  margin-left: var(--space-2);
-}
 
-.file {
-  width: 100%;
-  padding: var(--space-3);
-  border: var(--rule-width) solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-}
 
-.file:focus-visible {
-  outline: 2px solid var(--color-border-interactive);
-  outline-offset: 2px;
-}
 
 .hint {
   font-size: var(--font-size-sm);

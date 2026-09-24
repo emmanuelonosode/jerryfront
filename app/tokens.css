@@ -43,6 +43,10 @@
 :root {
   color-scheme: light;
 
+  /* The smallest thing a thumb can reliably hit: Apple's 44pt guideline and
+     WCAG 2.5.5. Every link and button that stands on its own meets it. */
+  --size-tap: 44px;
+
   /* ===========================================================================
      ATOMS - NAMED COLOUR. The only place raw hex belongs.
      =========================================================================== */

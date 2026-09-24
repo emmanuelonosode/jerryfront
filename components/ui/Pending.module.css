@@ -39,8 +39,8 @@
      reaches 5.93:1 and is the same hue. */
   background-color: var(--malibu-text);
   color: var(--white);
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 12px;
+  line-height: 16px;
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.04em;
   white-space: nowrap;

@@ -61,6 +61,8 @@
   white-space: nowrap;
   border-bottom: 2px solid transparent;
   transition: all var(--duration-fast) var(--easing-out);
+  min-height: var(--size-tap);
+  min-width: var(--size-tap);
 }
 
 .tab:hover {

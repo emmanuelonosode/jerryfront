@@ -206,6 +206,13 @@
   align-self: flex-start;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+  min-height: var(--size-tap);
+  padding-inline: var(--space-3);
+  border: var(--rule-width) dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-link);
+  cursor: pointer;
 }
 
 .blockerList {

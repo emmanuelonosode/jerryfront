@@ -6,6 +6,7 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { ProofUpload } from '@/components/apply/ProofUpload';
 import { ChoiceGroup, Radio, Select, TextInput, Textarea } from '@/components/ui/Controls';
 import {
   DAY_PART_LABEL,
@@ -342,47 +343,32 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
         {(p) => <Textarea {...p} name="note" rows={2} />}
       </Field>
 
-      <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.25rem' }}>
-          Photo of your ID
-        </label>
-        <p style={{ color: 'var(--color-ink-light)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-          To keep everyone safe, we require a photo of the front and back of your ID before you can book a tour. 
-          It is stored securely and deleted automatically once your tour request is reviewed.
+      <fieldset className={styles.idGroup}>
+        <legend className={styles.idTitle}>Photo of your ID</legend>
+        <p className={styles.idHint}>
+          To keep everyone safe we need a photo of the front and back of your ID before a tour.
+          It is stored privately and deleted automatically once your request is reviewed.
         </p>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }} htmlFor="tf-id-front">
-              Front of ID
-            </label>
-            <input
-              id="tf-id-front"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf"
-              onChange={(e) => setIdFrontFile(e.target.files?.[0] ?? null)}
-              style={{ display: 'block', width: '100%' }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }} htmlFor="tf-id-back">
-              Back of ID
-            </label>
-            <input
-              id="tf-id-back"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf"
-              onChange={(e) => setIdBackFile(e.target.files?.[0] ?? null)}
-              style={{ display: 'block', width: '100%' }}
-            />
-          </div>
+        <div className={styles.idPair}>
+          <ProofUpload
+            name="tf-id-front"
+            prompt="Front of your ID"
+            help="A clear photo with all four corners in view."
+            onFileSelect={setIdFrontFile}
+          />
+          <ProofUpload
+            name="tf-id-back"
+            prompt="Back of your ID"
+            help="The side with the barcode."
+            onFileSelect={setIdBackFile}
+          />
         </div>
         {errorFor(issues, 'idFile') ? (
-          <p className={styles.formError} role="alert" style={{ marginTop: '0.5rem' }}>
+          <p className={styles.formError} role="alert">
             {errorFor(issues, 'idFile')}
           </p>
         ) : null}
-      </div>
+      </fieldset>
 
       <div className={styles.actions}>
         <Button type="submit" size="lg">

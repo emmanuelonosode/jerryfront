@@ -45,6 +45,8 @@
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: background-color var(--duration-fast), color var(--duration-fast);
+  min-width: var(--size-tap);
+  min-height: var(--size-tap);
 }
 
 .zoomButton + .zoomButton {
@@ -271,6 +273,7 @@
   cursor: pointer;
   transition: background-color var(--duration-fast) var(--easing-out),
     color var(--duration-fast) var(--easing-out);
+  min-height: var(--size-tap);
 }
 
 .styleButton:hover {

@@ -142,6 +142,9 @@
   display: inline-flex;
   align-items: center;
   min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-tap);
 }
 
 .articleTitle {
