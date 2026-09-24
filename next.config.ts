@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
       },
       {
         // Overrides the site-wide referrer policy with the stricter one.
-        source: '/(magic|apply|saved|alerts|portal|login)/:path*',
+        source: '/(magic|apply|saved|alerts|portal|login|tour-id)/:path*',
         headers: [
           { key: 'Referrer-Policy', value: 'no-referrer' },
           { key: 'X-Robots-Tag', value: 'noindex, nofollow' },

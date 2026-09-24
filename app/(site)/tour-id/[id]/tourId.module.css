@@ -1,0 +1,94 @@
+.page {
+  padding-block: var(--space-6) var(--space-9);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-border-strong);
+}
+
+.title {
+  font-size: clamp(var(--font-size-2xl), 5vw, var(--font-size-4xl));
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-bold);
+}
+
+.lead {
+  max-width: 62ch;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-block: var(--space-6);
+  max-width: 40rem;
+}
+
+.fileField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.optional {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+  margin-left: var(--space-2);
+}
+
+.file {
+  width: 100%;
+  padding: var(--space-3);
+  border: var(--rule-width) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.file:focus-visible {
+  outline: 2px solid var(--color-border-interactive);
+  outline-offset: 2px;
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-status-error-fill);
+  color: var(--color-status-error-text);
+  border: var(--rule-width) solid var(--color-status-error-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  max-width: 40rem;
+  padding: var(--space-4);
+  background-color: var(--color-status-success-fill);
+  color: var(--color-status-success-text);
+  border-radius: var(--radius-md);
+  line-height: var(--line-height-relaxed);
+}
+
+.doneTitle {
+  font-weight: var(--font-weight-semibold);
+}
