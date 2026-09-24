@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Figtree, Outfit } from 'next/font/google';
 import { SITE_ORIGIN } from '@/lib/seo/site';
 import './globals.css';
@@ -90,6 +91,31 @@ export default function RootLayout({
             marketing shell around a staff tool blurs which surface someone is
             looking at - which matters when one of them publishes to renters. */}
         {children}
+        <Script
+          id="smartsupp-chat"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              var _smartsupp = _smartsupp || {};
+              _smartsupp.key = 'bbe43f29df9ecd87f441a7bd7cdd794e40037c31';
+              // Below 1024px listing pages pin a Tour / Apply bar to the bottom
+              // of the screen (~68px plus the iPhone home-indicator inset), and
+              // the chat bubble sat on top of the Apply button. Lift it clear.
+              if (window.matchMedia('(max-width: 1023px)').matches) {
+                _smartsupp.offsetY = 110;
+              }
+              window.smartsupp||(function(d) {
+                var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+                s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+                c.type='text/javascript';c.charset='utf-8';c.async=true;
+                c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+              })(document);
+            `,
+          }}
+        />
+        <noscript>
+          Powered by <a href="https://www.smartsupp.com" target="_blank" rel="noopener noreferrer">Smartsupp</a>
+        </noscript>
       </body>
     </html>
   );

@@ -140,3 +140,11 @@ ol[role='list'] {
 body:has(main[data-chrome='search']) > footer {
   display: none;
 }
+
+/* Ensure Smartsupp chat button sits above sticky action bar on mobile */
+@media (max-width: 1023px) {
+  #chat-application-iframe:not([style*="height: 100%"]),
+  #smartsupp-widget-container:not([style*="height: 100%"]) {
+    bottom: 110px !important;
+  }
+}
