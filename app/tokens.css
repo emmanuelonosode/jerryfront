@@ -53,7 +53,12 @@
 
   /* --- Meta Blue: the interactive blue. Header, primary action, links. ------- */
   --pacific-dark: #1259B5;
-  --pacific-base: #1877F2;
+  /* #166BDA, not the #1877F2 of the original board: that blue measured 4.23:1
+     under white text and 3.78:1 as text on the page ground, short of the 4.5:1
+     AA floor, and it is the header, the primary buttons and every link. This
+     is the lightest step toward --pacific-dark that clears 4.5:1 on white
+     (5.06) and on --color-bg-primary (4.51) - the same hue, a shade deeper. */
+  --pacific-base: #166BDA;
   --pacific-light: #5296F5;
   --pacific-dull: #8CB6F8;
   --pacific-muted: #C6D8FB;
@@ -103,8 +108,12 @@
      Cascade reads 4.45:1 on Ridge and Appalachian 2.85:1 on white - both just
      under bar - so text and control strokes use these, and the published atoms
      stay untouched for everything else. */
-  --cascade-text: #6A6A6A;
-  --appalachian-ui: #909090;
+  /* #676767 (was #6A6A6A): the old grey read 4.33:1 on the tertiary band,
+     under the 4.5:1 AA floor; one step darker clears it (4.53:1). */
+  --cascade-text: #676767;
+  /* #8B8B8B (was #909090): input borders must reach 3:1 against the page
+     (WCAG 1.4.11); the old value measured 2.85:1. */
+  --appalachian-ui: #8B8B8B;
   --teton: #B4B4B4;
   --rocky: #EBEBEB;
   --ridge: #F6F6F6;

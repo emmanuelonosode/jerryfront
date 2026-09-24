@@ -8,15 +8,16 @@ import { visibilityOf } from '@/lib/listings/lifecycle';
 import { RESPONSE_HOURS } from '@/lib/tours/request';
 import styles from './tour.module.css';
 import { listingBySlug } from '@/lib/listings/source';
+import { pageMetadata } from '@/lib/seo/metadata';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Schedule a tour',
   description:
     'See a home in person or on a video walkthrough. No fee, no application required, and we confirm a specific time within four hours.',
-  alternates: { canonical: '/schedule-tour' },
-};
+  path: '/schedule-tour',
+});
 
 export default async function ScheduleTourPage({
   searchParams,

@@ -139,7 +139,6 @@
   color: var(--brand-text);
   text-decoration: none;
   transition: transform var(--duration-fast) var(--easing-default);
-  min-height: var(--size-tap);
 }
 
 .sectionLink:hover {
@@ -309,9 +308,6 @@
   font-weight: var(--font-weight-bold);
   color: var(--brand-text);
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 .spotlightLink:hover {
@@ -356,10 +352,14 @@
   border-color: var(--brand);
 }
 
+/* Number, then its timing on its own line: side by side, a long timing
+   ("Move-in costs published upfront") wrapped into a ragged two-line block
+   squeezed against the number. */
 .stepHeader {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
   margin-bottom: var(--space-3);
 }
 
@@ -700,9 +700,6 @@
   font-weight: var(--font-weight-bold);
   color: var(--brand-text);
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 /* ---- 10. High Impact Bottom CTA ------------------------------------------ */
@@ -710,7 +707,10 @@
 .finalCta {
   margin-block: var(--space-8);
   padding: 0;
-  background: linear-gradient(135deg, var(--brand) 0%, #153766 100%);
+  /* A solid colour under the gradient, so the white text still has a
+     measurable, readable background if the gradient does not paint. */
+  background-color: var(--pacific-dark);
+  background-image: linear-gradient(135deg, var(--brand) 0%, #153766 100%);
   border-radius: var(--radius-xl);
   overflow: hidden;
   color: #FFFFFF;
@@ -781,4 +781,22 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Thumb-sized targets on touch screens only: on a desktop the same links
+   keep their compact rhythm. */
+@media (pointer: coarse) {
+  .sectionLink {
+    min-height: var(--size-tap);
+  }
+  .spotlightLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
+  }
+  .guideReadMore {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
+  }
 }

@@ -161,12 +161,14 @@ describe('vouchers are answered both ways', () => {
 
 describe('published claims are quoted, not invented', () => {
   test('the application answer does not claim applying is free', () => {
-    // /how-it-works says the first step is free and the fee comes after it.
-    // "Free to apply" - which this page's rail used to say - is not that.
+    // Questions and tours are free; the application carries a fee, paid once
+    // at the end. There is no free "check your odds" step any more - the
+    // pre-qualification it described was removed - so the answer must not
+    // promise one, nor claim applying is free.
     const apply = faqFor(listing()).find((e) => /How do I apply/.test(e.question));
     assert.ok(apply);
-    assert.doesNotMatch(apply.answer, /free to apply|applying is free/i);
-    assert.match(apply.answer, /first step checks your odds and is free/);
+    assert.doesNotMatch(apply.answer, /free to apply|applying is free|checks your odds/i);
+    assert.match(apply.answer, /application fee is paid once/);
   });
 
   test('the 24 hours keeps its "complete application" qualifier', () => {

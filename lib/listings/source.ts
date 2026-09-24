@@ -565,6 +565,27 @@ export async function searchListings(
 }
 
 /**
+ * One photograph for a city, for the market carousel on the home page.
+ *
+ * A single-home page request per city, only for the handful of markets shown
+ * first. Fetching a whole city's results for one picture - what the search
+ * function would do - is the cost the home page was designed to avoid.
+ */
+export async function cityPhoto(
+  city: string,
+  state: string,
+): Promise<{ photo: Listing['photos'][number]; slug: string } | null> {
+  try {
+    const query = new URLSearchParams({ city, state, page_size: '1', sort: 'newest' });
+    const data = await fetchJson<{ results: ApiProperty[] }>(`/properties/?${query.toString()}`);
+    const home = data.results[0] ? toListing(data.results[0]) : null;
+    return home?.photos[0] ? { photo: home.photos[0], slug: home.slug } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * One home on the map: a point, a price, and somewhere to go.
  *
  * Deliberately not a `Listing`. A dot needs five values; a Listing carries

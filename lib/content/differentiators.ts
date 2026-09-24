@@ -23,6 +23,8 @@ export type Differentiator = {
   title: string;
   lead: string;
   image?: string;
+  /** Intrinsic pixel size, so the page reserves the space before it loads. */
+  imageSize?: { width: number; height: number };
   imageAlt?: string;
   /** Name the specific difficulty, without euphemism. */
   acknowledge: string[];
@@ -34,7 +36,7 @@ export type Differentiator = {
 };
 
 const SHARED_TIMELINE = [
-  { step: 'Pre-qualification', detail: 'A few questions, an honest read on your odds. No fee yet.' },
+  { step: 'Ask first', detail: 'Tell us your situation and get an honest answer. Free, no fee.' },
   { step: 'Application', detail: 'Around ten minutes on a phone. Documents can follow after you submit.' },
   { step: 'Decision', detail: 'Within 24 hours of a complete application, with the reason stated.' },
   { step: 'Lease and keys', detail: 'Signed remotely if you need to. Move-in costs known in advance.' },
@@ -47,6 +49,7 @@ export const DIFFERENTIATORS: Record<string, Differentiator> = {
     title: 'We accept housing vouchers, in every market we serve',
     lead: 'Not "considered". Accepted. If you hold a Housing Choice Voucher or another subsidy, your application is measured against the same published criteria as everyone else.',
     image: '/images/family-home-concept.jpg',
+    imageSize: { width: 1024, height: 682 },
     imageAlt: 'Paper cutout of family and home on green grass under the sun',
     acknowledge: [
       'Plenty of listings say "no Section 8" outright, and plenty more simply stop returning calls once a voucher is mentioned.',
@@ -91,6 +94,7 @@ export const DIFFERENTIATORS: Record<string, Differentiator> = {
     title: 'A record from years ago is not the whole application',
     lead: 'An eviction filing, a broken lease, or a low score does not end the conversation here. It moves you to our individual review track, which has published rules you can read before you apply.',
     image: '/images/family-painting-home.jpg',
+    imageSize: { width: 1024, height: 548 },
     imageAlt: 'Family painting their new home together',
     acknowledge: [
       'Automated screening at scale declines a wide band of applicants on a single data point, and never explains which one.',
@@ -101,7 +105,7 @@ export const DIFFERENTIATORS: Record<string, Differentiator> = {
       'We read the difference between a filing and a judgment, and between a lease broken for a job move and one broken for non-payment.',
       'What we ask of every applicant is written down, and it is the same for everyone: want the home, afford the monthly cost, agree the terms, show a photo ID. No minimum credit score and no income multiple - it is all on the criteria page.',
       'Medical debt is not counted against you.',
-      'Before you pay anything, the first application step gives you an honest read on your odds. If it looks unlikely, we say so and you keep your money.',
+      'Not sure? Ask us before you pay anything - a person will tell you honestly whether the home is a realistic fit.',
     ],
     documents: [
       'Any court documents about the filing, including a dismissal or a satisfied judgment',
@@ -135,6 +139,7 @@ export const DIFFERENTIATORS: Record<string, Differentiator> = {
     title: 'Income that does not arrive as a pay stub still counts',
     lead: 'If you are self-employed, contract, seasonal, or working across several platforms, the problem is usually the form, not the money. We accept documentation that reflects how you are actually paid.',
     image: '/images/lease-signing.jpg',
+    imageSize: { width: 1024, height: 682 },
     imageAlt: 'Couple signing lease paperwork with property manager',
     acknowledge: [
       'Most application forms have one box for "employer" and one for "monthly salary", and neither describes contract or platform income.',
@@ -178,6 +183,7 @@ export const DIFFERENTIATORS: Record<string, Differentiator> = {
     title: 'Tell us what you need and we will find the home',
     lead: 'House hunting takes time. Give us your budget, preferred area, and household needs. We will search on your behalf and share homes that genuinely fit. ',
     image: '/images/happy-family-outdoors.jpg',
+    imageSize: { width: 1024, height: 682 },
     imageAlt: 'Happy family smiling together outdoors while finding their new home',
     acknowledge: [
       'Searching means checking multiple sites that often list the same homes at different prices, many of which are already rented.',

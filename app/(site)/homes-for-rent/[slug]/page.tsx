@@ -37,6 +37,7 @@ import { breadcrumbJsonLd, faqJsonLd, listingJsonLd } from '@/lib/seo/structured
 import { SITE_NAME, SITE_ORIGIN } from '@/lib/seo/site';
 import type { Listing } from '@/lib/listings/types';
 import styles from './detail.module.css';
+import { DEFAULT_OG_IMAGE, clampDescription } from '@/lib/seo/metadata';
 
 /**
  * Property detail.
@@ -165,10 +166,11 @@ export async function generateMetadata({
    * need the last third of the title.
    */
   const title = `${listing.addressLine}, ${listing.city} ${listing.state} · ${listing.beds} Bed ${noun} for Rent`;
-  const description =
+  const fullDescription =
     `${listing.beds} bed, ${listing.baths} bath ${noun.toLowerCase()} for rent in ` +
     `${listing.city}, ${listing.state}. ${listing.sqft.toLocaleString('en-US')} sqft, ` +
-    `${total} per month including every required fee. See the full cost breakdown, photos and floor plan.`;
+    `${total} per month including every required fee. See the full cost breakdown, photos and floor plan.`
+  const description = clampDescription(fullDescription);
 
   const lead = listing.photos[0];
   const visibility = visibilityOf(listing);
@@ -208,13 +210,13 @@ export async function generateMetadata({
               },
             ],
           }
-        : {}),
+        : { images: [DEFAULT_OG_IMAGE] }),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      ...(lead ? { images: [lead.url] } : {}),
+      images: [lead ? lead.url : DEFAULT_OG_IMAGE.url],
     },
   };
 }
@@ -1066,7 +1068,7 @@ export default async function PropertyDetailPage({
                 </span>
                 <span className={styles.railPoint}>
                   <CheckIcon />
-                  The first step checks your odds, and it is free.
+                  Questions and tours are free - ask us anything before you apply.
                 </span>
                 <span className={styles.railPoint}>
                   <CheckIcon />A decision within 24 hours of a complete application.

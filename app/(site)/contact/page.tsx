@@ -5,13 +5,14 @@ import { COMPANY } from '@/lib/navigation';
 import styles from './contact.module.css';
 
 import { ContactForm } from './ContactForm';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Contact',
   description:
     'Reach a named person at Skelton Realty Group: phone, email, and physical office address, plus state licensing details.',
-  alternates: { canonical: '/contact' },
-};
+  path: '/contact',
+});
 
 export default function ContactPage() {
   return (

@@ -24,6 +24,7 @@ import { formatUsd } from '@/lib/money';
 import styles from '../hub.module.css';
 import { fetchCities, fetchCityLinks, searchListings } from '@/lib/listings/source';
 import { DEFAULT_FILTERS } from '@/lib/listings/search';
+import { pageMetadata } from '@/lib/seo/metadata';
 
 /**
  * City hub - the indexed front door for location intent.
@@ -116,17 +117,16 @@ export async function generateMetadata({
         ? `, with ${bedLabel(band.bedrooms).toLowerCase()} homes typically ` +
           `${formatUsd(band.medianCents)} a month`
         : '') +
-      `. Every price is the total monthly cost, fees included. Pets welcome, vouchers accepted, ` +
-      `decision in 24 hours.`
-    : `Single-family homes for rent in ${hub.city}, ${hub.state}. Total monthly cost shown up ` +
-      `front, screening criteria published, and a decision within 24 hours.`;
+      `. Every price includes all required fees, and you get a decision in 24 hours.`
+    : `Single-family homes for rent in ${hub.city}, ${hub.state}. The total monthly cost is shown ` +
+      `up front, anyone can apply, and you get a decision within 24 hours.`;
 
-  return {
+  return pageMetadata({
     title: `Houses for Rent in ${hub.city}, ${hub.state}`,
     description,
-    alternates: { canonical: `/rentals/${state.toLowerCase()}/${hub.slug}` },
+    path: `/rentals/${state.toLowerCase()}/${hub.slug}`,
     robots: hub.indexable ? undefined : { index: false, follow: true },
-  };
+  });
 }
 
 export default async function CityHubPage({

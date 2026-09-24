@@ -142,9 +142,6 @@
   display: inline-flex;
   align-items: center;
   min-height: 24px;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 .articleTitle {
@@ -251,5 +248,15 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+}
+
+/* Thumb-sized targets on touch screens only: on a desktop the same links
+   keep their compact rhythm. */
+@media (pointer: coarse) {
+  .breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
   }
 }

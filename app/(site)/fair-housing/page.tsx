@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, PageHeader } from '@/components/content/ContentPage';
 import { Prose } from '@/components/layout/Container';
 import { Pending } from '@/components/ui/Pending';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Fair housing',
   description:
     'Our fair housing commitment, how our screening criteria are applied consistently, and how to raise a concern.',
-  alternates: { canonical: '/fair-housing' },
-};
+  path: '/fair-housing',
+});
 
 export default function FairHousingPage() {
   return (

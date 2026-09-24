@@ -2,12 +2,14 @@ import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, PageHeader } from '@/components/content/ContentPage';
 import { Prose } from '@/components/layout/Container';
 import { Pending } from '@/components/ui/Pending';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Terms',
-  description: 'The terms that apply to using this site and to submitting an application.',
-  alternates: { canonical: '/terms' },
-};
+  description:
+    'The terms that apply to using this site and to submitting an application.',
+  path: '/terms',
+});
 
 export default function TermsPage() {
   return (

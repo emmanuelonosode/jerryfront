@@ -190,8 +190,8 @@ export function buildListingFaq(
     question: 'How do I apply, and what does it cost?',
     answer:
       'Anyone can apply — there is no minimum credit score cutoff, and a person reviews' +
-      ' every application against our published criteria. The first step checks your odds' +
-      ' and is free; no fee is taken before you know where you stand. You get a decision' +
+      ' every application. Questions and tours are free; the application fee is paid once,' +
+      ' at the end of the application, and covers your whole household. You get a decision' +
       ' within 24 hours of a complete application, with the reason stated either way.',
   });
 

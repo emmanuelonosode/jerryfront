@@ -2,18 +2,19 @@ import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, PageHeader } from '@/components/content/ContentPage';
 import { Prose } from '@/components/layout/Container';
 import { COMPANY_FACTS } from '@/lib/content/business';
+import { pageMetadata } from '@/lib/seo/metadata';
 import {
   PLACEHOLDER_ACCESSIBILITY_AUDIT,
   PLACEHOLDER_ACCESSIBILITY_GAPS,
   PLACEHOLDER_ACCESSIBILITY_RESPONSE_TIME,
 } from '@/lib/content/placeholders';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Accessibility',
   description:
     'Our accessibility commitment, the standard we build to, known gaps, and how to tell us when something does not work.',
-  alternates: { canonical: '/accessibility' },
-};
+  path: '/accessibility',
+});
 
 export default function AccessibilityPage() {
   return (

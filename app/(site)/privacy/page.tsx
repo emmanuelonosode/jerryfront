@@ -2,12 +2,14 @@ import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, PageHeader } from '@/components/content/ContentPage';
 import { Prose } from '@/components/layout/Container';
 import { Pending } from '@/components/ui/Pending';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Privacy',
-  description: 'What personal information we collect, why, how long we keep it, and your rights over it.',
-  alternates: { canonical: '/privacy' },
-};
+  description:
+    'What personal information we collect, why, how long we keep it, and your rights over it.',
+  path: '/privacy',
+});
 
 /**
  * Structure and an accurate inventory of what the product collects - not

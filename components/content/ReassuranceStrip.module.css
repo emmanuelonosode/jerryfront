@@ -3,9 +3,18 @@
   background-color: var(--color-bg-secondary);
 }
 
+/* The band runs edge to edge; its four points sit on the same column as the
+   rest of the page, rather than starting at the viewport edge. */
 .list {
   display: grid;
   grid-template-columns: 1fr;
+  /* Less each item's own padding, so the text itself lines up with the page. */
+  max-width: calc(var(--max-width-wide) - 2 * var(--space-4));
+}
+
+/* Scoped to beat the global `ul[role='list'] { margin: 0 }` reset. */
+.strip .list {
+  margin-inline: auto;
 }
 
 .item {

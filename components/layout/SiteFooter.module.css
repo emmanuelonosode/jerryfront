@@ -158,18 +158,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  /* The links carry their own height now. */
-  gap: 0;
 }
 
+/* 24px tall even with a mouse (WCAG 2.5.8); touch screens get 44px below. */
 .columnLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   font-size: var(--font-size-sm);
   color: var(--footer-text);
   text-decoration: none;
-  /* A full-height row per link, so a thumb never lands on the neighbour. */
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 .columnLink:hover {
@@ -207,18 +205,12 @@
 .address a {
   color: var(--footer-text);
   width: fit-content;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 .figure,
 .figureLink {
   font-family: var(--font-family-mono);
   font-variant-numeric: tabular-nums;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 .figureLink {
@@ -379,4 +371,42 @@
 
 .licenceExtra {
   font-size: var(--font-size-xs);
+}
+
+/* Thumb-sized targets on touch screens only: on a desktop the same links
+   keep their compact rhythm. */
+@media (pointer: coarse) {
+  .columnLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
+  }
+  .figureLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
+  }
+  .address a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
+  }
+  .columnList {
+    gap: 0;
+  }
+}
+
+/* The address is a few lines and the licence list is dozens of states: an even
+   split left a tall empty column beside a cramped list. Give the list the
+   width. */
+@media (min-width: 960px) {
+  .company {
+    grid-template-columns: minmax(14rem, 1fr) 3fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .licenceList {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }

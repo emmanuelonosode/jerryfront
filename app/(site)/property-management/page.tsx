@@ -6,13 +6,14 @@ import {
   PLACEHOLDER_OWNER_TERMS,
 } from '@/lib/content/placeholders';
 import styles from './owner.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'For property owners',
   description:
     'We lease and manage single-family homes for property owners, managing tenant placement, screening, and operations.',
-  alternates: { canonical: '/property-management' },
-};
+  path: '/property-management',
+});
 
 /**
  * Owner-facing page.

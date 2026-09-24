@@ -12,13 +12,14 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { faqJsonLd } from '@/lib/seo/structuredData';
 import { INCOME_DOCUMENTS, TIER_ONE, type Criterion } from '@/lib/content/qualifications';
 import styles from './qualifications.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Who can apply',
   description:
-    'Anyone can apply for any available home. No minimum credit score and no income multiple - if you want the home, can afford the monthly cost and agree the terms, an agent works with you from there.',
-  alternates: { canonical: '/qualifications' },
-};
+    'Anyone can apply for any available home. No minimum credit score and no income multiple: want the home, afford the monthly cost, agree the terms.',
+  path: '/qualifications',
+});
 
 function CriteriaTable({ criteria, caption }: { criteria: Criterion[]; caption: string }) {
   return (
@@ -137,6 +138,8 @@ export default function QualificationsPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/lease-signing.jpg"
+          width={1024}
+          height={682}
           alt="Transparent screening and lease review with property manager"
           className={styles.heroImage}
         />

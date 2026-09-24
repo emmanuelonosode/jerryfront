@@ -3,7 +3,7 @@ import { Container } from '@/components/layout/Container';
 import { PropertyCard } from '@/components/listings/PropertyCard';
 import { ButtonLink } from '@/components/ui/Button';
 import { Pending } from '@/components/ui/Pending';
-import { fetchCities, searchListings } from '@/lib/listings/source';
+import { cityPhoto, fetchCities, searchListings } from '@/lib/listings/source';
 import { DEFAULT_FILTERS } from '@/lib/listings/search';
 import { countsForHubThreshold } from '@/lib/listings/lifecycle';
 import { buildHubIndex } from '@/lib/listings/hubs';
@@ -49,7 +49,7 @@ const CATEGORY_CHIPS = [
   { label: 'Housing Vouchers Welcome', href: '/housing-vouchers' },
   { label: 'Second Chance Friendly', href: '/second-chance-leasing' },
   { label: 'Self-Employed Renters', href: '/self-employed-renters' },
-  { label: 'Schedule Instant Tour', href: '/schedule-tour' },
+  { label: 'Book a Tour', href: '/schedule-tour' },
 ];
 
 export async function HomeSections() {
@@ -105,6 +105,7 @@ export async function HomeSections() {
    * Both guards are kept deliberately: one stops the fetch, the other stops
    * whatever the hub shape grows next from crossing the boundary.
    */
+  const MARKETS_WITH_PHOTOS = 12;
   const markets: MarketData[] = buildHubIndex(cityRows)
     .flatMap((state) =>
       state.cities
@@ -122,6 +123,21 @@ export async function HomeSections() {
       return { ...market, photo: home?.photos[0] ?? null, seed: home?.slug ?? market.slug };
     })
     .sort((a, b) => b.liveCount - a.liveCount);
+
+  // The first markets a visitor sees get a real photograph even when none of
+  // their homes is in the featured slice - one single-home request each, in
+  // parallel. Anything further along the carousel shows the branded
+  // placeholder instead of an empty white square.
+  await Promise.all(
+    markets.slice(0, MARKETS_WITH_PHOTOS).map(async (market) => {
+      if (market.photo) return;
+      const found = await cityPhoto(market.city, market.state);
+      if (found) {
+        market.photo = found.photo;
+        market.seed = found.slug;
+      }
+    }),
+  );
 
   const guides = GUIDES.slice(0, 3);
 
@@ -206,6 +222,8 @@ export async function HomeSections() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/family_kitchen_tablet.jpg"
+                  width={1024}
+                  height={682}
                   alt="Family in kitchen looking at a tablet"
                   className={styles.spotlightImage}
                 />
@@ -227,6 +245,8 @@ export async function HomeSections() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/family_real_estate_agent.jpg"
+                  width={1024}
+                  height={682}
                   alt="Family talking with a real estate agent"
                   className={styles.spotlightImage}
                 />
@@ -248,6 +268,8 @@ export async function HomeSections() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/handing_over_keys.jpg"
+                  width={1024}
+                  height={341}
                   alt="Real estate agent handing over house keys"
                   className={styles.spotlightImage}
                 />
@@ -336,6 +358,8 @@ export async function HomeSections() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={member.photoUrl}
+                        width={960}
+                        height={960}
                         alt={`${member.name}, ${member.role}`}
                         className={styles.personAvatar}
                       />
@@ -395,15 +419,15 @@ export async function HomeSections() {
       <Container width="wide">
         <div className={styles.finalCta}>
           <div className={styles.finalCtaContent}>
-            <span className={styles.finalEyebrow}>Fast & Transparent</span>
-            <h2 className={styles.finalTitle}>Find out where you stand with no upfront fee</h2>
+            <span className={styles.finalEyebrow}>Ask before you apply</span>
+            <h2 className={styles.finalTitle}>Not sure you would qualify? Ask us first</h2>
             <p className={styles.finalBody}>
-              A few simple questions and an honest read on your odds, before you pay anything or
-              hand over a Social Security number.
+              Tell us your situation and a person will give you an honest answer - free, before you
+              pay an application fee or share a Social Security number.
             </p>
             <div className={styles.finalCtaActions}>
-              <ButtonLink href="/apply/start" size="lg" variant="onBrand">
-                Check my odds now
+              <ButtonLink href="/contact" size="lg" variant="onBrand">
+                Ask a question
               </ButtonLink>
             </div>
           </div>
@@ -411,6 +435,8 @@ export async function HomeSections() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/move-in-happiness.jpg"
+                  width={1024}
+                  height={683}
               alt="Happy family moving into their new home"
               className={styles.finalCtaImage}
             />

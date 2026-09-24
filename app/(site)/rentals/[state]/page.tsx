@@ -11,6 +11,7 @@ import { LEAD_AGENT } from '@/lib/content/staff';
 import { formatUsd } from '@/lib/money';
 import styles from './hub.module.css';
 import { fetchCities } from '@/lib/listings/source';
+import { pageMetadata } from '@/lib/seo/metadata';
 
 /**
  * State hub.
@@ -73,12 +74,12 @@ export async function generateMetadata({
   const hub = findStateInIndex(buildHubIndex(await fetchCities()), state);
   if (!hub) return { title: 'Not found', robots: { index: false, follow: true } };
 
-  return {
+  return pageMetadata({
     title: `Houses for rent in ${hub.state}`,
-    description: `Single-family homes for rent across ${hub.state}, with the total monthly cost shown up front and screening criteria published in full.`,
-    alternates: { canonical: `/rentals/${hub.slug}` },
+    description: `Single-family homes for rent across ${hub.state}. The total monthly cost is shown up front, anyone can apply, and you get a decision in 24 hours.`,
+    path: `/rentals/${hub.slug}`,
     robots: hub.indexable ? undefined : { index: false, follow: true },
-  };
+  });
 }
 
 export default async function StateHubPage({ params }: { params: Promise<{ state: string }> }) {

@@ -16,6 +16,7 @@ import {
 } from '@/lib/listings/search';
 import styles from './search.module.css';
 import { relaxedSearch, searchListings } from '@/lib/listings/source';
+import { pageMetadata } from '@/lib/seo/metadata';
 
 /**
  * Search.
@@ -67,16 +68,16 @@ export async function generateMetadata({
       ? `/homes-for-rent?page=${filters.page}`
       : '/homes-for-rent';
 
-  return {
+  return pageMetadata({
     title:
       filters.page > 1
         ? `Affordable move-in ready rentals - page ${filters.page}`
         : 'Affordable Move-In Ready Rentals',
     description:
       'Every move-in ready home we have available, with the full monthly cost shown up front - base rent plus all required fees. Anyone can apply.',
-    alternates: { canonical },
+    path: canonical,
     robots: filtered ? { index: false, follow: true } : undefined,
-  };
+  });
 }
 
 export default async function SearchPage({

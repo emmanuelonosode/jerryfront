@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { Container } from '@/components/layout/Container';
 import { ButtonLink } from '@/components/ui/Button';
 import styles from './lease.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Our residential lease',
   description:
-    'What our residential lease says: rent that matches the listing, a small late fee after a grace period, repairs handled by us, 48 hours notice before entry, and state-specific protections.',
-  alternates: { canonical: '/lease-agreement' },
-};
+    'Our lease in plain words: rent that matches the listing, a small late fee after a grace period, repairs on us, and your state\'s protections built in.',
+  path: '/lease-agreement',
+});
 
 /**
  * What the lease says, in plain words - and where to sign yours.

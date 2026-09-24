@@ -4,6 +4,7 @@
 
 .breadcrumbList {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2);
   font-size: var(--font-size-sm);
@@ -12,9 +13,6 @@
 
 .breadcrumbList a {
   color: var(--color-text-secondary);
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 .header {
@@ -446,4 +444,14 @@
 
 @media (min-width: 1024px) {
   .allHomesList { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Thumb-sized targets on touch screens only: on a desktop the same links
+   keep their compact rhythm. */
+@media (pointer: coarse) {
+  .breadcrumbList a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
+  }
 }

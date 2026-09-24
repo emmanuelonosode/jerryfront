@@ -30,6 +30,8 @@ export function DifferentiatorPage({ content }: { content: Differentiator }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={content.image}
+            width={content.imageSize?.width}
+            height={content.imageSize?.height}
             alt={content.imageAlt ?? content.title}
             className={styles.heroImage}
           />
@@ -90,8 +92,8 @@ export function DifferentiatorPage({ content }: { content: Differentiator }) {
       </ContentSection>
 
       <CtaBand
-        title="Find out where you stand with zero upfront fee"
-        body="The first step of the application gives you an honest read on your odds. If it looks unlikely, we tell you right away so you do not pay any application fee."
+        title="Not sure? Ask before you apply"
+        body="Tell us your situation and a person will give you an honest answer before you pay any application fee. Questions and tours are always free."
         primaryLabel="Start an application"
         secondaryHref="/qualifications"
         secondaryLabel="Read the full criteria"

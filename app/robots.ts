@@ -39,6 +39,8 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${SITE_ORIGIN}/sitemap.xml`,
-    host: SITE_ORIGIN,
+    // No `host`: it is a Yandex-only directive that takes a bare domain, and
+    // written as a URL it was malformed. The canonical host is already stated
+    // by every canonical link and by the sitemap.
   };
 }

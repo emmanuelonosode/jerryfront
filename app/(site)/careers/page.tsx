@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, PageHeader } from '@/components/content/ContentPage';
 import { ButtonLink } from '@/components/ui/Button';
 import { Pending } from '@/components/ui/Pending';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Careers',
   description:
     'Working at Skelton Realty Group: what the job actually involves, and what we will not ask you to do.',
-  alternates: { canonical: '/careers' },
-};
+  path: '/careers',
+});
 
 /**
  * Careers.

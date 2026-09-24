@@ -7,6 +7,7 @@ import { CATEGORY_LABEL, GUIDES, findGuide } from '@/lib/content/guides';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { articleJsonLd, breadcrumbJsonLd } from '@/lib/seo/structuredData';
 import styles from '../guides.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
 export function generateStaticParams() {
   return GUIDES.map((g) => ({ slug: g.slug }));
@@ -21,11 +22,12 @@ export async function generateMetadata({
   const guide = findGuide(slug);
   if (!guide) return { title: 'Not found', robots: { index: false, follow: true } };
 
-  return {
+  return pageMetadata({
     title: guide.title,
     description: guide.summary,
-    alternates: { canonical: `/guides/${guide.slug}` },
-  };
+    path: `/guides/${guide.slug}`,
+    type: 'article',
+  });
 }
 
 /**
@@ -57,7 +59,10 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           </p>
           <h1 className={styles.articleTitle}>{guide.title}</h1>
           <p className={styles.articleUpdated}>
-            Last reviewed <span className={styles.figure}>{guide.updated}</span>
+            Last reviewed{' '}
+            <time className={styles.figure} dateTime={guide.updated}>
+              {new Date(`${guide.updated}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+            </time>
           </p>
         </header>
 

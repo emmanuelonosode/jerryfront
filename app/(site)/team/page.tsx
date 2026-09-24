@@ -3,13 +3,14 @@ import { ContentLayout, ContentSection, CtaBand, PageHeader } from '@/components
 import { Pending } from '@/components/ui/Pending';
 import { TEAM } from '@/lib/content/team';
 import styles from './team.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Our team',
   description:
     'The people who review applications here, with names, roles, markets, and direct contact details.',
-  alternates: { canonical: '/team' },
-};
+  path: '/team',
+});
 
 export default function TeamPage() {
   return (
@@ -57,6 +58,8 @@ export default function TeamPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={member.photoUrl}
+                      width={960}
+                      height={960}
                       alt={`${member.name}, ${member.role}`}
                       className={styles.avatar}
                     />

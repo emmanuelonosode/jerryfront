@@ -104,7 +104,14 @@ export function MarketCarousel({ markets }: { markets: MarketData[] }) {
                       width={market.photo.width}
                       height={market.photo.height}
                     />
-                  ) : null}
+                  ) : (
+                    // No photograph for this market yet: a branded tile rather
+                    // than an empty white square that reads as a broken image.
+                    <div className={styles.marketPlaceholder}>
+                      <HouseIcon className={styles.marketPlaceholderIcon} />
+                      <span className={styles.marketPlaceholderState}>{market.state}</span>
+                    </div>
+                  )}
                 </div>
                 <div className={styles.marketBody}>
                   <span className={styles.marketName}>{market.city}</span>

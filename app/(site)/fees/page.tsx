@@ -8,6 +8,7 @@ import { CURRENT_FEE_SCHEDULE, FEE_SCHEDULE_PENDING } from '@/lib/content/fees';
 import { formatUsd, formatUsdRange } from '@/lib/money';
 import type { Fee } from '@/lib/pricing';
 import styles from './fees.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
 /**
  * The published fee schedule.
@@ -26,12 +27,12 @@ import styles from './fees.module.css';
  * value of publishing it.
  */
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Every fee we charge',
   description:
     'The complete fee schedule: what is charged, when, how much, and why. Required monthly fees are already inside the price on every listing.',
-  alternates: { canonical: '/fees' },
-};
+  path: '/fees',
+});
 
 function amountOf(fee: Fee): string {
   switch (fee.amount.kind) {

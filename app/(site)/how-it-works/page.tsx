@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { ContentLayout, ContentSection, CtaBand, PageHeader } from '@/components/content/ContentPage';
 import styles from './how-it-works.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'How it works',
   description:
-    'Browse, apply, get a decision within 24 hours, move in. Each step with realistic timing and no fee taken before you know your odds.',
-  alternates: { canonical: '/how-it-works' },
-};
+    'Browse, apply, get a decision within 24 hours, move in. Each step with realistic timing, and your questions answered free before you pay anything.',
+  path: '/how-it-works',
+});
 
 const STEPS = [
   {
@@ -16,9 +17,9 @@ const STEPS = [
     body: 'Every home shows its total monthly cost (base rent plus all required fees), so the price you see is the price you pay. Save your favorite homes without creating an account.',
   },
   {
-    title: 'Check your odds, then apply',
+    title: 'Apply',
     time: 'About 10 minutes on a phone',
-    body: 'The first step asks about income, vouchers, pets, and any past rental history, then gives you an honest read on your likely outcome. No fee until after that. Documents can follow once you have submitted.',
+    body: 'Tell us about you, your household and your income. Not sure you would qualify? Ask us first - questions and tours are free. The application fee is paid once, at the end, and covers everyone in your household. Documents can follow once you have submitted.',
   },
   {
     title: 'A decision in 24 hours',
@@ -45,6 +46,8 @@ export default function HowItWorksPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/couple-celebrating-movein.jpg"
+          width={1024}
+          height={575}
           alt="Couple happily celebrating moving into their new home"
           className={styles.heroImage}
         />

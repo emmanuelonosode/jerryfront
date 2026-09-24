@@ -234,9 +234,6 @@
   font-size: var(--text-sm);
   letter-spacing: var(--meta-track-sm);
   color: var(--color-text-tertiary);
-  min-height: var(--size-tap);
-  display: inline-flex;
-  align-items: center;
 }
 
 /* A lead line under a section heading, where the section is a picture and the
@@ -295,9 +292,6 @@
   min-height: 24px;
   color: var(--color-text-tertiary);
   text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-tap);
 }
 
 .breadcrumbList a:hover {
@@ -1447,5 +1441,20 @@ a.tile:hover {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Thumb-sized targets on touch screens only: on a desktop the same links
+   keep their compact rhythm. */
+@media (pointer: coarse) {
+  .breadcrumbList a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--size-tap);
+  }
+  .sectionHint {
+    min-height: var(--size-tap);
+    display: inline-flex;
+    align-items: center;
   }
 }

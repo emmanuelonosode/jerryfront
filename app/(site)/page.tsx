@@ -3,6 +3,7 @@ import { ReassuranceStrip } from '@/components/content/ReassuranceStrip';
 import { HomeSections } from '@/components/home/HomeSections';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { localBusinessJsonLd, organizationJsonLd } from '@/lib/seo/structuredData';
+import { pageMetadata } from '@/lib/seo/metadata';
 
 /**
  * Cached, not rendered per visitor.
@@ -33,9 +34,12 @@ export const revalidate = 300;
  * unaided. On a three-week-old domain with barely any crawl budget, spending
  * it deciding that `/?utm_source=x` and `/` are the same page is waste.
  */
-export const metadata = {
-  alternates: { canonical: '/' },
-};
+export const metadata = pageMetadata({
+  title: 'Affordable, Move-In Ready Rentals · Skelton Realty Group',
+  description:
+    'Affordable, move-in ready homes for rent. Anyone can apply, every fee is shown up front, and repairs are on us. A real decision in 24 hours.',
+  path: '/',
+});
 
 export default function HomePage() {
   return (

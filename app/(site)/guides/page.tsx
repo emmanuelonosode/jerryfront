@@ -4,13 +4,14 @@ import { Container } from '@/components/layout/Container';
 import { ReassuranceStrip } from '@/components/content/ReassuranceStrip';
 import { CATEGORY_LABEL, GUIDES, guidesByCategory, usedCategories, type GuideCategory } from '@/lib/content/guides';
 import styles from './guides.module.css';
+import { pageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Renter guides',
   description:
     'Straight answers about applying for a rental, what to do when you are declined, and how housing vouchers work with private landlords.',
-  alternates: { canonical: '/guides' },
-};
+  path: '/guides',
+});
 
 export default async function GuidesPage({
   searchParams,
