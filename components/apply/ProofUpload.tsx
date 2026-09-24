@@ -41,7 +41,13 @@ export function ProofUpload({
   savedFilename,
   error,
   onFileSelect,
+  prompt = 'Add your payment receipt',
+  help = 'The screenshot from your banking or payment app is ideal — it shows the amount, the date, and where it went. Make sure the reference above is visible if your app shows it.',
 }: {
+  /** The call to action inside the drop area. */
+  prompt?: string;
+  /** The sentence under it. */
+  help?: string;
   name?: string;
   /** Set once a file has been stored for this draft. */
   savedFilename?: string | null;
@@ -137,7 +143,7 @@ export function ProofUpload({
             </>
           ) : (
             <>
-              <span className={styles.dropTitle}>Add your payment receipt</span>
+              <span className={styles.dropTitle}>{prompt}</span>
               {/* Two short lines rather than one long one: at 375px the single
                   sentence wrapped to three ragged lines inside the dashed box
                   and read as fine print rather than as an instruction. */}
@@ -156,8 +162,7 @@ export function ProofUpload({
       ) : null}
 
       <p className={styles.help} id={`${name}-help`}>
-        The screenshot from your banking or payment app is ideal — it shows the amount, the
-        date, and where it went. Make sure the reference above is visible if your app shows it.
+        {help}
       </p>
     </div>
   );

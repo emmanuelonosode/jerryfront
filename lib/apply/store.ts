@@ -24,6 +24,9 @@ import { DjangoDraftStore } from './djangoStore.ts';
  * boundary means the rest of the code can trust the shape.
  */
 export function normaliseDraft(draft: ApplicationDraft): ApplicationDraft {
+  // The server keeps only the last four; a store that still holds the full
+  // number (the in-memory one) is reduced to the same shape here.
+  const idDigits = (draft.ssn ?? '').replace(/\D/g, '');
   return {
     ...draft,
     attemptedSteps: draft.attemptedSteps ?? [],
@@ -35,9 +38,18 @@ export function normaliseDraft(draft: ApplicationDraft): ApplicationDraft {
     paymentProofPath: draft.paymentProofPath ?? null,
     paymentProofRejected: draft.paymentProofRejected ?? null,
     paymentVerifiedAt: draft.paymentVerifiedAt ?? null,
-    incomeSource: draft.incomeSource ?? null,
     vehicles: draft.vehicles ?? [],
     pets: draft.pets ?? [],
+    // Household income, the optional breakdown and the guarantor arrived after
+    // drafts were in flight; the full SSN/licence are never sent back at all.
+    householdMonthlyIncomeCents: draft.householdMonthlyIncomeCents ?? null,
+    incomeSources: Array.isArray(draft.incomeSources) ? draft.incomeSources : [],
+    grossMonthlyCents: draft.grossMonthlyCents ?? null,
+    guarantor: draft.guarantor ?? null,
+    ssn: null,
+    driversLicense: null,
+    ssnLast4: draft.ssnLast4 ?? (idDigits.length >= 4 ? idDigits.slice(-4) : null),
+    hasLicenseOnFile: draft.hasLicenseOnFile ?? Boolean(draft.driversLicense?.trim()),
   };
 }
 
@@ -89,8 +101,11 @@ export class InMemoryDraftStore implements DraftStore {
       submittedAt: existing.submittedAt,
       updatedAt: now.toISOString(),
     };
-    this.drafts.set(id, next);
-    return next;
+    // Stored the way the server stores it: the full SSN and licence number
+    // are reduced to "on file" and never read back.
+    const stored = normaliseDraft(next);
+    this.drafts.set(id, stored);
+    return stored;
   }
 
   async findByContact(contact: string) {

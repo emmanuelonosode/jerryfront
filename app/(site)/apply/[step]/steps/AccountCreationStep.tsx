@@ -18,7 +18,7 @@ export function AccountCreationStep({ draft }: { draft: ApplicationDraft }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function explainError(response: { status?: number; payload?: any; error?: string }, fallback: string) {
+  function explainError(response: { status?: number; payload?: unknown; error?: string }, fallback: string) {
     if (response.error) return 'We could not reach the server. Check your connection and try again.';
     
     const data = response.payload;
@@ -107,7 +107,7 @@ export function AccountCreationStep({ draft }: { draft: ApplicationDraft }) {
     <div className={styles.form}>
       <div className={styles.feeCallout}>
         <p>
-          Your payment has been recorded! Now, let's create your account so you can track your application and pay invoices later.
+          We have your application and your payment report - a person will confirm the money has arrived. Next, create your account so you can follow your application and pay move-in costs later.
         </p>
       </div>
 
@@ -119,9 +119,9 @@ export function AccountCreationStep({ draft }: { draft: ApplicationDraft }) {
 
       {phase === 'password' && (
         <form onSubmit={onRegister} noValidate className={styles.group}>
-          <legend className={styles.groupTitle}>Create a Password</legend>
+          <legend className={styles.groupTitle}>Create a password</legend>
           <p className={styles.groupHint}>
-            We'll use <strong>{draft.email}</strong> as your username. Please pick a password to secure your account.
+            We will use <strong>{draft.email}</strong> as your username. Choose a password to protect your account.
           </p>
 
           <Field

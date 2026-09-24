@@ -63,7 +63,10 @@ export function ConfirmationStep({ draft }: { draft: ApplicationDraft }) {
           <p className={styles.confirmBody}>
             Your answers are saved and your application is in the queue. A person checks
             the account and confirms the{' '}
-            <span className={styles.figure}>{formatUsd(APPLICATION_FEE_CENTS)}</span> has
+            <span className={styles.figure}>
+              {formatUsd(draft.applicationFeeCents ?? APPLICATION_FEE_CENTS * (draft.adultCount ?? 1))}
+            </span>{' '}
+            has
             arrived - usually the same working day.{' '}
             <strong>Your 24-hour decision window starts then</strong>, and we will email
             you the exact deadline the moment it does.

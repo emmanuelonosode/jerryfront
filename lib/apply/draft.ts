@@ -19,6 +19,43 @@ import { isStepSlug, stepIndex, type StepSlug, STEP_SLUGS } from './steps.ts';
 export type Vehicle = { makeModel: string | null; color: string | null; licensePlate: string | null; state: string | null };
 export type Pet = { animalType: string | null; breed: string | null; weightLbs: number | null; name: string | null; isServiceAnimal: boolean };
 
+/** Where one part of the household's income comes from. */
+export const INCOME_SOURCE_TYPES = [
+  { value: 'job', label: 'A job' },
+  { value: 'self-employment', label: 'Self-employment or gig work' },
+  { value: 'benefits', label: 'Social Security, disability or other benefits' },
+  { value: 'voucher', label: 'Housing voucher' },
+  { value: 'support', label: 'Child or spousal support' },
+  { value: 'other', label: 'Something else' },
+] as const;
+export type IncomeSourceType = (typeof INCOME_SOURCE_TYPES)[number]['value'];
+
+/**
+ * One line of the optional income breakdown.
+ *
+ * Optional because the total is what we ask for; the breakdown only helps us
+ * match the documents we ask for later to the right person.
+ */
+export type IncomeSourceLine = {
+  earnerName: string | null;
+  sourceType: IncomeSourceType | null;
+  monthlyAmountCents: number | null;
+  /** Only asked when the source is a job. */
+  employerName: string | null;
+};
+
+/** Someone who agrees to cover the rent if the household cannot. Optional. */
+export type GuarantorDetails = {
+  fullName: string | null;
+  relationship: string | null;
+  email: string | null;
+  phone: string | null;
+  monthlyIncomeCents: number | null;
+};
+
+/** ID numbers we accept. An ITIN is accepted in place of an SSN. */
+export const ID_TYPES = ['SSN', 'ITIN'] as const;
+
 export type ApplicationDraft = {
   id: string;
   /** The listing this is for, if it started from one. */
@@ -43,11 +80,19 @@ export type ApplicationDraft = {
   // background
   dateOfBirth: string | null;
   idType: string | null;
+  /**
+   * Only ever held on the way TO the server. The server encrypts it, keeps the
+   * last four, and never sends the full number back - see `ssnLast4`.
+   */
   ssn: string | null;
-  ein: string | null;
+  /** Set by the server when an SSN or ITIN is on file. */
+  ssnLast4: string | null;
 
   hasLicense: boolean | null;
+  /** Write-only, like `ssn`. */
   driversLicense: string | null;
+  /** Set by the server when a licence number is on file. */
+  hasLicenseOnFile: boolean;
   driversLicenseState: string | null;
 
   hasEviction: boolean | null;
@@ -57,12 +102,15 @@ export type ApplicationDraft = {
   isActiveMilitary: boolean | null;
   receivesHousingAssistance: boolean | null;
 
-  // income
+  // income - the WHOLE household's, before tax
+  householdMonthlyIncomeCents: number | null;
+  /** Optional breakdown. */
+  incomeSources: IncomeSourceLine[];
+  /**
+   * The previous form's single "gross monthly income". Read on resume so an
+   * application started before the change keeps its answer.
+   */
   grossMonthlyCents: number | null;
-  grossAnnualCents: number | null;
-  incomeSource: string | null;
-  employerName: string | null;
-  durationMonths: number | null;
 
   // household
   hasMinorsOrDependents: boolean | null;
@@ -72,9 +120,8 @@ export type ApplicationDraft = {
   hasAnimals: boolean | null;
   adultCount: number | null;
   pets: Pet[];
-
-  // review
-  disclosuresAcceptedAt: string | null;
+  /** Optional guarantor; null when none was added. */
+  guarantor: GuarantorDetails | null;
 
   // payment - manual rails, reconciled by a person
   /** Which method they chose. */
@@ -144,10 +191,11 @@ export function emptyDraft(id: string, listingSlug: string | null, now: Date): A
     dateOfBirth: null,
     idType: null,
     ssn: null,
-    ein: null,
+    ssnLast4: null,
 
     hasLicense: null,
     driversLicense: null,
+    hasLicenseOnFile: false,
     driversLicenseState: null,
 
     hasEviction: null,
@@ -158,11 +206,9 @@ export function emptyDraft(id: string, listingSlug: string | null, now: Date): A
     receivesHousingAssistance: null,
 
     // income
+    householdMonthlyIncomeCents: null,
+    incomeSources: [],
     grossMonthlyCents: null,
-    grossAnnualCents: null,
-    incomeSource: null,
-    employerName: null,
-    durationMonths: null,
 
     // household
     hasMinorsOrDependents: null,
@@ -172,8 +218,8 @@ export function emptyDraft(id: string, listingSlug: string | null, now: Date): A
     hasAnimals: null,
     adultCount: 1,
     pets: [],
+    guarantor: null,
 
-    disclosuresAcceptedAt: null,
     paymentMethod: null,
     paymentReportedAt: null,
     applicationFeeCents: null,
@@ -238,36 +284,46 @@ export function validateStep(draft: ApplicationDraft, step: StepSlug): FieldErro
       if (!draft.dateOfBirth) {
         errors.push({ field: 'dateOfBirth', message: 'Enter your date of birth.' });
       }
-      if (!draft.idType) {
-        errors.push({ field: 'idType', message: 'Select an ID type.' });
+      if (!draft.idType || !(ID_TYPES as readonly string[]).includes(draft.idType)) {
+        errors.push({ field: 'idType', message: 'Choose SSN or ITIN.' });
       }
-      if (draft.idType === 'SSN' && !draft.ssn?.trim()) {
-        errors.push({ field: 'ssn', message: 'Enter your SSN.' });
+      // Either a number typed now, or one already on file from an earlier save.
+      const idDigits = (draft.ssn ?? '').replace(/\D/g, '');
+      if (idDigits.length !== 9 && !draft.ssnLast4) {
+        errors.push({ field: 'ssn', message: 'Enter all nine digits of your SSN or ITIN.' });
       }
-      if (draft.idType === 'EIN' && !draft.ein?.trim()) {
-        errors.push({ field: 'ein', message: 'Enter your EIN.' });
+      if (draft.hasLicense === null) {
+        errors.push({ field: 'hasLicense', message: "Tell us whether you have a driver's license." });
       }
-      if (draft.hasLicense === true && !draft.driversLicense?.trim()) {
-        errors.push({ field: 'driversLicense', message: 'Enter your driver\'s license number.' });
+      if (draft.hasLicense === true && !draft.driversLicense?.trim() && !draft.hasLicenseOnFile) {
+        errors.push({ field: 'driversLicense', message: "Enter your driver's license number." });
+      }
+      if (draft.hasLicense === true && !draft.driversLicenseState) {
+        errors.push({ field: 'driversLicenseState', message: 'Choose the state that issued your license.' });
       }
       if (draft.hasEviction === null || draft.hasFelony === null || draft.hasBankruptcy === null) {
-        errors.push({ field: 'questionnaires', message: 'Please answer all questionnaire questions.' });
+        errors.push({
+          field: 'questionnaires',
+          message: 'Answer the three questions above. A yes does not mean a no from us - a person reads every application.',
+        });
+      }
+      if (draft.isActiveMilitary === null || draft.receivesHousingAssistance === null) {
+        errors.push({ field: 'situation', message: 'Answer both questions above.' });
       }
       break;
     }
 
     case 'income': {
-      if (!draft.grossMonthlyCents) {
-        errors.push({ field: 'grossMonthlyCents', message: 'Enter your gross monthly income.' });
+      if (!householdIncomeCents(draft)) {
+        errors.push({
+          field: 'householdMonthlyIncomeCents',
+          message: "Enter your household's total monthly income before tax. An estimate is fine.",
+        });
       }
-      if (!draft.incomeSource) {
-        errors.push({ field: 'incomeSource', message: 'Select your primary source of income.' });
-      }
-      if (!draft.employerName?.trim()) {
-        errors.push({ field: 'employerName', message: 'Enter your employer name.' });
-      }
-      if (!draft.durationMonths) {
-        errors.push({ field: 'durationMonths', message: 'Enter how long you have worked there.' });
+      for (const [i, line] of draft.incomeSources.entries()) {
+        if (line.sourceType === 'job' && !line.employerName?.trim()) {
+          errors.push({ field: `incomeSources.${i}.employerName`, message: 'Add the employer, or change the source.' });
+        }
       }
       break;
     }
@@ -285,6 +341,12 @@ export function validateStep(draft: ApplicationDraft, step: StepSlug): FieldErro
       for (const [i, pet] of draft.pets.entries()) {
         if (!pet.animalType?.trim()) {
           errors.push({ field: `pets.${i}.animalType`, message: 'Say what kind of animal this is, or remove it.' });
+        }
+      }
+      if (draft.guarantor) {
+        const g = draft.guarantor;
+        if (!g.phone?.trim() && !g.email?.trim()) {
+          errors.push({ field: 'guarantor.contact', message: 'Add a phone number or email for your guarantor, or remove them.' });
         }
       }
       break;
@@ -368,7 +430,9 @@ export function resumeStep(draft: ApplicationDraft): StepSlug {
 export function canEnterStep(draft: ApplicationDraft, step: StepSlug): boolean {
   if (!isStepSlug(step)) return false;
   if (step === 'confirmation') return draft.submittedAt !== null;
-  if (step === 'payment') return isStepComplete(draft, 'household');
+  // Every step before payment, not just the one before it: the fee is only
+  // ever charged against a complete application.
+  if (step === 'payment') return resumeStep(draft) === 'payment';
   if (step === 'account_creation') return isStepComplete(draft, 'payment');
   return stepIndex(step) <= stepIndex(resumeStep(draft));
 }
@@ -397,6 +461,32 @@ export function progressOf(draft: ApplicationDraft): Progress {
   };
 }
 
+/** The household total, falling back to the older single-income answer. */
+export function householdIncomeCents(draft: ApplicationDraft): number {
+  return draft.householdMonthlyIncomeCents ?? draft.grossMonthlyCents ?? 0;
+}
+
 export function totalMonthlyIncomeCents(draft: ApplicationDraft): number {
-  return draft.grossMonthlyCents ?? 0;
+  return householdIncomeCents(draft);
+}
+
+/** What the optional breakdown adds up to, and whether it matches the total. */
+export function breakdownCheck(draft: ApplicationDraft): { sumCents: number; matches: boolean } | null {
+  const lines = draft.incomeSources.filter((l) => l.monthlyAmountCents);
+  if (lines.length === 0) return null;
+  const sumCents = lines.reduce((acc, l) => acc + (l.monthlyAmountCents ?? 0), 0);
+  return { sumCents, matches: sumCents === householdIncomeCents(draft) };
+}
+
+/**
+ * Dollars as typed - "4,200", "$4200.50", "4200.5" - to cents.
+ *
+ * The previous parser stripped every non-digit, so "4200.50" became 420,050
+ * dollars. Returns null for anything that is not a non-negative amount.
+ */
+export function parseDollarsToCents(raw: string | null | undefined): number | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/[$,\s]/g, '');
+  if (!/^\d+(\.\d{0,2})?$/.test(cleaned)) return null;
+  return Math.round(Number.parseFloat(cleaned) * 100);
 }

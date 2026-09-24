@@ -101,12 +101,23 @@ export const CURRENT_FEE_SCHEDULE: FeeScheduleVersion = {
     },
     {
       id: 'late-fee',
-      label: 'Late payment',
+      // Kept in step with the lease terms in the backend (apps/crm/lease.py).
+      label: 'Late payment (at most)',
       cadence: 'one-time',
       condition: 'conditional',
-      appliesWhen: 'if rent is paid after the grace period',
+      appliesWhen: 'only if rent is more than 5 days late (7 in Colorado)',
       amount: { kind: 'flat', cents: FEE_AMOUNTS.lateFee ?? dollars(50) },
-      reason: 'Charged once per late month, after the grace period stated in your lease.',
+      reason:
+        'The lesser of $50 or 5% of your monthly rent, charged once per late month and never more than your state allows.',
+    },
+    {
+      id: 'returned-payment',
+      label: 'Returned payment',
+      cadence: 'one-time',
+      condition: 'conditional',
+      appliesWhen: 'if your bank returns a payment unpaid',
+      amount: { kind: 'flat', cents: dollars(25) },
+      reason: 'What the lease charges when a payment bounces, or less where state law sets a lower limit.',
     },
   ],
 };

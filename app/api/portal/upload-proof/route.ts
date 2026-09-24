@@ -2,6 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
+import { API_BASE } from '@/lib/env';
+
+/**
+ * Who is uploading - asked of Django, which owns sessions.
+ *
+ * This route wrote files to disk for anyone who posted to it. The resident's
+ * access token arrives as a Bearer header or in the `portal_access` cookie the
+ * portal keeps alongside it; either way the backend decides whether it is
+ * valid. Presence alone is not checked here, because a cookie anyone can set
+ * proves nothing.
+ */
+async function isSignedIn(req: NextRequest): Promise<boolean> {
+  const header = req.headers.get('authorization') ?? '';
+  const token = header.toLowerCase().startsWith('bearer ')
+    ? header.slice(7)
+    : req.cookies.get('portal_access')?.value ?? '';
+  if (!token) return false;
+  try {
+    const res = await fetch(`${API_BASE}/auth/me/`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 const ALLOWED_MIME: Record<string, string> = {
   'image/png': 'png',
@@ -15,6 +42,9 @@ const ALLOWED_MIME: Record<string, string> = {
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(req: NextRequest) {
+  if (!(await isSignedIn(req))) {
+    return NextResponse.json({ error: 'Sign in again to upload a receipt.' }, { status: 401 });
+  }
   try {
     const formData = await req.formData();
     const file = (formData.get('file') || formData.get('paymentProof')) as File | null;

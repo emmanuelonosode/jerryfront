@@ -196,7 +196,10 @@ export function documentsFor(draft: ApplicationDraft): RequestedDocument[] {
     },
   ];
 
-  if (draft.incomeSource === 'voucher') {
+  const hasVoucher =
+    draft.receivesHousingAssistance === true
+    || draft.incomeSources.some((line) => line.sourceType === 'voucher');
+  if (hasVoucher) {
     docs.push({
       kind: 'voucher',
       label: 'Voucher award letter',

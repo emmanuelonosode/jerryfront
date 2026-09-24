@@ -49,19 +49,19 @@ export const STEPS: StepDefinition[] = [
   {
     slug: 'background',
     label: 'Background',
-    purpose: 'Identification and standard screening questions.',
+    purpose: 'Your ID number and a few standard questions we ask everyone.',
     revisitable: true,
   },
   {
     slug: 'income',
     label: 'Income',
-    purpose: 'Your primary source of income and employment details.',
+    purpose: "Your household's total monthly income, from every source.",
     revisitable: true,
   },
   {
     slug: 'household',
     label: 'Household',
-    purpose: 'Who else is moving in, including pets.',
+    purpose: 'Who is moving in, vehicles, animals, and an optional guarantor.',
     revisitable: true,
   },
   {
@@ -72,7 +72,7 @@ export const STEPS: StepDefinition[] = [
   },
   {
     slug: 'account_creation',
-    label: 'Create Account',
+    label: 'Your account',
     purpose: 'Verify your email to create your account and track your application.',
     revisitable: false,
   },

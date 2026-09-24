@@ -9,6 +9,7 @@ import { ProofUpload } from '@/components/apply/ProofUpload';
 import controls from '@/components/ui/controls.module.css';
 import { formatUsd } from '@/lib/money';
 import { ApiError, apiFetch } from '@/lib/portal/api';
+import { getAccessToken } from '@/lib/portal/tokens';
 import { StatusBadge } from './StatusBadge';
 import styles from './portal.module.css';
 import own from './Payments.module.css';
@@ -213,9 +214,11 @@ export function Payments() {
       if (selectedFile) {
         const uploadData = new FormData();
         uploadData.append('file', selectedFile);
+        const token = getAccessToken();
         const res = await fetch('/api/portal/upload-proof', {
           method: 'POST',
           body: uploadData,
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         if (!res.ok) {
           const errJson = await res.json().catch(() => ({}));

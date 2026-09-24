@@ -5,11 +5,19 @@ import styles from './SignaturePad.module.css';
 
 interface SignaturePadProps {
   initialName?: string;
+  /**
+   * The consent the tenant agrees to, as the server will store it. Passed in
+   * so what is on screen is word for word what is recorded with the signature.
+   */
+  consentText?: string;
   onSave: (signatureData: { type: 'draw' | 'type'; dataUrl: string; signerName: string }) => void;
   onCancel?: () => void;
 }
 
-export function SignaturePad({ initialName = '', onSave, onCancel }: SignaturePadProps) {
+const DEFAULT_CONSENT =
+  'I agree that this electronic signature is the legally binding equivalent of my manual handwritten signature, and I confirm that I have reviewed all terms of this Lease Agreement.';
+
+export function SignaturePad({ initialName = '', consentText = DEFAULT_CONSENT, onSave, onCancel }: SignaturePadProps) {
   const [tab, setTab] = useState<'draw' | 'type'>('draw');
   const [signerName, setSignerName] = useState(initialName);
   const [agreed, setAgreed] = useState(false);
@@ -251,10 +259,7 @@ export function SignaturePad({ initialName = '', onSave, onCancel }: SignaturePa
           onChange={(e) => setAgreed(e.target.checked)}
           className={styles.checkbox}
         />
-        <span className={styles.consentText}>
-          I agree that this electronic signature is the legally binding equivalent of my manual
-          handwritten signature, and I confirm that I have reviewed all terms of this Lease Agreement.
-        </span>
+        <span className={styles.consentText}>{consentText}</span>
       </label>
 
       <div className={styles.actions}>

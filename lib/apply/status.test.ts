@@ -87,7 +87,7 @@ describe('documents', () => {
   });
 
   test('a voucher holder is asked for the award letter and caseworker', () => {
-    const d = draft({ incomeSource: 'voucher' });
+    const d = draft({ incomeSources: [{ earnerName: null, sourceType: 'voucher', monthlyAmountCents: null, employerName: null }] });
     const voucher = documentsFor(d).find((x) => x.kind === 'voucher');
     assert.ok(voucher);
     assert.match(voucher.why, /caseworker/);

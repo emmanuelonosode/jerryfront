@@ -18,6 +18,8 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
   const [hasDependents, setHasDependents] = useState(draft.hasMinorsOrDependents ?? false);
   const [hasVehicles, setHasVehicles] = useState(draft.hasMotorVehicles ?? false);
   const [hasAnimals, setHasAnimals] = useState(draft.hasAnimals ?? false);
+  const [addGuarantor, setAddGuarantor] = useState(draft.guarantor !== null);
+  const g = draft.guarantor;
 
   const petRows = [0, 1];
   const vehicleRows = [0, 1];
@@ -29,7 +31,9 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
           Everyone who will live in the home, any vehicles, and any animals.
         </p>
         <p className={styles.explainerNote}>
-          Adults 18 and over are included in this application. The {formatUsd(APPLICATION_FEE_CENTS)} application fee is calculated automatically per adult listed here, and one single payment covers everyone.
+          The application fee is {formatUsd(APPLICATION_FEE_CENTS)} for each adult (18 or over)
+          who will live in the home. You pay it once for everyone on the next step. We may ask
+          other adults for their own details after you apply.
         </p>
       </div>
 
@@ -37,7 +41,7 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
         <legend className={styles.legend}>Adults</legend>
         <Field
           name="adultCount"
-          label="Number of adults (including you)"
+          label="Adults 18 or over moving in, including you"
           error={errorFor(errors, 'adultCount')}
         >
           {(p) => (
@@ -56,13 +60,13 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
 
       <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>Dependents</legend>
-        <ChoiceGroup legend="Do you have any minors or dependents?">
+        <ChoiceGroup legend="Will any children or other dependents live with you?">
           <Radio name="hasMinorsOrDependents" value="yes" label="Yes" defaultChecked={draft.hasMinorsOrDependents === true} onChange={() => setHasDependents(true)} />
           <Radio name="hasMinorsOrDependents" value="no" label="No" defaultChecked={draft.hasMinorsOrDependents === false} onChange={() => setHasDependents(false)} />
         </ChoiceGroup>
 
         {hasDependents && (
-          <Field name="dependentCount" label="Number of dependents" required error={errorFor(errors, 'dependentCount')}>
+          <Field name="dependentCount" label="How many" required error={errorFor(errors, 'dependentCount')}>
             {(p) => (
               <TextInput
                 {...p}
@@ -80,7 +84,7 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
 
       <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>Vehicles</legend>
-        <ChoiceGroup legend="Do you have any motor vehicles?">
+        <ChoiceGroup legend="Will you park any vehicles at the home?">
           <Radio name="hasMotorVehicles" value="yes" label="Yes" defaultChecked={draft.hasMotorVehicles === true} onChange={() => setHasVehicles(true)} />
           <Radio name="hasMotorVehicles" value="no" label="No" defaultChecked={draft.hasMotorVehicles === false} onChange={() => setHasVehicles(false)} />
         </ChoiceGroup>
@@ -90,20 +94,20 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
           return (
             <div className={styles.petBlock} key={i}>
               <div className={styles.pair}>
-                <Field name="makeModel" idSuffix={i} label={`Vehicle ${i + 1} Make & Model`} note="Optional">
-                  {(p) => <TextInput {...p} name="makeModel" defaultValue={vehicle?.makeModel ?? ''} />}
+                <Field name="makeModel" idSuffix={i} label={`Vehicle ${i + 1}: make and model`} note="Optional">
+                  {(p) => <TextInput {...p} name={`vehicles.${i}.makeModel`} defaultValue={vehicle?.makeModel ?? ''} />}
                 </Field>
                 <Field name="color" idSuffix={i} label="Color" note="Optional">
-                  {(p) => <TextInput {...p} name="color" defaultValue={vehicle?.color ?? ''} />}
+                  {(p) => <TextInput {...p} name={`vehicles.${i}.color`} defaultValue={vehicle?.color ?? ''} />}
                 </Field>
               </div>
               <div className={styles.pair}>
-                <Field name="licensePlate" idSuffix={i} label="License Plate" note="Optional">
-                  {(p) => <TextInput {...p} name="licensePlate" defaultValue={vehicle?.licensePlate ?? ''} />}
+                <Field name="licensePlate" idSuffix={i} label="License plate" note="Optional">
+                  {(p) => <TextInput {...p} name={`vehicles.${i}.licensePlate`} defaultValue={vehicle?.licensePlate ?? ''} />}
                 </Field>
-                <Field name="vehicleState" idSuffix={i} label="State" note="Optional">
+                <Field name="vehicleState" idSuffix={i} label="Plate state" note="Optional">
                   {(p) => (
-                    <Select {...p} name="vehicleState" defaultValue={vehicle?.state ?? ''}>
+                    <Select {...p} name={`vehicles.${i}.state`} defaultValue={vehicle?.state ?? ''}>
                       <option value="" disabled>Select state…</option>
                       {US_STATES.map((state) => (
                         <option key={state.value} value={state.value}>{state.label}</option>
@@ -119,7 +123,10 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
 
       <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>Pets and assistance animals</legend>
-        <ChoiceGroup legend="Do you have any animals?">
+        <ChoiceGroup
+          legend="Will any animals live with you?"
+          hint="Include assistance animals. They are not pets: no pet fee, pet rent or pet deposit, ever."
+        >
           <Radio name="hasAnimals" value="yes" label="Yes" defaultChecked={draft.hasAnimals === true} onChange={() => setHasAnimals(true)} />
           <Radio name="hasAnimals" value="no" label="No" defaultChecked={draft.hasAnimals === false} onChange={() => setHasAnimals(false)} />
         </ChoiceGroup>
@@ -129,32 +136,77 @@ export function HouseholdStep({ draft, errors }: { draft: ApplicationDraft; erro
           return (
             <div className={styles.petBlock} key={i}>
               <div className={styles.pair}>
-                <Field name="animalType" idSuffix={i} label={`Animal ${i + 1} Type`} required error={errorFor(errors, `pets.${i}.animalType`)}>
-                  {(p) => <TextInput {...p} name="animalType" placeholder="Dog, cat…" defaultValue={pet?.animalType ?? ''} />}
+                <Field name="animalType" idSuffix={i} label={`Animal ${i + 1}: what kind`} required={i === 0} error={errorFor(errors, `pets.${i}.animalType`)}>
+                  {(p) => <TextInput {...p} name={`pets.${i}.animalType`} placeholder="Dog, cat…" defaultValue={pet?.animalType ?? ''} />}
                 </Field>
                 <Field name="petName" idSuffix={i} label="Name" note="Optional">
-                  {(p) => <TextInput {...p} name="petName" defaultValue={pet?.name ?? ''} />}
+                  {(p) => <TextInput {...p} name={`pets.${i}.name`} defaultValue={pet?.name ?? ''} />}
                 </Field>
               </div>
               <div className={styles.pair}>
                 <Field name="breed" idSuffix={i} label="Breed" note="Optional">
-                  {(p) => <TextInput {...p} name="breed" defaultValue={pet?.breed ?? ''} />}
+                  {(p) => <TextInput {...p} name={`pets.${i}.breed`} defaultValue={pet?.breed ?? ''} />}
                 </Field>
                 <Field name="weightLbs" idSuffix={i} label="Weight in pounds" note="Optional">
-                  {(p) => <TextInput {...p} figure name="weightLbs" inputMode="numeric" defaultValue={pet?.weightLbs ?? ''} />}
+                  {(p) => <TextInput {...p} figure name={`pets.${i}.weightLbs`} inputMode="numeric" defaultValue={pet?.weightLbs ?? ''} />}
                 </Field>
               </div>
               <Checkbox
                 id={`pet-assist-${i}`}
-                name="isServiceAnimal"
+                name={`pets.${i}.isServiceAnimal`}
                 value="yes"
-                label="This is a service/assistance animal"
-                description="Never charged a pet fee, pet rent, or deposit, and no breed or weight restriction applies"
+                label="This is a service or assistance animal"
+                description="Never charged a pet fee, pet rent or deposit, and no breed or weight limits apply."
                 defaultChecked={pet?.isServiceAnimal ?? false}
               />
             </div>
           );
         })}
+      </fieldset>
+
+      <fieldset className={styles.fieldset}>
+        <legend className={styles.legend}>
+          Guarantor <span className={styles.optional}>Optional</span>
+        </legend>
+        <ChoiceGroup
+          legend="Would you like to add a guarantor?"
+          hint="Someone who agrees to cover the rent if your household cannot - often a parent or relative. Not required. You can also add one later in your portal."
+        >
+          <Radio id="addGuarantor-yes" name="addGuarantor" value="yes" label="Yes" defaultChecked={addGuarantor} onChange={() => setAddGuarantor(true)} />
+          <Radio id="addGuarantor-no" name="addGuarantor" value="no" label="No, not now" defaultChecked={!addGuarantor} onChange={() => setAddGuarantor(false)} />
+        </ChoiceGroup>
+
+        {addGuarantor ? (
+          <div className={styles.petBlock}>
+            <div className={styles.pair}>
+              <Field name="guarantor.fullName" label="Their full name" required>
+                {(p) => <TextInput {...p} name="guarantor.fullName" autoComplete="off" defaultValue={g?.fullName ?? ''} />}
+              </Field>
+              <Field name="guarantor.relationship" label="How you know them" note="Optional">
+                {(p) => <TextInput {...p} name="guarantor.relationship" placeholder="e.g. Parent" defaultValue={g?.relationship ?? ''} />}
+              </Field>
+            </div>
+            <div className={styles.pair}>
+              <Field name="guarantor.phone" label="Their phone" error={errorFor(errors, 'guarantor.contact')}>
+                {(p) => <TextInput {...p} type="tel" name="guarantor.phone" inputMode="tel" defaultValue={g?.phone ?? ''} />}
+              </Field>
+              <Field name="guarantor.email" label="Their email">
+                {(p) => <TextInput {...p} type="email" name="guarantor.email" inputMode="email" defaultValue={g?.email ?? ''} />}
+              </Field>
+            </div>
+            <Field name="guarantor.monthlyIncome" label="Their monthly income, before tax" note="Optional">
+              {(p) => (
+                <TextInput
+                  {...p}
+                  figure
+                  name="guarantor.monthlyIncome"
+                  inputMode="decimal"
+                  defaultValue={g?.monthlyIncomeCents ? String(g.monthlyIncomeCents / 100) : ''}
+                />
+              )}
+            </Field>
+          </div>
+        ) : null}
       </fieldset>
 
       <StepNav step="household" />

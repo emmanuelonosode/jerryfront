@@ -168,8 +168,8 @@ export default function QualificationsPage() {
             needs explaining, they ask you rather than declining you over it.
           </li>
           <li>
-            <strong>You agree the terms together</strong> - the lease length you chose in
-            the application, and which utilities sit with you.
+            <strong>You read the lease before you sign</strong> - 12 months, then month to
+            month; you pay electricity and we pay water, sewer, trash and any gas.
           </li>
           <li>
             <strong>A decision within 24 hours</strong>, with the reason given either way.

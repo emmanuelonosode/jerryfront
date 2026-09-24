@@ -99,7 +99,7 @@ export const DIFFERENTIATORS: Record<string, Differentiator> = {
     ],
     handling: [
       'We read the difference between a filing and a judgment, and between a lease broken for a job move and one broken for non-payment.',
-      'Our individual review track is written down: income multiple, deposit, co-signer terms, and how far back a record can be. All of it is on the criteria page.',
+      'What we ask of every applicant is written down, and it is the same for everyone: want the home, afford the monthly cost, agree the terms, show a photo ID. No minimum credit score and no income multiple - it is all on the criteria page.',
       'Medical debt is not counted against you.',
       'Before you pay anything, the first application step gives you an honest read on your odds. If it looks unlikely, we say so and you keep your money.',
     ],

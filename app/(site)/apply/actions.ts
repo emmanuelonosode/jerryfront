@@ -6,7 +6,14 @@ import { join } from 'node:path';
 import { cookies } from 'next/headers';
 import { draftStore } from '@/lib/apply/store';
 import type { StepSlug } from '@/lib/apply/steps';
-import { emptyDraft, type ApplicationDraft } from '@/lib/apply/draft';
+import {
+  emptyDraft,
+  parseDollarsToCents,
+  type ApplicationDraft,
+  type IncomeSourceLine,
+  type IncomeSourceType,
+} from '@/lib/apply/draft';
+import { INCOME_ROWS } from '@/lib/apply/income';
 import { APPLICATION_FEE_CENTS } from '@/lib/payments/methods';
 
 /**
@@ -140,22 +147,28 @@ export async function applyStepUpdate(
   }
 
   if (step === 'background') {
-    changes.dateOfBirth = readString(formData, 'dateOfBirth');
-    changes.idType = readString(formData, 'idType');
-    changes.ssn = readString(formData, 'ssn');
-    changes.ein = readString(formData, 'ein');
-    
-    changes.hasLicense = formData.get('hasLicense') === 'yes';
-    changes.driversLicense = readString(formData, 'driversLicense');
-    changes.driversLicenseState = readString(formData, 'driversLicenseState');
-    
     const getBool = (key: string) => {
       const val = formData.get(key);
       if (val === 'yes') return true;
       if (val === 'no') return false;
       return null;
     };
-    
+
+    changes.dateOfBirth = readString(formData, 'dateOfBirth');
+    changes.idType = readString(formData, 'idType');
+    // Write-only. Blank means "keep the one on file", so it is simply not sent.
+    const ssn = readString(formData, 'ssn');
+    if (ssn) changes.ssn = ssn;
+
+    changes.hasLicense = getBool('hasLicense');
+    if (changes.hasLicense === true) {
+      const licence = readString(formData, 'driversLicense');
+      if (licence) changes.driversLicense = licence;
+      changes.driversLicenseState = readString(formData, 'driversLicenseState');
+    } else if (changes.hasLicense === false) {
+      changes.driversLicenseState = null;
+    }
+
     changes.hasEviction = getBool('hasEviction');
     changes.hasFelony = getBool('hasFelony');
     changes.hasBankruptcy = getBool('hasBankruptcy');
@@ -165,45 +178,79 @@ export async function applyStepUpdate(
   }
 
   if (step === 'income') {
-    const monthlyStr = readString(formData, 'grossMonthlyCents');
-    changes.grossMonthlyCents = monthlyStr ? parseInt(monthlyStr.replace(/,/g, ''), 10) * 100 : null;
-    changes.grossAnnualCents = changes.grossMonthlyCents ? changes.grossMonthlyCents * 12 : null;
-    changes.incomeSource = readString(formData, 'incomeSource');
-    changes.employerName = readString(formData, 'employerName');
-    const durationStr = readString(formData, 'durationMonths');
-    changes.durationMonths = durationStr ? parseInt(durationStr, 10) : null;
+    changes.householdMonthlyIncomeCents = parseDollarsToCents(readString(formData, 'householdMonthlyIncome'));
+
+    // The optional breakdown: one row per index, kept only if anything in it
+    // was filled in. Indexed names (`incomeSources.0.earnerName`) rather than
+    // repeated ones, so a blank field cannot shift the next row's values.
+    const lines: IncomeSourceLine[] = [];
+    for (let i = 0; i < INCOME_ROWS; i += 1) {
+      const line: IncomeSourceLine = {
+        earnerName: readString(formData, `incomeSources.${i}.earnerName`),
+        sourceType: (readString(formData, `incomeSources.${i}.sourceType`) as IncomeSourceType | null),
+        monthlyAmountCents: parseDollarsToCents(readString(formData, `incomeSources.${i}.monthlyAmount`)),
+        employerName: readString(formData, `incomeSources.${i}.employerName`),
+      };
+      if (line.sourceType !== 'job') line.employerName = null;
+      if (line.earnerName || line.sourceType || line.monthlyAmountCents) lines.push(line);
+    }
+    changes.incomeSources = lines;
   }
 
   if (step === 'household') {
     const countStr = readString(formData, 'adultCount');
-    changes.adultCount = countStr ? parseInt(countStr, 10) : 1;
+    changes.adultCount = countStr ? Math.max(1, parseInt(countStr, 10) || 1) : 1;
 
-    changes.hasMinorsOrDependents = formData.get('hasMinorsOrDependents') === 'yes';
+    changes.hasMinorsOrDependents = formData.get('hasMinorsOrDependents') === 'yes'
+      ? true
+      : formData.get('hasMinorsOrDependents') === 'no' ? false : null;
     const depStr = readString(formData, 'dependentCount');
-    changes.dependentCount = depStr ? parseInt(depStr, 10) : null;
-    
+    changes.dependentCount = changes.hasMinorsOrDependents ? (depStr ? parseInt(depStr, 10) : null) : 0;
+
     changes.hasMotorVehicles = formData.get('hasMotorVehicles') === 'yes';
-    const makes = formData.getAll('makeModel') as string[];
-    changes.vehicles = makes
-      .filter((k) => k.trim() !== '')
-      .map((makeModel, i) => ({
-        makeModel: makeModel.trim(),
-        color: (formData.getAll('color')[i] as string) || null,
-        licensePlate: (formData.getAll('licensePlate')[i] as string) || null,
-        state: (formData.getAll('vehicleState')[i] as string) || null,
-      }));
+    changes.vehicles = [];
+    if (changes.hasMotorVehicles) {
+      for (let i = 0; i < 2; i += 1) {
+        const makeModel = readString(formData, `vehicles.${i}.makeModel`);
+        if (!makeModel) continue;
+        changes.vehicles.push({
+          makeModel,
+          color: readString(formData, `vehicles.${i}.color`),
+          licensePlate: readString(formData, `vehicles.${i}.licensePlate`),
+          state: readString(formData, `vehicles.${i}.state`),
+        });
+      }
+    }
 
     changes.hasAnimals = formData.get('hasAnimals') === 'yes';
-    const petKinds = formData.getAll('animalType') as string[];
-    changes.pets = petKinds
-      .filter((k) => k.trim() !== '')
-      .map((animalType, i) => ({
-        animalType: animalType.trim(),
-        breed: (formData.getAll('breed')[i] as string) || null,
-        weightLbs: Number(formData.getAll('weightLbs')[i]) || null,
-        name: (formData.getAll('petName')[i] as string) || null,
-        isServiceAnimal: formData.getAll('isServiceAnimal')[i] === 'yes',
-      }));
+    changes.pets = [];
+    if (changes.hasAnimals) {
+      for (let i = 0; i < 2; i += 1) {
+        const animalType = readString(formData, `pets.${i}.animalType`);
+        if (!animalType) continue;
+        changes.pets.push({
+          animalType,
+          breed: readString(formData, `pets.${i}.breed`),
+          weightLbs: Number(readString(formData, `pets.${i}.weightLbs`)) || null,
+          name: readString(formData, `pets.${i}.name`),
+          // Indexed per row: an unticked checkbox is not submitted at all, so
+          // a shared name made the second pet inherit the first one's answer.
+          isServiceAnimal: formData.get(`pets.${i}.isServiceAnimal`) === 'yes',
+        });
+      }
+    }
+
+    // Optional guarantor. Empty name = none.
+    const guarantorName = formData.get('addGuarantor') === 'yes' ? readString(formData, 'guarantor.fullName') : null;
+    changes.guarantor = guarantorName
+      ? {
+          fullName: guarantorName,
+          relationship: readString(formData, 'guarantor.relationship'),
+          email: readString(formData, 'guarantor.email'),
+          phone: readString(formData, 'guarantor.phone'),
+          monthlyIncomeCents: parseDollarsToCents(readString(formData, 'guarantor.monthlyIncome')),
+        }
+      : null;
   }
 
   if (step === 'payment') {

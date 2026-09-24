@@ -7,6 +7,8 @@ import {
   isStepComplete,
   progressOf,
   resumeStep,
+  breakdownCheck,
+  parseDollarsToCents,
   totalMonthlyIncomeCents,
   validateStep,
   type ApplicationDraft,
@@ -24,18 +26,17 @@ const filledDetails = {
   lastName: 'Okafor',
   email: 'dana@example.com',
   phone: '(901) 555-0143',
+  preferredContactMethod: 'Email',
+  emergencyContactName: 'Ife Okafor',
+  emergencyContactPhone: '(901) 555-0199',
+  preferredMoveInDate: '2026-10-01',
+};
+
+const filledBackground = {
   dateOfBirth: '1990-04-12',
-};
-
-const filledIncome = {
-  grossMonthlyCents: dollars(4200),
-  grossAnnualCents: dollars(50400),
-  incomeSource: 'employment',
-  employerName: 'Acme Corp',
-  durationMonths: 24,
-};
-
-const filledHistory = {
+  idType: 'SSN',
+  ssn: '123-45-6789',
+  hasLicense: false,
   hasEviction: false,
   hasFelony: false,
   hasBankruptcy: false,
@@ -44,29 +45,11 @@ const filledHistory = {
   receivesHousingAssistance: false,
 };
 
-/**
- * The screening identifiers belong to the REVIEW step now, not to details.
- *
- * They were required by the form on step one and by nothing in `draft.ts`,
- * so an application could reach staff with no way to screen it while a
- * would-be applicant was blocked on the first screen. Both halves moved to
- * review, which is why they are here and not in `filledDetails`.
- */
-const filledIdentifiers = {
-  ssn: '123-45-6789',
-  mothersMaidenName: 'Okafor',
-  driversLicense: 'D1234567',
-  driversLicenseState: 'NC',
+const filledIncome = {
+  householdMonthlyIncomeCents: dollars(4200),
 };
 
-const complete = () =>
-  draft({
-    ...filledDetails,
-    ...filledIncome,
-    ...filledHistory,
-    ...filledIdentifiers,
-    disclosuresAcceptedAt: NOW.toISOString(),
-  });
+const complete = () => draft({ ...filledDetails, ...filledBackground, ...filledIncome });
 
 describe('step registry', () => {
   test('steps are named, never numbered', () => {
@@ -82,8 +65,9 @@ describe('step registry', () => {
   });
 
   test('navigation walks in order and stops at the ends', () => {
-    assert.equal(nextStep('details'), 'income');
-    assert.equal(previousStep('income'), 'details');
+    assert.equal(nextStep('details'), 'background');
+    assert.equal(nextStep('background'), 'income');
+    assert.equal(previousStep('background'), 'details');
     assert.equal(previousStep('details'), null);
     assert.equal(nextStep('confirmation'), null);
   });
@@ -118,12 +102,13 @@ describe('a draft is allowed to be incomplete', () => {
 describe('per-step validation', () => {
   test('details requires the fields a decision depends on', () => {
     const errors = validateStep(draft(), 'details');
-    assert.deepEqual(errors.map((e) => e.field).sort(), ['dateOfBirth', 'email', 'firstName', 'lastName', 'phone']);
+    assert.deepEqual(errors.map((e) => e.field).sort(), [
+      'email', 'emergencyContactName', 'emergencyContactPhone', 'firstName', 'lastName',
+      'phone', 'preferredContactMethod', 'preferredMoveInDate',
+    ]);
   });
 
   test('messages say what to do and why we are asking', () => {
-    const dob = validateStep(draft(), 'details').find((e) => e.field === 'dateOfBirth');
-    assert.match(dob!.message, /screening report/, 'sensitive requests state their reason');
     const email = validateStep(draft(), 'details').find((e) => e.field === 'email');
     assert.match(email!.message, /send your decision/);
   });
@@ -176,22 +161,65 @@ describe('per-step validation', () => {
     assert.deepEqual(errors, ['paymentMethod', 'paymentProof', 'paymentReported']);
   });
 
-  test('income counts every kind of source, not just wages', () => {
-    for (const kind of ['self-employment', 'benefits', 'voucher', 'support'] as const) {
-      const d = draft({ ...filledIncome, incomeSource: kind, grossMonthlyCents: dollars(2000) });
-      assert.equal(isStepComplete(d, 'income'), true, kind);
-    }
+  test('income is one household total; the breakdown is optional', () => {
+    assert.equal(isStepComplete(draft({ householdMonthlyIncomeCents: dollars(2000) }), 'income'), true);
+    assert.equal(isStepComplete(draft({ householdMonthlyIncomeCents: 0 }), 'income'), false);
+    const err = validateStep(draft(), 'income')[0];
+    assert.match(err.message, /household/);
   });
 
-  test('a zero-value source does not count as income', () => {
-    const d = draft({ ...filledIncome, incomeSource: 'employment', grossMonthlyCents: 0 });
-    assert.equal(isStepComplete(d, 'income'), false);
+  test('an employer is asked only when a line is a job', () => {
+    const line = { earnerName: 'Dana', monthlyAmountCents: dollars(2000), employerName: null };
+    const benefits = draft({ ...filledIncome, incomeSources: [{ ...line, sourceType: 'benefits' }] });
+    assert.equal(isStepComplete(benefits, 'income'), true);
+    const job = draft({ ...filledIncome, incomeSources: [{ ...line, sourceType: 'job' }] });
+    assert.deepEqual(validateStep(job, 'income').map((e) => e.field), ['incomeSources.0.employerName']);
   });
 
-  test('the eviction question must be answered, and says answering yes is safe', () => {
-    const d = draft({ ...filledHistory, hasEviction: null });
+  test('a breakdown that does not add up is flagged, not blocked', () => {
+    const d = draft({
+      householdMonthlyIncomeCents: dollars(5000),
+      incomeSources: [{ earnerName: 'Dana', sourceType: 'job', monthlyAmountCents: dollars(3000), employerName: 'Acme' }],
+    });
+    assert.deepEqual(breakdownCheck(d), { sumCents: dollars(3000), matches: false });
+    assert.equal(isStepComplete(d, 'income'), true);
+  });
+
+  test('an older draft with the single-income answer still counts', () => {
+    assert.equal(isStepComplete(draft({ grossMonthlyCents: dollars(3000) }), 'income'), true);
+  });
+
+  test('dollars are parsed with cents, not multiplied by a hundred', () => {
+    assert.equal(parseDollarsToCents('4,200.50'), 420050);
+    assert.equal(parseDollarsToCents('$4200'), 420000);
+    assert.equal(parseDollarsToCents('abc'), null);
+  });
+
+  test('an ITIN is accepted in place of an SSN', () => {
+    assert.equal(isStepComplete(draft({ ...filledBackground, idType: 'ITIN' }), 'background'), true);
+    assert.equal(isStepComplete(draft({ ...filledBackground, idType: 'EIN' }), 'background'), false);
+  });
+
+  test('a number already on file satisfies the step without re-entering it', () => {
+    assert.equal(isStepComplete(draft({ ...filledBackground, ssn: null, ssnLast4: '6789' }), 'background'), true);
+    assert.equal(isStepComplete(draft({ ...filledBackground, ssn: '123-45-678' }), 'background'), false);
+  });
+
+  test('a licence needs its issuing state', () => {
+    const d = draft({ ...filledBackground, hasLicense: true, driversLicense: 'D123' });
+    assert.deepEqual(validateStep(d, 'background').map((e) => e.field), ['driversLicenseState']);
+  });
+
+  test('the standard questions must be answered, and say a yes is not a no', () => {
+    const d = draft({ ...filledBackground, hasEviction: null });
     const err = validateStep(d, 'background').find((e) => e.field === 'questionnaires');
-    assert.match(err!.message, /all questionnaire questions/);
+    assert.match(err!.message, /does not mean a no/);
+  });
+
+  test('a guarantor needs a way to reach them', () => {
+    const g = { fullName: 'Ada Okafor', relationship: null, email: null, phone: null, monthlyIncomeCents: null };
+    assert.equal(isStepComplete(draft({ guarantor: g }), 'household'), false);
+    assert.equal(isStepComplete(draft({ guarantor: { ...g, phone: '9015550100' } }), 'household'), true);
   });
 
   test('an empty household is valid - not everyone has dependents or pets', () => {
@@ -212,14 +240,14 @@ describe('resume', () => {
   });
 
   test('resumes at the first INCOMPLETE step, not the furthest reached', () => {
-    // Someone who filled details and household but skipped income should land
-    // on income - not be dropped past the gap and rejected at review later.
+    // Someone who filled details but skipped background should land there,
+    // not be dropped past the gap.
     const d = draft({ ...filledDetails, furthestStep: 'household' });
-    assert.equal(resumeStep(d), 'income');
+    assert.equal(resumeStep(d), 'background');
   });
 
-  test('a fully answered draft resumes at review', () => {
-    assert.equal(resumeStep(complete()), 'review');
+  test('a fully answered draft resumes at payment', () => {
+    assert.equal(resumeStep(complete()), 'payment');
   });
 
   test('a submitted application resumes at confirmation', () => {
@@ -229,19 +257,21 @@ describe('resume', () => {
 
 describe('step access', () => {
   test('a resume link to an earlier step always works', () => {
-    const d = draft({ ...filledDetails, ...filledIncome });
+    const d = draft({ ...filledDetails, ...filledBackground });
     assert.equal(canEnterStep(d, 'details'), true);
-    assert.equal(canEnterStep(d, 'income'), true);
     assert.equal(canEnterStep(d, 'background'), true);
+    assert.equal(canEnterStep(d, 'income'), true);
   });
 
   test('you cannot skip ahead past an incomplete step', () => {
     assert.equal(canEnterStep(draft(), 'household'), false);
   });
 
-  test('PAYMENT is unreachable until review passes', () => {
+  test('PAYMENT is unreachable until every earlier step is complete', () => {
     // The guarantee that a fee is only ever charged against a complete
-    // application.
+    // application. Household validates on its own (one adult, no pets), so
+    // checking only the step before payment let a blank application through.
+    assert.equal(canEnterStep(draft(), 'payment'), false);
     assert.equal(canEnterStep(draft({ ...filledDetails }), 'payment'), false);
     assert.equal(canEnterStep(complete(), 'payment'), true);
   });
@@ -255,23 +285,29 @@ describe('step access', () => {
 describe('progress and income', () => {
   test('progress counts steps behind you, not steps that happen to validate', () => {
     // An empty household validates vacuously; a blank draft must still read 0%.
-    assert.deepEqual(progressOf(draft()), { completed: 0, total: 5, percent: 0 });
+    assert.deepEqual(progressOf(draft()), { completed: 0, total: 4, percent: 0 });
     assert.equal(progressOf(draft({ ...filledDetails })).completed, 1);
-    assert.equal(progressOf(draft({ ...filledDetails, ...filledIncome })).completed, 2);
-    // A fully answered draft sits on review - four behind it.
+    assert.equal(progressOf(draft({ ...filledDetails, ...filledBackground })).completed, 2);
+    // A fully answered draft sits on payment - all four behind it.
     assert.equal(progressOf(complete()).completed, 4);
-    assert.equal(progressOf(draft({ ...filledDetails, ...filledIncome, ...filledHistory, disclosuresAcceptedAt: NOW.toISOString(), submittedAt: NOW.toISOString() })).percent, 100);
+    assert.equal(progressOf(draft({ submittedAt: NOW.toISOString() })).percent, 100);
   });
 
-  test('income totals across every source', () => {
-    const d = draft({
-      grossMonthlyCents: dollars(4000),
-    });
-    assert.equal(totalMonthlyIncomeCents(d), dollars(4000));
+  test('the income total is the household total', () => {
+    assert.equal(totalMonthlyIncomeCents(draft({ householdMonthlyIncomeCents: dollars(4000) })), dollars(4000));
   });
 });
 
 describe('draft store - save and resume', () => {
+  test('the full SSN is not kept once saved; the last four are', async () => {
+    const { InMemoryDraftStore } = await import('./store.ts');
+    const store = new InMemoryDraftStore();
+    const d = await store.create(null, NOW);
+    const after = await store.patch(d.id, { ssn: '123-45-6789' }, NOW);
+    assert.equal(after?.ssn, null);
+    assert.equal(after?.ssnLast4, '6789');
+  });
+
   test('a patch merges rather than replacing', async () => {
     const { InMemoryDraftStore } = await import('./store.ts');
     const store = new InMemoryDraftStore();
@@ -308,7 +344,7 @@ describe('draft store - save and resume', () => {
     const resumed = await store.get(d.id);
     assert.ok(resumed);
     assert.equal(resumed.firstName, 'Dana');
-    assert.equal(resumeStep(resumed), 'income', 'lands on the first unfinished step');
+    assert.equal(resumeStep(resumed), 'background', 'lands on the first unfinished step');
     assert.equal(progressOf(resumed).completed, 1);
   });
 

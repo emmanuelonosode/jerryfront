@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Illustration } from '@/components/brand/Illustration';
 import { DocumentIcon } from '@/components/ui/Icons';
 import { ApiError, apiFetch } from '@/lib/portal/api';
+import { DocumentRequests } from './DocumentRequests';
+import { GuarantorCard } from './GuarantorCard';
 import styles from './portal.module.css';
 import own from './Documents.module.css';
 
@@ -83,6 +85,8 @@ export function Documents() {
         </div>
       </header>
 
+      <DocumentRequests />
+
       <div className={styles.tabs} role="group" aria-label="Filter documents">
         {TABS.map(({ key, label }) => (
           <button
@@ -106,16 +110,17 @@ export function Documents() {
             <div>
               <div className={own.leaseFeaturedTitleRow}>
                 <h2 className={own.leaseFeaturedTitle}>Residential Lease Agreement</h2>
-                <span className={own.leaseBadgeOfficial}>Official Template</span>
+
               </div>
               <p className={own.leaseFeaturedDesc}>
-                Review your official 41-clause residential lease terms, view customized property &amp; move-in financials, or sign electronically with your digital signature.
+                Read your lease, see the rent and move-in costs for your home, and sign
+                electronically once we have sent it to you.
               </p>
             </div>
           </div>
           <div className={own.leaseFeaturedActions}>
             <Link href="/portal/lease" className={own.leaseSignBtn}>
-              View &amp; Sign Lease Agreement →
+              Open your lease →
             </Link>
           </div>
         </div>
@@ -189,6 +194,7 @@ export function Documents() {
           ))}
         </ul>
       )}
+      <GuarantorCard />
     </div>
   );
 }

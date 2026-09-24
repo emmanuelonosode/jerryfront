@@ -1,394 +1,182 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { API_BASE } from '@/lib/env';
-import { apiFetch, type PortalUser } from '@/lib/portal/api';
 import { LeaseAgreementDocument } from '@/components/legal/LeaseAgreementDocument';
 import { SignaturePad } from '@/components/legal/SignaturePad';
-import { TenantQuestionnaireModal, type QuestionnaireData } from '@/components/legal/TenantQuestionnaireModal';
+import { Field } from '@/components/ui/Field';
+import { Textarea, TextInput } from '@/components/ui/Controls';
+import { Button } from '@/components/ui/Button';
+import { ApiError, apiFetch } from '@/lib/portal/api';
+import type { LeasePayload } from '@/lib/lease/types';
 import styles from './PortalLease.module.css';
 
-interface ApplicationData {
-  id: string;
-  status: string;
-  status_display: string;
-  move_in_date: string | null;
-  security_deposit_cents: number | null;
-  property: {
-    id: string;
-    title: string;
-    address: string;
-    city: string;
-    state: string;
-    zip_code: string;
-    full_address: string;
-    bedrooms: number;
-    bathrooms: number;
-    price_cents: number;
-  } | null;
-}
+type Phase = 'loading' | 'none' | 'error' | 'ready';
 
+/**
+ * The resident's own lease: read it, confirm who is living there, sign it.
+ *
+ * WHAT CHANGED. This used to call an endpoint that handed back the newest
+ * applicant's lease to anyone, filled gaps with a sample house and 2024
+ * dates, let the tenant edit the move-in date on screen only, and showed
+ * "Signed" from localStorage even when the server had refused the signature.
+ * Now the lease is the signed-in person's own, every value comes from the
+ * server, and "Signed" means the server recorded it.
+ */
 export function PortalLeaseClient() {
-  const [user, setUser] = useState<PortalUser | null>(null);
-  const [application, setApplication] = useState<ApplicationData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Modals
-  const [showSignModal, setShowSignModal] = useState(false);
-  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
-
-  // Signature state
-  const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
-  const [signedAt, setSignedAt] = useState<string | null>(null);
-
-  // Landlord of record for this house
-  const [landlordName, setLandlordName] = useState('Kenneth Hensley Jr');
-  const [landlordCompany, setLandlordCompany] = useState('Skelton Realty Group');
-  const [landlordAddress, setLandlordAddress] = useState('213 Bob Ln, Virginia Beach, VA 23454');
-  const [landlordEmail, setLandlordEmail] = useState('kenneth@skeltonrealtygroup.com');
-  const [landlordPhone, setLandlordPhone] = useState('(800) 555-0198');
-
-  // Questionnaire values
-  const [occupants, setOccupants] = useState('');
-  const [vehicles, setVehicles] = useState('');
-  const [emergencyContact, setEmergencyContact] = useState('');
-  const [confirmedStartDate, setConfirmedStartDate] = useState('');
+  const [phase, setPhase] = useState<Phase>('loading');
+  const [lease, setLease] = useState<LeasePayload | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [signing, setSigning] = useState(false);
+  const [details, setDetails] = useState({ occupants: '', vehicles: '', emergency_contact: '' });
+  const [detailsConfirmed, setDetailsConfirmed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-
-    async function loadData() {
-      try {
-        const me = await apiFetch<PortalUser>('/auth/me/');
-        if (!cancelled) setUser(me);
-
-        let apps: ApplicationData[] = [];
-        try {
-          apps = await apiFetch<ApplicationData[]>('/leads/apply/my-applications/');
-        } catch {
-          try {
-            apps = await apiFetch<ApplicationData[]>('/crm/apply/my-applications/');
-          } catch {
-            apps = await apiFetch<ApplicationData[]>('/apply/my-applications/').catch(() => []);
-          }
+    apiFetch<LeasePayload>('/leads/lease/latest/')
+      .then((data) => {
+        if (cancelled) return;
+        setLease(data);
+        setDetails(data.questionnaire);
+        setPhase('ready');
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 404) {
+          setPhase('none');
+        } else {
+          setError(err instanceof ApiError ? (err.userMessage ?? 'We could not load your lease.') : 'We could not reach the server.');
+          setPhase('error');
         }
-
-        let activeApp = apps && apps.length > 0 ? apps[0] : null;
-
-        // If no direct application from list, check for active lease agreement directly
-        if (!activeApp) {
-          try {
-            const latestRes = await fetch(`${API_BASE}/crm/lease/latest/`);
-            if (latestRes.ok) {
-              const leaseData = await latestRes.json();
-              if (leaseData.application_id) {
-                activeApp = {
-                  id: leaseData.application_id,
-                  status: leaseData.status,
-                  status_display: 'Approved',
-                  move_in_date: leaseData.dates?.term_start_date || null,
-                  security_deposit_cents: null,
-                  property: leaseData.property ? {
-                    id: leaseData.property.id || '',
-                    title: leaseData.property.title || 'Deer Park Single Family Home',
-                    address: leaseData.property.address || '745 Academy Ln',
-                    city: leaseData.property.city || 'Deer Park',
-                    state: leaseData.property.state || 'TX',
-                    zip_code: leaseData.property.zip_code || '77536',
-                    full_address: leaseData.property.full_address || '745 Academy Ln, Deer Park, TX 77536',
-                    bedrooms: 3,
-                    bathrooms: 2,
-                    price_cents: 159600,
-                  } : null,
-                };
-              }
-            }
-          } catch {
-            // ignore fallback error
-          }
-        }
-
-        if (!cancelled && activeApp) {
-          setApplication(activeApp);
-
-          // Fetch personalized lease details for this specific application
-          try {
-            const leaseRes = await fetch(`${API_BASE}/crm/lease/${activeApp.id}/`);
-            if (leaseRes.ok) {
-              const leaseData = await leaseRes.json();
-              if (leaseData.landlord) {
-                setLandlordName(leaseData.landlord.name || 'Kenneth Hensley Jr');
-                setLandlordCompany(leaseData.landlord.company || 'Skelton Realty Group');
-                setLandlordAddress(leaseData.landlord.address || '213 Bob Ln, Virginia Beach, VA 23454');
-                setLandlordEmail(leaseData.landlord.email || 'kenneth@skeltonrealtygroup.com');
-                setLandlordPhone(leaseData.landlord.phone || '(800) 555-0198');
-              }
-              if (leaseData.occupants) setOccupants(leaseData.occupants);
-              if (leaseData.vehicles) setVehicles(leaseData.vehicles);
-              if (leaseData.emergency_contact) setEmergencyContact(leaseData.emergency_contact);
-              if (leaseData.is_signed && leaseData.signature_url) {
-                setSignatureUrl(leaseData.signature_url);
-                setSignedAt(leaseData.signed_at);
-              }
-            }
-          } catch {
-            // Ignore fetch error and fall back to application data
-          }
-
-          // Check localStorage as well
-          const stored = localStorage.getItem(`skelton_lease_sig_${activeApp.id}`);
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored);
-              setSignatureUrl(parsed.signatureUrl);
-              setSignedAt(parsed.signedAt);
-            } catch {
-              // ignore parse errors
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load user or lease data', err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    loadData();
-
+      });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const handlePrint = () => {
-    if (typeof window !== 'undefined') {
-      window.print();
+  function confirmDetails(event: FormEvent) {
+    event.preventDefault();
+    setDetailsConfirmed(true);
+    setSigning(true);
+  }
+
+  async function sign(signature: { dataUrl: string; signerName: string }) {
+    if (!lease) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const updated = await apiFetch<LeasePayload>(`/leads/lease/${lease.application_id}/sign/`, {
+        method: 'POST',
+        body: {
+          signature_url: signature.dataUrl,
+          signer_name: signature.signerName,
+          consent: true,
+          ...details,
+        },
+      });
+      setLease(updated);
+      setSigning(false);
+    } catch (err) {
+      setError(err instanceof ApiError ? (err.userMessage ?? 'Your signature was not saved. Please try again.') : 'We could not reach the server. Your signature was not saved.');
+    } finally {
+      setSubmitting(false);
     }
-  };
+  }
 
-  const handleQuestionnaireConfirm = (data: QuestionnaireData) => {
-    setConfirmedStartDate(data.moveInDate);
-    setOccupants(data.occupants);
-    setVehicles(data.vehicles);
-    setEmergencyContact(data.emergencyContact);
-    setShowQuestionnaire(false);
-  };
-
-  const handleSignatureSave = async (data: { type: 'draw' | 'type'; dataUrl: string; signerName: string }) => {
-    const now = new Date();
-    const timestamp = now.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-
-    setSignatureUrl(data.dataUrl);
-    setSignedAt(timestamp);
-    setShowSignModal(false);
-
-    // Persist locally
-    const storageKey = application ? `skelton_lease_sig_${application.id}` : 'skelton_lease_sig_general';
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({
-        signatureUrl: data.dataUrl,
-        signedAt: timestamp,
-        signerName: data.signerName,
-      }),
+  if (phase === 'loading') {
+    return <p className={styles.muted}>Loading your lease…</p>;
+  }
+  if (phase === 'none') {
+    return (
+      <div className={styles.page}>
+        <h1 className={styles.title}>Your lease</h1>
+        <p className={styles.muted}>
+          There is no lease for you to sign yet. Once your application is approved and your lease is
+          ready, we will email you and it will appear here.
+        </p>
+        <Link href="/portal/dashboard" className={styles.link}>Back to your dashboard</Link>
+      </div>
     );
+  }
+  if (phase === 'error' || !lease) {
+    return <p className={styles.error} role="alert">{error}</p>;
+  }
 
-    // Persist to backend if application id exists
-    if (application?.id) {
-      try {
-        const res = await fetch(`${API_BASE}/crm/lease/${application.id}/sign/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            signature_url: data.dataUrl,
-            signer_name: data.signerName,
-            occupants,
-            vehicles,
-            emergency_contact: emergencyContact,
-          }),
-        });
-        if (res.ok) {
-          const body = await res.json();
-          if (body.signed_at) {
-            setSignedAt(body.signed_at);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to post signature to backend', err);
-      }
-    }
-  };
-
-  // Derive document values
-  const tenantName = user?.full_name || 'Resident';
-  const tenantEmail = user?.email || 'resident@example.com';
-  const tenantPhone = user?.phone || '';
-
-  const property = application?.property;
-  const propAddress = property?.full_address || property?.address || '745 Academy Ln, Deer Park, TX 77536';
-  const beds = property?.bedrooms ? `${property.bedrooms} (${property.bedrooms})` : 'three (3)';
-  const baths = property?.bathrooms ? `${property.bathrooms} (${property.bathrooms})` : 'two (2)';
-
-  const rentMonthlyCents = property?.price_cents || 159600;
-  const rentMonthly = `$${(rentMonthlyCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-  const rentAnnual = `$${((rentMonthlyCents * 12) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-
-  const depositCents = application?.security_deposit_cents || rentMonthlyCents;
-  const depositFormatted = `$${(depositCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-
-  const startDate = confirmedStartDate || (application?.move_in_date
-    ? new Date(application.move_in_date).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : 'September 6, 2024');
-
-  const startObj = application?.move_in_date ? new Date(application.move_in_date) : new Date(2024, 8, 6);
-  const endObj = new Date(startObj);
-  endObj.setFullYear(endObj.getFullYear() + 1);
-  endObj.setDate(endObj.getDate() - 1);
-  const endDate = endObj.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-
-  const agreementDate = new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const signed = lease.signing.is_signed;
 
   return (
     <div className={styles.page}>
-      {/* Top Banner Navigation & Action Bar */}
-      <div className={styles.actionBar}>
-        <div className={styles.actionLeft}>
-          <Link href="/portal/documents" className={styles.backLink}>
-            ← Back to Documents
-          </Link>
-          <div className={styles.docMeta}>
-            <h1 className={styles.pageTitle}>Residential Lease Agreement</h1>
-            <p className={styles.pageSubtitle}>
-              {property ? property.title || propAddress : 'Official Lease Document'} · Landlord: {landlordName} ({landlordCompany})
-            </p>
-          </div>
+      <header className={styles.bar}>
+        <div>
+          <h1 className={styles.title}>Your lease</h1>
+          <p className={styles.muted}>
+            {signed
+              ? `Signed ${lease.signing.signed_at}. ${lease.signing.countersigned_by ? 'Fully signed.' : 'Waiting for our countersignature.'}`
+              : lease.can_sign
+                ? 'Read it through, confirm who is living there, then sign.'
+                : 'We are still preparing this lease. You can read it, but it cannot be signed yet.'}
+          </p>
         </div>
+        <div className={styles.barActions}>
+          <Button type="button" variant="secondary" onClick={() => window.print()}>Print or save as PDF</Button>
+          {lease.can_sign && !signing ? (
+            <Button type="button" onClick={() => setSigning(true)}>Sign the lease</Button>
+          ) : null}
+        </div>
+      </header>
 
-        <div className={styles.actionRight}>
-          {signatureUrl ? (
-            <div className={styles.signedStatusBadge}>
-              <span className={styles.greenDot} />
-              <span>Signed &amp; Active</span>
-            </div>
+      {error ? <p className={styles.error} role="alert">{error}</p> : null}
+
+      {signing && lease.can_sign ? (
+        <section className={styles.signPanel} aria-labelledby="sign-heading">
+          <h2 className={styles.panelTitle} id="sign-heading">
+            {detailsConfirmed ? 'Your signature' : 'First, confirm who is living there'}
+          </h2>
+
+          {!detailsConfirmed ? (
+            <form className={styles.form} onSubmit={confirmDetails}>
+              <Field name="lease-occupants" label="Everyone who will live in the home, including you" hint="Full names. Mark anyone under 18.">
+                {(p) => (
+                  <Textarea {...p} rows={3} value={details.occupants} required
+                    onChange={(e) => setDetails({ ...details, occupants: e.target.value })} />
+                )}
+              </Field>
+              <Field name="lease-vehicles" label="Vehicles parked at the home" note="Optional">
+                {(p) => (
+                  <TextInput {...p} value={details.vehicles}
+                    onChange={(e) => setDetails({ ...details, vehicles: e.target.value })} />
+                )}
+              </Field>
+              <Field name="lease-emergency" label="Emergency contact (name, relationship, phone)" note="Optional">
+                {(p) => (
+                  <TextInput {...p} value={details.emergency_contact}
+                    onChange={(e) => setDetails({ ...details, emergency_contact: e.target.value })} />
+                )}
+              </Field>
+              <p className={styles.muted}>
+                The move-in date, rent and other terms are set in the lease. If anything there is
+                wrong, do not sign - reply to our email or message us and we will correct it.
+              </p>
+              <div className={styles.barActions}>
+                <Button type="submit">Continue to signature</Button>
+                <Button type="button" variant="quiet" onClick={() => setSigning(false)}>Cancel</Button>
+              </div>
+            </form>
+          ) : submitting ? (
+            <p className={styles.muted}>Saving your signature…</p>
           ) : (
-            <div className={styles.pendingStatusBadge}>
-              <span className={styles.yellowDot} />
-              <span>Signature Required</span>
-            </div>
-          )}
-
-          {!signatureUrl && (
-            <button
-              type="button"
-              onClick={() => setShowQuestionnaire(true)}
-              className={styles.questionnaireBtn}
-            >
-              Confirm Occupants &amp; Move-In
-            </button>
-          )}
-
-          {!signatureUrl && (
-            <button
-              type="button"
-              onClick={() => setShowSignModal(true)}
-              className={styles.signButton}
-            >
-              Sign Agreement Now
-            </button>
-          )}
-
-          <button type="button" onClick={handlePrint} className={styles.printButton}>
-            Print / Download PDF
-          </button>
-        </div>
-      </div>
-
-      {/* Tenant Questionnaire Modal */}
-      {showQuestionnaire && (
-        <TenantQuestionnaireModal
-          propertyName={propAddress}
-          initialData={{
-            moveInDate: startDate,
-            occupants,
-            vehicles,
-            emergencyContact,
-          }}
-          onConfirm={handleQuestionnaireConfirm}
-          onClose={() => setShowQuestionnaire(false)}
-        />
-      )}
-
-      {/* Signature Modal */}
-      {showSignModal && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modalContent}>
             <SignaturePad
-              initialName={user?.full_name || ''}
-              onSave={handleSignatureSave}
-              onCancel={() => setShowSignModal(false)}
+              initialName={lease.terms.tenant.name}
+              consentText={lease.signing.consent_text}
+              onSave={sign}
+              onCancel={() => setSigning(false)}
             />
-          </div>
-        </div>
-      )}
+          )}
+        </section>
+      ) : null}
 
-      {/* Agreement Preview / Display */}
-      {loading ? (
-        <div className={styles.loadingBox}>
-          <p>Loading your official lease agreement…</p>
-        </div>
-      ) : (
-        <div className={styles.docWrapper}>
-          <LeaseAgreementDocument
-            stateName={property?.state ? `State of ${property.state}` : 'State of Texas'}
-            agreementDate={agreementDate}
-            landlordName={landlordName}
-            landlordCompany={landlordCompany}
-            landlordAddress={landlordAddress}
-            landlordEmail={landlordEmail}
-            landlordPhone={landlordPhone}
-            tenantName={tenantName}
-            tenantAddress={propAddress}
-            tenantEmail={tenantEmail}
-            tenantPhone={tenantPhone}
-            propertyType="single-family residence"
-            bedrooms={beds}
-            bathrooms={baths}
-            parkingSpaces="two (2)"
-            propertyAddress={propAddress}
-            termStartDate={startDate}
-            termEndDate={endDate}
-            annualRent={rentAnnual}
-            monthlyRent={rentMonthly}
-            securityDeposit={depositFormatted}
-            occupants={occupants}
-            vehicles={vehicles}
-            emergencyContact={emergencyContact}
-            tenantSignatureUrl={signatureUrl}
-            signedAt={signedAt}
-            isSample={false}
-          />
-        </div>
-      )}
+      <LeaseAgreementDocument lease={lease} />
     </div>
   );
 }

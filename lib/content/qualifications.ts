@@ -66,10 +66,10 @@ export const TIER_ONE: Criterion[] = [
   {
     id: 'lease-terms',
     label: 'You agree the terms',
-    value: 'Lease length and utilities are set with you',
+    value: 'A 12-month lease, then month to month',
     pending: '',
     detail:
-      'You tell us the lease length you want in the application and we confirm which utilities sit with you. Neither is fixed before we have spoken.',
+      'Every lease runs for 12 months from your move-in date and then continues month to month until either of us gives notice. Utilities are the same on every lease: you pay electricity; we pay water, sewer, trash and any gas. You read the whole lease before you sign.',
   },
   {
     id: 'identification',
