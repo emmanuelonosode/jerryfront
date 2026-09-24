@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Logo } from '@/components/brand/Logo';
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import controls from '@/components/ui/controls.module.css';
 import { ApiError, login } from '@/lib/portal/api';
+import { afterCelebration } from '@/lib/motion';
+import { AuthSuccess } from './AuthSuccess';
 import styles from './LoginForm.module.css';
 
 /**
@@ -31,6 +33,19 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [unverified, setUnverified] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
+  // A wrong password shakes the card once - a "no" you can feel, without
+  // moving anything the person needs to read.
+  useEffect(() => {
+    if (!error && !unverified) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    cardRef.current?.animate(
+      [0, -10, 9, -6, 4, -2, 0].map((x) => ({ transform: `translateX(${x}px)` })),
+      { duration: 400, easing: 'ease-out' },
+    );
+  }, [error, unverified]);
 
   // Only same-site portal paths are honoured - an absolute URL here would make
   // the login page an open redirect.
@@ -60,6 +75,8 @@ export function LoginForm() {
       // is not guaranteed to carry it - the request can reach the proxy before
       // the cookie is visible to it, which bounces the resident straight back
       // to this form with correct credentials.
+      setSignedIn(true);
+      await afterCelebration(700);
       window.location.href = next;
     } catch (err) {
       if (err instanceof ApiError && (err.data as { reason?: string })?.reason === 'unverified') {
@@ -75,7 +92,8 @@ export function LoginForm() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
+      <div className={styles.card} ref={cardRef} data-busy={busy || undefined}>
+        {signedIn ? <AuthSuccess message="Welcome back - opening your portal…" /> : null}
         <Link href="/" className={styles.brand} aria-label="Skelton Realty Group main site">
           <Logo />
         </Link>
@@ -132,8 +150,8 @@ export function LoginForm() {
           </Button>
         </form>
 
-        <p className={styles.help} style={{ marginBottom: '0.5rem' }}>
-          Don't have an account?{' '}
+        <p className={`${styles.help} ${styles.helpTight}`}>
+          Don&apos;t have an account?{' '}
           <Link href="/portal/register">Sign up</Link>.
         </p>
         <p className={styles.help}>

@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Field } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
-import { OtpInput } from '@/components/ui/OtpInput';
+import { OtpInput, type OtpStatus } from '@/components/ui/OtpInput';
+import { afterCelebration } from '@/lib/motion';
 import { saveTokens } from '@/lib/portal/tokens';
 import type { ApplicationDraft } from '@/lib/apply/draft';
 import controls from '@/components/ui/controls.module.css';
@@ -14,6 +15,7 @@ export function AccountCreationStep({ draft }: { draft: ApplicationDraft }) {
   const [phase, setPhase] = useState<'password' | 'otp'>('password');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
+  const [otpStatus, setOtpStatus] = useState<OtpStatus>('idle');
   
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +72,8 @@ export function AccountCreationStep({ draft }: { draft: ApplicationDraft }) {
 
     setBusy(true);
     setError(null);
-    
+    setOtpStatus('verifying');
+
     const response = await proxyAuthPost('/auth/verify-email/', { email: draft.email, code: otp });
 
     if (response.ok && response.payload?.tokens) {
@@ -81,8 +84,11 @@ export function AccountCreationStep({ draft }: { draft: ApplicationDraft }) {
       // cookie `login` has only just written, and a client-side transition can
       // reach the proxy before the cookie is visible to it.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      setOtpStatus('success');
+      await afterCelebration();
       window.location.href = '/portal/dashboard';
     } else {
+      setOtpStatus('error');
       setError(explainError(response, 'That code is not valid.'));
       setBusy(false);
     }
@@ -157,7 +163,15 @@ export function AccountCreationStep({ draft }: { draft: ApplicationDraft }) {
             We just sent a 6-digit code to <strong>{draft.email}</strong>. Enter it below to create your account and log in.
           </p>
 
-          <OtpInput value={otp} onChange={setOtp} disabled={busy} />
+          <OtpInput
+            value={otp}
+            onChange={(next) => {
+              setOtp(next);
+              if (otpStatus === 'error') setOtpStatus('idle');
+            }}
+            disabled={busy}
+            status={otpStatus}
+          />
 
           <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <Button type="submit" fullWidth loading={busy} loadingLabel="Verifying…">

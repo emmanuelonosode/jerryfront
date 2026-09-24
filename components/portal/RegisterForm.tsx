@@ -6,9 +6,11 @@ import { useSearchParams } from 'next/navigation';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
-import { OtpInput } from '@/components/ui/OtpInput';
+import { OtpInput, type OtpStatus } from '@/components/ui/OtpInput';
+import { afterCelebration } from '@/lib/motion';
 import controls from '@/components/ui/controls.module.css';
 import { ApiError, login } from '@/lib/portal/api';
+import { AuthSuccess } from './AuthSuccess';
 import styles from './LoginForm.module.css';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000/api/v1';
@@ -41,6 +43,7 @@ export function RegisterForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [codeStatus, setCodeStatus] = useState<OtpStatus>('idle');
 
   async function post(path: string, body: unknown) {
     const response = await fetch(`${API_BASE}${path}`, {
@@ -77,6 +80,7 @@ export function RegisterForm() {
     event.preventDefault();
     setBusy(true);
     setError(null);
+    setCodeStatus('verifying');
     try {
       await post('/auth/verify-email/', { email, code });
       // Sign in straight away rather than sending them to a login form they
@@ -87,8 +91,11 @@ export function RegisterForm() {
       // cookie `login` has only just written, and a client-side transition can
       // reach the proxy before the cookie is visible to it.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      setCodeStatus('success');
+      await afterCelebration();
       window.location.href = '/portal/dashboard';
     } catch (err) {
+      setCodeStatus('error');
       setError(explain(err, 'That code is not valid.'));
       setBusy(false);
     }
@@ -96,7 +103,8 @@ export function RegisterForm() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.card}>
+      <div className={styles.card} data-busy={busy || undefined}>
+        {codeStatus === 'success' ? <AuthSuccess message="You're verified - opening your portal…" /> : null}
         <Link href="/" className={styles.brand} aria-label="Jerry Realty Group - home">
           <Logo />
         </Link>
@@ -159,7 +167,15 @@ export function RegisterForm() {
           <form className={styles.form} onSubmit={onVerify} noValidate>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontWeight: 500, marginBottom: '0.5rem' }}>Six-digit code</label>
-              <OtpInput value={code} onChange={setCode} disabled={busy} />
+              <OtpInput
+                value={code}
+                onChange={(next) => {
+                  setCode(next);
+                  if (codeStatus === 'error') setCodeStatus('idle');
+                }}
+                disabled={busy}
+                status={codeStatus}
+              />
             </div>
 
             <Button type="submit" fullWidth loading={busy} loadingLabel="Checking…">

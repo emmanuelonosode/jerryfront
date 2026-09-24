@@ -83,3 +83,181 @@
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
 }
+
+.helpTight {
+  margin-bottom: var(--space-2);
+}
+
+/* ---- Motion ---------------------------------------------------------------
+   The sign-in page is the front door of the portal, so it gets an entrance:
+   soft brand light drifting behind the card, the card rising in, and its
+   contents following one after another. A progress light runs along the top
+   while signing in (never a spinner), and a check draws itself on success.
+   All of it is removed under reduced motion. */
+
+.page {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.page::before,
+.page::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.page::before {
+  top: -25vmax;
+  left: -20vmax;
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand) 45%, transparent), transparent 65%);
+  animation: drift 18s ease-in-out infinite alternate;
+}
+
+.page::after {
+  right: -25vmax;
+  bottom: -30vmax;
+  background: radial-gradient(circle, color-mix(in srgb, var(--malibu-base) 40%, transparent), transparent 65%);
+  animation: drift 22s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes drift {
+  to {
+    transform: translate(8vmax, 6vmax) scale(1.08);
+  }
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  animation: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+}
+
+/* The contents follow the card in, top to bottom. */
+.card > * {
+  animation: fadeUp 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.card > :nth-child(1) { animation-delay: 120ms; }
+.card > :nth-child(2) { animation-delay: 170ms; }
+.card > :nth-child(3) { animation-delay: 220ms; }
+.card > :nth-child(4) { animation-delay: 270ms; }
+.card > :nth-child(5) { animation-delay: 320ms; }
+.card > :nth-child(6) { animation-delay: 370ms; }
+.card > :nth-child(n + 7) { animation-delay: 420ms; }
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Signing in: a light that runs along the top edge of the card. */
+.card[data-busy]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  animation: sweep 1s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  to {
+    left: 100%;
+  }
+}
+
+/* Success: the card clears to a check that draws itself. */
+.success {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  animation: fadeIn 200ms ease-out both;
+}
+
+.successMark {
+  width: 72px;
+  height: 72px;
+}
+
+.successRing,
+.successCheck {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+}
+
+.successRing {
+  stroke: var(--color-status-success-text);
+  stroke-width: 3;
+  stroke-dashoffset: 1;
+  animation: draw 420ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.successCheck {
+  stroke: var(--color-status-success-text);
+  stroke-width: 4;
+  stroke-dashoffset: 1;
+  animation: draw 280ms 360ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.successText {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  animation: fadeUp 300ms 420ms ease-out both;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page::before,
+  .page::after,
+  .card,
+  .card > *,
+  .card[data-busy]::before,
+  .success,
+  .successText {
+    animation: none;
+  }
+
+  .successRing,
+  .successCheck {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
