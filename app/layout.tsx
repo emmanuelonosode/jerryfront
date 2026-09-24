@@ -71,7 +71,7 @@ export const metadata: Metadata = {
   // make it credible. The previous line led on "published screening criteria",
   // which advertised a gate that no longer exists.
   description:
-    'Affordable, move-in ready homes for rent. Anyone can apply, every fee is shown up front, and you set the lease length with us. A real decision in 24 hours.',
+    'Affordable, move-in ready homes for rent. Anyone can apply, every fee is shown up front, and repairs are on us. A real decision in 24 hours.',
 };
 
 export const viewport: Viewport = {
