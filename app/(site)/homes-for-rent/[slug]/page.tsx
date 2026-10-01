@@ -372,7 +372,7 @@ export default async function PropertyDetailPage({
         <CalendarIcon className={styles.buttonIcon} />
         Tour
       </BookTourButton>
-      <Link href={`/apply?home=${listing.slug}`} className={styles.button}>
+      <Link href={`/apply/start?home=${listing.slug}`} className={styles.button}>
         Apply now
       </Link>
     </>
@@ -1101,7 +1101,7 @@ export default async function PropertyDetailPage({
                 Tour
               </BookTourButton>
               <Link
-                href={`/apply?home=${listing.slug}`}
+                href={`/apply/start?home=${listing.slug}`}
                 className={`${styles.button} ${styles.actionBarCta}`}
               >
                 Apply now

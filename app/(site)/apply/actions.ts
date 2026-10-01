@@ -51,11 +51,17 @@ const DRAFT_COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24 * 30,
 };
 
+import { cache } from 'react';
+
+const getCachedDraft = cache(async (id: string) => {
+  return draftStore.get(id);
+});
+
 export async function currentDraft(): Promise<ApplicationDraft | null> {
   const jar = await cookies();
   const id = jar.get(DRAFT_COOKIE)?.value;
   if (!id) return null;
-  return draftStore.get(id);
+  return getCachedDraft(id);
 }
 
 /**

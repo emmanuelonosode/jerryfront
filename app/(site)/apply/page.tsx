@@ -19,9 +19,11 @@ import { redirect } from 'next/navigation';
  * who you are, what you do, where you have lived. That is the agent's
  * conversation starter, not a gate with a threshold attached.
  */
-export default function ApplyIndex() {
-  // Via /apply/start, not straight to the first step: that route mints the
-  // draft and sets its cookie before any form is submitted, which the first
-  // step's validation depends on.
-  redirect('/apply/start');
+export default async function ApplyIndex({
+  searchParams,
+}: {
+  searchParams: Promise<{ home?: string }>;
+}) {
+  const { home } = await searchParams;
+  redirect(home ? `/apply/start?home=${encodeURIComponent(home)}` : '/apply/start');
 }

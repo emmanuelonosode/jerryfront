@@ -8,8 +8,8 @@ export type FieldControlProps = {
   'aria-describedby': string | undefined;
   'aria-invalid': true | undefined;
   required: boolean | undefined;
-  onChange?: any;
-  value?: any;
+  onChange?: (e: unknown) => void;
+  value?: string | number | readonly string[] | undefined;
 };
 
 type FieldProps = {
