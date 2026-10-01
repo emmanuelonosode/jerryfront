@@ -19,13 +19,18 @@ export function IdUpload({ tourId }: { tourId: string }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!front) {
-      setState({ kind: 'error', message: 'Add a photo of the front of your ID.' });
+    if (!front || !back) {
+      setState({
+        kind: 'error',
+        message: !front && !back
+          ? 'Add a photo of the front and the back of your ID.'
+          : `Add a photo of the ${front ? 'back' : 'front'} of your ID.`,
+      });
       return;
     }
     const form = new FormData();
     form.append('idFront', front);
-    if (back) form.append('idBack', back);
+    form.append('idBack', back);
 
     setState({ kind: 'sending' });
     try {
@@ -71,8 +76,8 @@ export function IdUpload({ tourId }: { tourId: string }) {
       />
       <ProofUpload
         name="tid-back"
-        prompt="Back of your ID (optional)"
-        help="The side with the barcode, if your ID has one."
+        prompt="Back of your ID"
+        help="The side with the barcode."
         onFileSelect={setBack}
       />
       <p className={styles.hint}>A phone photo works. PNG, JPG, HEIC or a PDF scan, up to 10MB.</p>

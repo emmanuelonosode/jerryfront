@@ -1,35 +1,38 @@
 'use client';
 
-import { API_BASE } from '@/lib/env';
-
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { ProofUpload } from '@/components/apply/ProofUpload';
-import { ChoiceGroup, Radio, Select, TextInput, Textarea } from '@/components/ui/Controls';
+import { ChoiceGroup, Radio, TextInput, Textarea } from '@/components/ui/Controls';
+import { TourTimePicker } from '@/components/tours/TourTimePicker';
 import {
-  DAY_PART_LABEL,
-  MAX_PREFERENCES,
   RESPONSE_HOURS,
+  formatDate,
+  formatWindow,
   selectableDates,
+  slotsFor,
   validateRequest,
-  type DayPart,
   type RequestIssue,
+  type TimeWindow,
   type TourKind,
 } from '@/lib/tours/request';
+import { submitTourRequest } from '@/lib/tours/submit';
 import styles from './tour.module.css';
 
 const errorFor = (issues: RequestIssue[], field: string) =>
   issues.find((i) => i.field === field)?.message;
 
 interface SubmittedSummary {
+  id: string;
   name: string;
   email: string;
   phone: string;
   kind: string;
-  preferredDate?: string;
-  preferredTime?: string;
+  date: string;
+  window: TimeWindow;
+  idProblem: string | null;
 }
 
 /**
@@ -39,103 +42,115 @@ interface SubmittedSummary {
  * with simply leaving - every field beyond what a person needs in order to
  * ring you back is a field that costs more requests than it gains information.
  *
- * Validated in the browser so a mistake costs no round trip, and the same
- * validator runs server-side.
+ * One day and one window - an hourly slot or a custom range. The API stores
+ * exactly one, so asking for three only to drop two was a promise we never
+ * kept.
+ *
+ * Validated in the browser so a mistake costs no round trip, and the API
+ * checks the same window rules.
  */
 export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | null; listingLabel: string | null }) {
-  const dates = selectableDates();
+  const dates = useMemo(() => {
+    const all = selectableDates();
+    return slotsFor(all[0].value).length > 0 ? all : all.slice(1);
+  }, []);
   const [issues, setIssues] = useState<RequestIssue[]>([]);
-  const [submitted, setSubmitted] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [date, setDate] = useState('');
+  const [window, setWindow] = useState<TimeWindow | null>(null);
   const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
   const [idBackFile, setIdBackFile] = useState<File | null>(null);
   const [submittedSummary, setSubmittedSummary] = useState<SubmittedSummary | null>(null);
+  const submitted = submittedSummary !== null;
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setProblem(null);
 
-    const preferences = [0, 1, 2]
-      .map((i) => ({
-        date: String(data.getAll('prefDate')[i] ?? ''),
-        dayPart: String(data.getAll('prefPart')[i] ?? 'morning') as DayPart,
-      }))
-      .filter((p) => p.date !== '');
+    const name = String(data.get('name') ?? '');
+    const email = String(data.get('email') ?? '');
+    const phone = String(data.get('phone') ?? '');
+    const kind = String(data.get('kind') ?? 'in-person') as TourKind;
+    const accessNeeds = String(data.get('accessNeeds') ?? '').trim();
+    const note = String(data.get('note') ?? '').trim();
 
     const found = validateRequest(
       {
         listingSlug,
-        name: String(data.get('name') ?? ''),
-        email: String(data.get('email') ?? ''),
-        phone: String(data.get('phone') ?? ''),
-        kind: (String(data.get('kind') ?? 'in-person') as TourKind),
-        preferences,
-        note: String(data.get('note') ?? '') || null,
-        accessNeeds: String(data.get('accessNeeds') ?? '') || null,
+        name,
+        email,
+        phone,
+        kind,
+        preferences: [{ date, window }],
+        note: note || null,
+        accessNeeds: accessNeeds || null,
       },
       new Date(),
     );
+    if (!date) found.push({ field: 'preferences.0.date', message: 'Pick a day for your tour.' });
 
     if (!idFrontFile || !idBackFile) {
-      found.push({ field: 'idFile', message: 'To keep everyone safe, we require a photo of both the front and back of your ID to book a tour.' });
+      found.push({
+        field: 'idFile',
+        message: !idFrontFile && !idBackFile
+          ? 'Add a photo of the front and the back of your ID.'
+          : `Add a photo of the ${idFrontFile ? 'back' : 'front'} of your ID.`,
+      });
     }
 
     setIssues(found);
-    if (found.length > 0) return;
+    if (found.length > 0 || !window || !idFrontFile || !idBackFile) {
+      // Take them to the first thing to fix rather than leaving them to hunt.
+      requestAnimationFrame(() =>
+        form.querySelector<HTMLElement>('[role="alert"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      );
+      return;
+    }
 
-    const first = preferences[0];
-    
-    const requestData = {
+    setSending(true);
+    const result = await submitTourRequest({
       listingSlug,
-      name: String(data.get('name') ?? ''),
-      email: String(data.get('email') ?? ''),
-      phone: String(data.get('phone') ?? ''),
-      kind: String(data.get('kind') ?? 'in-person'),
-      preferredDate: first?.date ?? '',
-      preferredTime: first?.dayPart ?? '',
-      note: String(data.get('note') ?? ''),
-    };
-
-    setSubmittedSummary({
-      name: requestData.name,
-      email: requestData.email,
-      phone: requestData.phone,
-      kind: requestData.kind,
-      preferredDate: first?.date,
-      preferredTime: first?.dayPart ? (DAY_PART_LABEL[first.dayPart] || first.dayPart) : undefined,
+      name,
+      email,
+      phone,
+      kind,
+      date,
+      window,
+      note: [note, accessNeeds ? `Access: ${accessNeeds}` : ''].filter(Boolean).join('\n'),
+      idFront: idFrontFile,
+      idBack: idBackFile,
     });
+    setSending(false);
 
-    void fetch(`${API_BASE}/viewings/request/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestData),
-    })
-      .then(async (r) => {
-        if (!r.ok) return;
-        const body = (await r.json()) as { id?: string };
-        if (idFrontFile && idBackFile && body.id) {
-          const form = new FormData();
-          form.append('idFront', idFrontFile);
-          form.append('idBack', idBackFile);
-          await fetch(`${API_BASE}/viewings/${body.id}/id/`, {
-            method: 'POST',
-            body: form,
-          });
-        }
-      })
-      .catch(() => {
-        // Deliberately not surfaced as a failure to the person: the request is
-        // also reachable by phone, and an error here after they have filled in
-        // the form loses us the lead entirely.
-      });
-    
-    // Trigger internal alert
+    if (!result.ok) {
+      setProblem(result.problem);
+      return;
+    }
+
+    // Internal alert, as before. Best effort - the API already told staff.
     void fetch('/api/alerts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'tour_booked', data: requestData }),
-    }).catch(console.error);
+      body: JSON.stringify({
+        type: 'tour_booked',
+        data: { listingSlug, name, email, phone, preferredDate: date, preferredTime: formatWindow(window) },
+      }),
+    }).catch(() => {});
 
-    setSubmitted(true);
+    setSubmittedSummary({
+      id: result.id,
+      name,
+      email,
+      phone,
+      kind,
+      date,
+      window,
+      idProblem: result.idUploaded ? null : result.idProblem,
+    });
+    globalThis.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   if (submitted) {
@@ -153,6 +168,13 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
           </p>
         </div>
 
+        {submittedSummary?.idProblem ? (
+          <p className={styles.formError} role="alert">
+            Your tour is requested, but your ID did not upload: {submittedSummary.idProblem}{' '}
+            <Link href={`/tour-id/${submittedSummary.id}`}>Try the upload again</Link>.
+          </p>
+        ) : null}
+
         <div className={styles.summaryCard}>
           <div className={styles.summaryGrid}>
             {listingLabel ? (
@@ -167,12 +189,20 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
                 {submittedSummary?.kind === 'video' ? 'Live Video Walkthrough' : 'In-Person Walkthrough'}
               </span>
             </div>
-            {submittedSummary?.preferredDate ? (
+            {submittedSummary ? (
               <div className={styles.summaryItem}>
-                <span className={styles.summaryLabel}>Preferred Window</span>
+                <span className={styles.summaryLabel}>Requested time</span>
                 <span className={styles.summaryValue}>
-                  {submittedSummary.preferredDate}
-                  {submittedSummary.preferredTime ? ` · ${submittedSummary.preferredTime}` : ''}
+                  {formatDate(submittedSummary.date)} · {formatWindow(submittedSummary.window)}
+                  {submittedSummary.window.custom ? ' (custom)' : ''}
+                </span>
+              </div>
+            ) : null}
+            {submittedSummary ? (
+              <div className={styles.summaryItem}>
+                <span className={styles.summaryLabel}>ID</span>
+                <span className={styles.summaryValue}>
+                  {submittedSummary.idProblem ? 'Not received yet' : 'Front and back received'}
                 </span>
               </div>
             ) : null}
@@ -214,12 +244,6 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
                 </p>
               </div>
             </div>
-            <div className={styles.stepItem}>
-              <div className={styles.stepIndex}>3</div>
-              <div className={styles.stepContent}>
-               
-              </div>
-            </div>
           </div>
         </div>
 
@@ -237,8 +261,11 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
             type="button"
             variant="quiet"
             onClick={() => {
-              setSubmitted(false);
               setSubmittedSummary(null);
+              setDate('');
+              setWindow(null);
+              setIdFrontFile(null);
+              setIdBackFile(null);
             }}
           >
             Submit Another Request
@@ -286,48 +313,19 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
       <fieldset className={styles.fieldset}>
         <legend className={styles.legend}>When suits you?</legend>
         <p className={styles.legendNote}>
-          Give us up to {MAX_PREFERENCES} options and we will confirm one of them. Evenings
-          and weekends are welcome.
+          Pick a day and an hour, or set a custom time. Evenings and weekends are welcome, and we
+          confirm with you within {RESPONSE_HOURS} business hours.
         </p>
-        {errorFor(issues, 'preferences') ? (
-          <p className={styles.formError} role="alert">
-            {errorFor(issues, 'preferences')}
-          </p>
-        ) : null}
-
-        {[0, 1, 2].map((i) => (
-          <div className={styles.prefRow} key={i}>
-            <Field
-              name="prefDate"
-              idSuffix={i}
-              label={i === 0 ? 'Day' : 'Another day'}
-              note={i === 0 ? undefined : 'Optional'}
-              error={errorFor(issues, `preferences.${i}.date`)}
-            >
-              {(p) => (
-                <Select {...p} name="prefDate" defaultValue="">
-                  <option value="">No preference</option>
-                  {dates.map((d) => (
-                    <option key={d.value} value={d.value}>
-                      {d.label}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-            <Field name="prefPart" idSuffix={i} label="Time">
-              {(p) => (
-                <Select {...p} name="prefPart" defaultValue="afternoon">
-                  {(Object.keys(DAY_PART_LABEL) as DayPart[]).map((part) => (
-                    <option key={part} value={part}>
-                      {DAY_PART_LABEL[part]}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-          </div>
-        ))}
+        <TourTimePicker
+          idPrefix="tf"
+          dates={dates}
+          date={date}
+          onDateChange={setDate}
+          window={window}
+          onWindowChange={setWindow}
+          dateError={errorFor(issues, 'preferences.0.date') ?? errorFor(issues, 'preferences')}
+          windowError={errorFor(issues, 'preferences.0.window')}
+        />
       </fieldset>
 
       <Field
@@ -370,8 +368,14 @@ export function TourForm({ listingSlug, listingLabel }: { listingSlug: string | 
         ) : null}
       </fieldset>
 
+      {problem ? (
+        <p className={styles.formError} role="alert">
+          {problem}
+        </p>
+      ) : null}
+
       <div className={styles.actions}>
-        <Button type="submit" size="lg">
+        <Button type="submit" size="lg" loading={sending} loadingLabel="Sending…">
           Request a tour
         </Button>
       </div>

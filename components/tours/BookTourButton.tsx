@@ -21,11 +21,17 @@ export function BookTourButton({
   listingSlug = null,
   listingLabel = null,
   className,
+  initialDate = null,
+  onOpen,
   children = 'Book a tour',
 }: {
   listingSlug?: string | null;
   listingLabel?: string | null;
   className?: string;
+  /** Opens the wizard on this day (`YYYY-MM-DD`). */
+  initialDate?: string | null;
+  /** Called when the dialog opens - for analytics. */
+  onOpen?: () => void;
   children?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -43,6 +49,7 @@ export function BookTourButton({
           // still open the real page in a new tab.
           if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
           event.preventDefault();
+          onOpen?.();
           setOpen(true);
         }}
       >
@@ -53,6 +60,7 @@ export function BookTourButton({
         onClose={() => setOpen(false)}
         listingSlug={listingSlug}
         listingLabel={listingLabel}
+        initialDate={initialDate}
       />
     </>
   );

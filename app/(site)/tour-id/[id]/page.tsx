@@ -30,7 +30,7 @@ export default async function TourIdPage({ params }: { params: Promise<{ id: str
         <header className={styles.header}>
           <h1 className={styles.title}>One last step before your tour</h1>
           <p className={styles.lead}>
-            Upload a photo of your government ID. Once we have checked it, we send you the code
+            Upload a photo of the front and back of your government ID. Once we have checked it, we send you the code
             for the door. Your ID is stored privately and deleted automatically after it has been
             checked.
           </p>

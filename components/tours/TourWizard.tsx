@@ -1,14 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { API_BASE } from '@/lib/env';
+import Link from 'next/link';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { record } from '@/lib/analytics/client';
+import { ProofUpload } from '@/components/apply/ProofUpload';
 import {
-  DAY_PART_LABEL,
   RESPONSE_HOURS,
+  formatDate,
+  formatWindow,
   selectableDates,
-  type DayPart,
+  slotsFor,
+  windowIssue,
+  type TimeWindow,
 } from '@/lib/tours/request';
+import { submitTourRequest } from '@/lib/tours/submit';
+import { TourTimePicker } from './TourTimePicker';
 import styles from './TourWizard.module.css';
 
 /**
@@ -26,30 +32,32 @@ import styles from './TourWizard.module.css';
  * there is no success page, because a success page is another navigation away
  * from the thing they came to do.
  *
- * THREE SHORT STEPS, NOT ONE LONG FORM. Who you are, when suits you, and
- * anything to arrange. Each is small enough to finish without scrolling on a
- * phone, and the progress is visible so it never feels open-ended. Only two
- * things in the whole flow are required: a name, and one way to reach you.
+ * THREE SHORT STEPS, NOT ONE LONG FORM. When suits you (a day and an hourly
+ * slot, or a custom range), who you are, and a photo of the front and back of
+ * an ID. WHEN COMES FIRST: picking a time is the low-commitment question and
+ * the one the visitor came with; asking for a name and email before showing
+ * any times is where people closed the dialog. A listing page can open this
+ * with the day already chosen (`initialDate`). Each is small enough to finish without scrolling far on a phone,
+ * and the progress is visible so it never feels open-ended.
  *
- * THE ID IS OPTIONAL AND SAYS SO. It speeds up a self-guided viewing and
- * nothing else. Requiring a document before we will discuss a time is exactly
- * how the previous flow ended up with five requests stranded in a state
- * nobody could leave, so it is offered, explained, and skippable.
+ * THE REQUEST IS NEVER HELD HOSTAGE TO THE ID. The tour is created first and
+ * the ID attached after; if the upload fails, the confirmation says so and
+ * links to /tour-id/<id> to try again, instead of losing the request.
  *
  * THE PAGE STILL EXISTS. `/schedule-tour` is in the sitemap and works with no
  * JavaScript at all; `BookTourButton` falls back to linking at it. This is the
  * faster path, not the only one.
  */
 
-type Step = 'you' | 'when' | 'extras' | 'done';
+type Step = 'you' | 'when' | 'id' | 'done';
 
-const STEP_ORDER: Step[] = ['you', 'when', 'extras'];
+const STEP_ORDER: Step[] = ['when', 'you', 'id'];
 
 const STEP_TITLE: Record<Step, string> = {
   you: 'Who should we contact?',
   when: 'When suits you?',
-  extras: 'Anything we should arrange?',
-  done: 'Request sent',
+  id: 'Your ID, and anything to arrange',
+  done: 'Tour requested',
 };
 
 type Props = {
@@ -58,26 +66,45 @@ type Props = {
   /** The home being toured, when opened from a listing. */
   listingSlug?: string | null;
   listingLabel?: string | null;
+  /** A day already picked on the page that opened this, as `YYYY-MM-DD`. */
+  initialDate?: string | null;
 };
 
-export function TourWizard({ open, onClose, listingSlug = null, listingLabel = null }: Props) {
-  const [step, setStep] = useState<Step>('you');
+type Outcome = { id: string; idProblem: string | null };
+
+export function TourWizard({
+  open,
+  onClose,
+  listingSlug = null,
+  listingLabel = null,
+  initialDate = null,
+}: Props) {
+  const [step, setStep] = useState<Step>('when');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [kind, setKind] = useState<'in-person' | 'video'>('in-person');
-  const [date, setDate] = useState('');
-  const [dayPart, setDayPart] = useState<DayPart>('afternoon');
+  // Seeded once: each day button on a listing owns its own dialog instance.
+  const [date, setDate] = useState(initialDate ?? '');
+  const [window, setWindow] = useState<TimeWindow | null>(null);
   const [note, setNote] = useState('');
   const [accessNeeds, setAccessNeeds] = useState('');
-  const [idFile, setIdFile] = useState<File | null>(null);
-  const [idNote, setIdNote] = useState<string | null>(null);
+  const [idFront, setIdFront] = useState<File | null>(null);
+  const [idBack, setIdBack] = useState<File | null>(null);
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
-  const dates = selectableDates();
+  const pickerId = useId().replace(/:/g, '');
+
+  // Today drops out once its last hourly slot has started; a custom range is
+  // still possible on any day that remains.
+  const dates = useMemo(() => {
+    const all = selectableDates();
+    return slotsFor(all[0].value).length > 0 ? all : all.slice(1);
+  }, []);
 
   /*
    * Focus moves into the dialog when it opens and returns to whatever opened
@@ -92,6 +119,11 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
     panelRef.current?.querySelector<HTMLElement>('input, select, textarea, button')?.focus();
     return () => openerRef.current?.focus?.();
   }, [open]);
+
+  // Each step starts at its top, and the error for it is the first thing read.
+  useEffect(() => {
+    panelRef.current?.scrollTo({ top: 0 });
+  }, [step, error]);
 
   // The page behind must not scroll while a dialog is over it.
   useEffect(() => {
@@ -108,95 +140,77 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose();
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    globalThis.addEventListener('keydown', onKey);
+    return () => globalThis.removeEventListener('keydown', onKey);
   }, [open, onClose]);
+
+  /** The first thing wrong with a step, or null if it is complete. */
+  const problemWith = useCallback(
+    (which: Step): string | null => {
+      if (which === 'you') {
+        if (!name.trim()) return 'Tell us your name so we know who to expect.';
+        if (!email.trim() && !phone.trim()) {
+          return 'Leave an email or a phone number - either one is enough.';
+        }
+      }
+      if (which === 'when') {
+        if (!date) return 'Pick a day for your tour.';
+        if (!window) return 'Pick an hour, or choose Custom time and set your own.';
+        const issue = windowIssue(window);
+        if (issue) return issue;
+      }
+      if (which === 'id') {
+        if (!idFront && !idBack) return 'Add a photo of the front and the back of your ID.';
+        if (!idFront) return 'Add a photo of the front of your ID.';
+        if (!idBack) return 'Add a photo of the back of your ID.';
+      }
+      return null;
+    },
+    [name, email, phone, date, window, idFront, idBack],
+  );
 
   const submit = useCallback(async () => {
     setError(null);
-    if (!name.trim()) {
-      setStep('you');
-      setError('Tell us your name so we know who to expect.');
-      return;
+    for (const s of STEP_ORDER) {
+      const problem = problemWith(s);
+      if (problem) {
+        setStep(s);
+        setError(problem);
+        return;
+      }
     }
-    if (!email.trim() && !phone.trim()) {
-      setStep('you');
-      setError('Leave an email or a phone number - either one is enough.');
-      return;
-    }
-    if (!idFile) {
-      setStep('extras');
-      setError('A photo of your ID is required to book a tour.');
-      return;
-    }
+    if (!window || !idFront || !idBack) return;
 
     setSending(true);
-    try {
-      const response = await fetch(`${API_BASE}/viewings/request/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          kind,
-          listingSlug,
-          // The API requires a date; "as soon as possible" resolves to the
-          // soonest offered rather than an error, because that is a real
-          // answer and refusing it would be pedantry.
-          preferredDate: date || dates[0]?.value,
-          preferredTime: dayPart,
-          note: [note.trim(), accessNeeds.trim() ? `Access: ${accessNeeds.trim()}` : '']
-            .filter(Boolean)
-            .join('\n'),
-        }),
-      });
-      if (!response.ok) throw new Error(String(response.status));
-      const body = (await response.json()) as { id?: string };
+    const result = await submitTourRequest({
+      listingSlug,
+      name,
+      email,
+      phone,
+      kind,
+      date,
+      window,
+      note: [note.trim(), accessNeeds.trim() ? `Access: ${accessNeeds.trim()}` : '']
+        .filter(Boolean)
+        .join('\n'),
+      idFront,
+      idBack,
+    });
+    setSending(false);
 
-      /*
-       * The ID is uploaded securely after the request is created.
-       * If this fails, the request still exists but the admin will see it's missing.
-       */
-      if (idFile && body.id) {
-        const form = new FormData();
-        form.append('idFront', idFile);
-        try {
-          const idResponse = await fetch(`${API_BASE}/viewings/${body.id}/id/`, {
-            method: 'POST',
-            body: form,
-          });
-          const detail = idResponse.ok
-            ? null
-            : ((await idResponse.json().catch(() => null)) as { detail?: string } | null);
-          setIdNote(
-            idResponse.ok
-              ? 'Your ID came through too.'
-              : detail?.detail
-                ?? 'Your tour is booked, but the ID did not upload. We will ask for it when we confirm.',
-          );
-        } catch {
-          setIdNote(
-            'Your tour is booked, but the ID did not upload. We will ask for it when we confirm.',
-          );
-        }
-      }
-
-      record({ event: 'tour_requested', path: window.location.pathname });
-      setStep('done');
-    } catch {
-      setError(
-        'That did not send. Try again, or call us and we will book it for you over the phone.',
-      );
-    } finally {
-      setSending(false);
+    if (!result.ok) {
+      setError(result.problem);
+      return;
     }
-  }, [name, email, phone, kind, listingSlug, date, dayPart, note, accessNeeds, idFile, dates]);
+    record({ event: 'tour_requested', path: globalThis.location.pathname });
+    setOutcome({ id: result.id, idProblem: result.idUploaded ? null : result.idProblem });
+    setStep('done');
+  }, [problemWith, listingSlug, name, email, phone, kind, date, window, note, accessNeeds, idFront, idBack]);
 
   if (!open) return null;
 
   const index = STEP_ORDER.indexOf(step);
-  const isLast = step === 'extras';
+  const isLast = step === 'id';
 
   return (
     <div className={styles.overlay}>
@@ -215,6 +229,7 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
           <div>
             <p className={styles.eyebrow}>
               {listingLabel ? `Tour ${listingLabel}` : 'Book a tour'}
+              {step !== 'done' ? ` · Step ${index + 1} of ${STEP_ORDER.length}` : ''}
             </p>
             <h2 className={styles.title} id={headingId}>
               {STEP_TITLE[step]}
@@ -226,17 +241,9 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
         </div>
 
         {step !== 'done' ? (
-          <ol className={styles.progress} aria-label="Progress">
+          <ol className={styles.progress} aria-hidden="true">
             {STEP_ORDER.map((s, i) => (
-              <li
-                key={s}
-                className={i <= index ? styles.dotDone : styles.dot}
-                aria-current={s === step ? 'step' : undefined}
-              >
-                <span className="visually-hidden">
-                  Step {i + 1} of {STEP_ORDER.length}
-                </span>
-              </li>
+              <li key={s} className={i <= index ? styles.dotDone : styles.dot} />
             ))}
           </ol>
         ) : null}
@@ -264,6 +271,7 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
               id="tw-email"
               className={styles.input}
               type="email"
+              inputMode="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
@@ -275,6 +283,7 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
               id="tw-phone"
               className={styles.input}
               type="tel"
+              inputMode="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               autoComplete="tel"
@@ -310,40 +319,45 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
               ))}
             </fieldset>
 
-            <label className={styles.label} htmlFor="tw-date">Which day?</label>
-            <select
-              id="tw-date"
-              className={styles.input}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            >
-              {/* "Soonest" is first and is a real answer, not a blank. */}
-              <option value="">As soon as possible</option>
-              {dates.map((d) => (
-                <option key={d.value} value={d.value}>{d.label}</option>
-              ))}
-            </select>
-
-            <label className={styles.label} htmlFor="tw-part">What time works?</label>
-            <select
-              id="tw-part"
-              className={styles.input}
-              value={dayPart}
-              onChange={(e) => setDayPart(e.target.value as DayPart)}
-            >
-              {(Object.keys(DAY_PART_LABEL) as DayPart[]).map((part) => (
-                <option key={part} value={part}>{DAY_PART_LABEL[part]}</option>
-              ))}
-            </select>
+            <TourTimePicker
+              idPrefix={`tw-${pickerId}`}
+              dates={dates}
+              date={date}
+              onDateChange={setDate}
+              window={window}
+              onWindowChange={setWindow}
+            />
             <p className={styles.hint}>
-              A person confirms an exact time with you within {RESPONSE_HOURS} business hours.
+              A person confirms the time with you within {RESPONSE_HOURS} business hours.
             </p>
           </div>
         ) : null}
 
-        {step === 'extras' ? (
+        {step === 'id' ? (
           <div className={styles.body}>
-            <label className={styles.label} htmlFor="tw-access">Anything we should arrange?</label>
+            <div className={styles.idBlock}>
+              <p className={styles.label}>Photo of your ID - front and back</p>
+              <p className={styles.hint}>
+                To keep everyone safe we need both sides of a government ID before a tour. It is
+                stored privately and deleted automatically once your request is reviewed.
+              </p>
+              <ProofUpload
+                name="tw-id-front"
+                prompt="Front of your ID"
+                help="A clear photo with all four corners in view."
+                onFileSelect={setIdFront}
+              />
+              <ProofUpload
+                name="tw-id-back"
+                prompt="Back of your ID"
+                help="The side with the barcode."
+                onFileSelect={setIdBack}
+              />
+            </div>
+
+            <label className={styles.label} htmlFor="tw-access">
+              Anything we should arrange? <span className={styles.optional}>Optional</span>
+            </label>
             <textarea
               id="tw-access"
               className={styles.textarea}
@@ -353,46 +367,66 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
               placeholder="Step-free access, an interpreter, bringing children - anything at all"
             />
 
-            <label className={styles.label} htmlFor="tw-note">Anything else to tell us?</label>
+            <label className={styles.label} htmlFor="tw-note">
+              Anything else to tell us? <span className={styles.optional}>Optional</span>
+            </label>
             <textarea
               id="tw-note"
               className={styles.textarea}
               rows={2}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Optional"
             />
-
-            <div className={styles.idBlock}>
-              <label className={styles.label} htmlFor="tw-id">
-                Photo of your ID
-              </label>
-              <p className={styles.hint}>
-                To keep everyone safe, we require a photo of your ID before you can book a tour. 
-                It is stored securely and deleted automatically once your tour request is reviewed.
-              </p>
-              <input
-                id="tw-id"
-                className={styles.file}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf"
-                onChange={(e) => setIdFile(e.target.files?.[0] ?? null)}
-              />
-              {idFile ? <p className={styles.fileName}>Attached: {idFile.name}</p> : null}
-            </div>
           </div>
         ) : null}
 
-        {step === 'done' ? (
-          <div className={styles.body}>
+        {step === 'done' && window ? (
+          <div className={styles.body} role="status">
             <p className={styles.doneLead}>
-              Got it{name ? `, ${name.split(' ')[0]}` : ''}. A person will confirm an exact time
-              with you within {RESPONSE_HOURS} business hours{email ? ` at ${email}` : ''}.
+              Got it{name ? `, ${name.trim().split(' ')[0]}` : ''}. A person will confirm your
+              time within {RESPONSE_HOURS} business hours{email ? ` at ${email.trim()}` : ''}.
             </p>
-            {idNote ? <p className={styles.hint}>{idNote}</p> : null}
+
+            <dl className={styles.summary}>
+              {listingLabel ? (
+                <div>
+                  <dt>Home</dt>
+                  <dd>{listingLabel}</dd>
+                </div>
+              ) : null}
+              <div>
+                <dt>Day</dt>
+                <dd>{formatDate(date)}</dd>
+              </div>
+              <div>
+                <dt>Time</dt>
+                <dd>
+                  {formatWindow(window)}
+                  {window.custom ? ' (custom)' : ''}
+                </dd>
+              </div>
+              <div>
+                <dt>Tour</dt>
+                <dd>{kind === 'video' ? 'Video walkthrough' : 'In person'}</dd>
+              </div>
+              <div>
+                <dt>ID</dt>
+                <dd>{outcome?.idProblem ? 'Not received yet' : 'Front and back received'}</dd>
+              </div>
+            </dl>
+
+            {outcome?.idProblem ? (
+              <p className={styles.error}>
+                Your tour is requested, but your ID did not upload: {outcome.idProblem}{' '}
+                <Link href={`/tour-id/${outcome.id}`} className={styles.inlineLink}>
+                  Try the upload again
+                </Link>
+                .
+              </p>
+            ) : null}
             <p className={styles.hint}>
-              Nothing is booked against you and there is nothing to pay. If your plans change,
-              reply to the confirmation email and we will move it.
+              Nothing to pay. If your plans change, reply to the confirmation email and we will
+              move it.
             </p>
           </div>
         ) : null}
@@ -409,7 +443,11 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
                 <button
                   type="button"
                   className={styles.secondary}
-                  onClick={() => setStep(STEP_ORDER[index - 1])}
+                  disabled={sending}
+                  onClick={() => {
+                    setError(null);
+                    setStep(STEP_ORDER[index - 1]);
+                  }}
                 >
                   Back
                 </button>
@@ -418,20 +456,16 @@ export function TourWizard({ open, onClose, listingSlug = null, listingLabel = n
                 type="button"
                 className={styles.primary}
                 disabled={sending}
+                aria-busy={sending || undefined}
                 onClick={() => {
                   if (isLast) {
                     void submit();
                     return;
                   }
-                  if (step === 'you') {
-                    if (!name.trim()) {
-                      setError('Tell us your name so we know who to expect.');
-                      return;
-                    }
-                    if (!email.trim() && !phone.trim()) {
-                      setError('Leave an email or a phone number - either one is enough.');
-                      return;
-                    }
+                  const problem = problemWith(step);
+                  if (problem) {
+                    setError(problem);
+                    return;
                   }
                   setError(null);
                   setStep(STEP_ORDER[index + 1]);

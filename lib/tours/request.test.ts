@@ -6,9 +6,16 @@ import {
   pendingRequests,
   responseDueAt,
   selectableDates,
+  formatClock,
+  formatWindow,
+  slotsFor,
   validateRequest,
+  windowIssue,
+  HOUR_SLOTS,
   type TourRequest,
 } from './request.ts';
+
+const SLOT = { start: '17:00', end: '18:00', custom: false };
 
 const NOW = new Date('2026-08-16T12:00:00Z');
 const inDays = (n: number) =>
@@ -21,7 +28,7 @@ function req(o: Partial<Omit<TourRequest, 'id' | 'requestedAt' | 'confirmedFor'>
     email: 'dana@example.com',
     phone: '',
     kind: 'in-person' as const,
-    preferences: [{ date: inDays(2), dayPart: 'evening' as const }],
+    preferences: [{ date: inDays(2), window: SLOT }],
     note: null,
     accessNeeds: null,
     ...o,
@@ -56,32 +63,32 @@ describe('preferred windows', () => {
 
   test('today is allowed - the most ready applicant should not be turned away', () => {
     assert.deepEqual(
-      validateRequest(req({ preferences: [{ date: inDays(0), dayPart: 'afternoon' }] }), NOW),
+      validateRequest(req({ preferences: [{ date: inDays(0), window: SLOT }] }), NOW),
       [],
     );
   });
 
   test('a past date is rejected', () => {
-    const issues = validateRequest(req({ preferences: [{ date: inDays(-1), dayPart: 'morning' }] }), NOW);
+    const issues = validateRequest(req({ preferences: [{ date: inDays(-1), window: SLOT }] }), NOW);
     assert.ok(issues.some((i) => /already passed/.test(i.message)));
   });
 
   test('too far ahead is rejected, and explains why', () => {
     const issues = validateRequest(
-      req({ preferences: [{ date: inDays(MAX_DAYS_AHEAD + 1), dayPart: 'morning' }] }),
+      req({ preferences: [{ date: inDays(MAX_DAYS_AHEAD + 1), window: SLOT }] }),
       NOW,
     );
     assert.ok(issues.some((i) => /may well be gone by then/.test(i.message)));
   });
 
   test('more than three options is rejected', () => {
-    const four = [0, 1, 2, 3].map((i) => ({ date: inDays(i + 1), dayPart: 'morning' as const }));
+    const four = [0, 1, 2, 3].map((i) => ({ date: inDays(i + 1), window: SLOT }));
     assert.ok(validateRequest(req({ preferences: four }), NOW).some((i) => i.field === 'preferences'));
   });
 
   test('evening windows exist for people who work days', () => {
     assert.deepEqual(
-      validateRequest(req({ preferences: [{ date: inDays(3), dayPart: 'evening' }] }), NOW),
+      validateRequest(req({ preferences: [{ date: inDays(3), window: SLOT }] }), NOW),
       [],
     );
   });
@@ -130,13 +137,13 @@ describe('timezone correctness', () => {
     const dates = selectableDates(NOW);
     const today = dates[0];
     assert.equal(today.label, 'Today');
-    const issues = validateRequest(req({ preferences: [{ date: today.value, dayPart: 'afternoon' }] }), NOW);
+    const issues = validateRequest(req({ preferences: [{ date: today.value, window: SLOT }] }), NOW);
     assert.deepEqual(issues, [], `"Today" (${today.value}) must be selectable`);
   });
 
   test('every offered date validates', () => {
     for (const d of selectableDates(NOW)) {
-      const issues = validateRequest(req({ preferences: [{ date: d.value, dayPart: 'morning' }] }), NOW);
+      const issues = validateRequest(req({ preferences: [{ date: d.value, window: SLOT }] }), NOW);
       assert.deepEqual(issues, [], `${d.label} (${d.value}) should be valid`);
     }
   });
@@ -144,5 +151,40 @@ describe('timezone correctness', () => {
   test('the value matches the local calendar day, not the UTC one', () => {
     const local = `${NOW.getFullYear()}-${String(NOW.getMonth() + 1).padStart(2, '0')}-${String(NOW.getDate()).padStart(2, '0')}`;
     assert.equal(selectableDates(NOW)[0].value, local);
+  });
+});
+
+describe('time windows', () => {
+  test('hourly slots run 8am-9am through 6pm-7pm', () => {
+    assert.equal(HOUR_SLOTS.length, 11);
+    assert.equal(formatWindow(HOUR_SLOTS[0]), '8am – 9am');
+    assert.equal(formatWindow(HOUR_SLOTS[HOUR_SLOTS.length - 1]), '6pm – 7pm');
+  });
+
+  test('clock labels read like people say them', () => {
+    assert.equal(formatClock('00:00'), '12am');
+    assert.equal(formatClock('12:00'), '12pm');
+    assert.equal(formatClock('13:30'), '1:30pm');
+  });
+
+  test('today only offers slots that have not started', () => {
+    const at = new Date(2026, 9, 1, 13, 15);
+    const slots = slotsFor('2026-10-01', at);
+    assert.equal(slots[0].start, '14:00');
+    assert.equal(slotsFor('2026-10-02', at).length, HOUR_SLOTS.length);
+  });
+
+  test('a custom range must run forwards, inside tour hours, 30 min to 4 h', () => {
+    assert.equal(windowIssue({ start: '13:30', end: '15:00' }), null);
+    assert.match(windowIssue({ start: '11:00', end: '10:00' }) ?? '', /after the start/);
+    assert.match(windowIssue({ start: '05:00', end: '06:00' }) ?? '', /between/);
+    assert.match(windowIssue({ start: '10:00', end: '10:15' }) ?? '', /30 minutes/);
+    assert.match(windowIssue({ start: '09:00', end: '15:00' }) ?? '', /four hours/);
+    assert.match(windowIssue({ start: '', end: '10:00' }) ?? '', /start and an end/);
+  });
+
+  test('a day without a time is not a request', () => {
+    const issues = validateRequest(req({ preferences: [{ date: inDays(2), window: null }] }), NOW);
+    assert.ok(issues.some((i) => i.field === 'preferences.0.window'));
   });
 });

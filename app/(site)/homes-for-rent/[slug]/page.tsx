@@ -8,8 +8,8 @@ import {
   CalendarIcon,
   CheckIcon,
   ClockIcon,
-  DocumentIcon,
   KeyIcon,
+  PhoneIcon,
   PetIcon,
   ShieldCheckIcon,
   UserIcon,
@@ -32,7 +32,8 @@ import { citySlug } from '@/lib/listings/hubs';
 import { cityCostContext } from '@/lib/listings/marketContext';
 import { buildListingFaq } from '@/lib/listings/faq';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { BookTourButton } from '@/components/tours/BookTourButton';
+import { TourDayPicker, TrackedLink, TrackedTourButton } from '@/components/listings/ListingActions';
+import { COMPANY_FACTS, FEE_AMOUNTS } from '@/lib/content/business';
 import { breadcrumbJsonLd, faqJsonLd, listingJsonLd } from '@/lib/seo/structuredData';
 import { SITE_NAME, SITE_ORIGIN } from '@/lib/seo/site';
 import type { Listing } from '@/lib/listings/types';
@@ -360,26 +361,57 @@ export default async function PropertyDetailPage({
     ...(similar.length > 0 ? [{ id: 'similar', label: 'Similar homes' }] : []),
   ];
 
-  const applyCta = canApply ? (
-    <>
-      {/* Opens over the listing. Somebody deciding on this house should not
-          have to leave the photographs to ask to see it. */}
-      <BookTourButton
+  /*
+   * THE TWO ACTIONS, AND WHAT EACH ONE COSTS THE VISITOR.
+   *
+   * Apply is the commit, so it is the one cobalt button. But "Apply now" on
+   * its own is a door with no idea what is behind it - how long, how much,
+   * how soon an answer - and that uncertainty is where people stop. So the
+   * line under it says, using only facts the site already publishes. The fee
+   * appears only when it is configured; it is never guessed.
+   */
+  const applyHref = `/apply/start?home=${listing.slug}`;
+  const applyFacts = [
+    'About 10 minutes on a phone',
+    FEE_AMOUNTS.application ? `${formatUsd(FEE_AMOUNTS.application)} application fee` : null,
+    'Decision within 24 hours',
+  ].filter(Boolean).join(' · ');
+  const phone = COMPANY_FACTS.phone;
+  const phoneHref = phone ? `tel:${phone.replace(/[^\d+]/g, '')}` : null;
+
+  const tourButton = (className: string, cta: string, label: React.ReactNode = 'Book a tour') => (
+    <TrackedTourButton
+      cta={cta}
+      listingSlug={listing.slug}
+      listingLabel={listing.addressLine}
+      className={className}
+    >
+      {label}
+    </TrackedTourButton>
+  );
+  const applyButton = (className: string, cta: string) => (
+    <TrackedLink cta={cta} listingSlug={listing.slug} href={applyHref} className={className}>
+      Apply now
+    </TrackedLink>
+  );
+
+  const contactLinks = (
+    <div className={styles.contactRow}>
+      {phone && phoneHref ? (
+        <TrackedLink cta="call" listingSlug={listing.slug} href={phoneHref} className={styles.contactLink}>
+          <PhoneIcon className={styles.contactIcon} />
+          Call {phone}
+        </TrackedLink>
+      ) : null}
+      <TrackedLink
+        cta="ask"
         listingSlug={listing.slug}
-        listingLabel={listing.addressLine}
-        className={styles.buttonSecondary}
+        href={`/contact?home=${listing.slug}`}
+        className={styles.contactLink}
       >
-        <CalendarIcon className={styles.buttonIcon} />
-        Tour
-      </BookTourButton>
-      <Link href={`/apply/start?home=${listing.slug}`} className={styles.button}>
-        Apply now
-      </Link>
-    </>
-  ) : (
-    <Link href="/homes-for-rent" className={styles.buttonSecondary}>
-      See available homes
-    </Link>
+        Ask a question
+      </TrackedLink>
+    </div>
   );
 
   return (
@@ -570,7 +602,30 @@ export default async function PropertyDetailPage({
                 the rail - one definition, rendered in whichever place is
                 visible.
               */}
-              <div className={styles.headerActions}>{applyCta}</div>
+              <div className={styles.headerActions}>
+                {canApply ? (
+                  <>
+                    <div className={styles.headerButtons}>
+                      {tourButton(styles.buttonSecondary, 'tour_header', (
+                        <>
+                          <CalendarIcon className={styles.buttonIcon} />
+                          Book a tour
+                        </>
+                      ))}
+                      {applyButton(styles.button, 'apply_header')}
+                    </div>
+                    <p className={styles.applyFacts}>{applyFacts}</p>
+                    <div className={styles.convertCard}>
+                      <TourDayPicker listingSlug={listing.slug} listingLabel={listing.addressLine} />
+                    </div>
+                    {contactLinks}
+                  </>
+                ) : (
+                  <Link href="/homes-for-rent" className={styles.buttonSecondary}>
+                    See available homes
+                  </Link>
+                )}
+              </div>
             </header>
 
             {/* ---- Section index ----------------------------------------- */}
@@ -766,6 +821,24 @@ export default async function PropertyDetailPage({
                 <p className={styles.sectionNote}>{listing.petPolicy}</p>
               ) : null}
             </section>
+
+            {/* ---- Mid-page nudge ----------------------------------------
+                Someone who has read the cost and the facts has the answers
+                they came for, and the buttons are a long way back up. */}
+            {canApply ? (
+              <aside className={styles.ctaBand} aria-label="Next steps for this home">
+                <div className={styles.ctaBandText}>
+                  <p className={styles.ctaBandTitle}>Like what you see?</p>
+                  <p className={styles.ctaBandBody}>
+                    Tours are free. Applying takes about 10 minutes on your phone.
+                  </p>
+                </div>
+                <div className={styles.ctaBandActions}>
+                  {tourButton(styles.buttonSecondary, 'tour_mid')}
+                  {applyButton(styles.button, 'apply_mid')}
+                </div>
+              </aside>
+            ) : null}
 
             {/* ---- Features ---------------------------------------------- */}
             {hasAmenities ? (
@@ -974,6 +1047,52 @@ export default async function PropertyDetailPage({
               <FaqAccordion entries={faq} name={`faq-${listing.slug}`} />
             </section>
 
+            {/* ---- Closing ------------------------------------------------
+                The end of the facts, so the last thing before other homes is
+                the reasons to act on this one and the way to do it. */}
+            {canApply ? (
+              <section className={styles.closing} aria-labelledby="closing-heading">
+                <h2 className={styles.closingTitle} id="closing-heading">
+                  Ready to make {listing.addressLine} home?
+                </h2>
+                <ul className={styles.perksGrid} role="list">
+                  <li className={styles.perkCard}>
+                    <UserIcon className={styles.perkCardIcon} />
+                    <span className={styles.perkCardTitle}>Anyone can apply</span>
+                    <span className={styles.perkCardBody}>
+                      No minimum score cutoff. A person reviews every application.
+                    </span>
+                  </li>
+                  <li className={styles.perkCard}>
+                    <ShieldCheckIcon className={styles.perkCardIcon} />
+                    <span className={styles.perkCardTitle}>Every fee is in the total</span>
+                    <span className={styles.perkCardBody}>
+                      {totalLabel} a month is what you pay, with each charge itemised above.
+                    </span>
+                  </li>
+                  <li className={styles.perkCard}>
+                    <ClockIcon className={styles.perkCardIcon} />
+                    <span className={styles.perkCardTitle}>A decision in 24 hours</span>
+                    <span className={styles.perkCardBody}>
+                      From a complete application, with the reason stated either way.
+                    </span>
+                  </li>
+                  <li className={styles.perkCard}>
+                    <KeyIcon className={styles.perkCardIcon} />
+                    <span className={styles.perkCardTitle}>Tour on your schedule</span>
+                    <span className={styles.perkCardBody}>
+                      Pick an hour that suits you, evenings and weekends included.
+                    </span>
+                  </li>
+                </ul>
+                <div className={styles.closingActions}>
+                  {tourButton(styles.buttonSecondary, 'tour_closing')}
+                  {applyButton(styles.button, 'apply_closing')}
+                </div>
+                <p className={styles.applyFacts}>{applyFacts}</p>
+              </section>
+            ) : null}
+
             {/* ---- Similar ----------------------------------------------- */}
             {similar.length > 0 ? (
               <section
@@ -999,37 +1118,6 @@ export default async function PropertyDetailPage({
               </section>
             ) : null}
 
-            {/* ---- Perks (Bottom of Page) --------------------------------- */}
-            <div className={styles.perksGrid}>
-              <div className={styles.perkCard}>
-                <UserIcon className={styles.perkCardIcon} />
-                <span className={styles.perkCardTitle}>Anyone can apply</span>
-                <span className={styles.perkCardBody}>
-                  No minimum score cutoff. A person reviews every application.
-                </span>
-              </div>
-              <div className={styles.perkCard}>
-                <ShieldCheckIcon className={styles.perkCardIcon} />
-                <span className={styles.perkCardTitle}>Every fee is in the total</span>
-                <span className={styles.perkCardBody}>
-                  The price above is what you pay, with each charge itemised below.
-                </span>
-              </div>
-              <div className={styles.perkCard}>
-                <ClockIcon className={styles.perkCardIcon} />
-                <span className={styles.perkCardTitle}>A decision in 24 hours</span>
-                <span className={styles.perkCardBody}>
-                  From a complete application, with the reason stated either way.
-                </span>
-              </div>
-              <div className={styles.perkCard}>
-                <KeyIcon className={styles.perkCardIcon} />
-                <span className={styles.perkCardTitle}>Tour on your schedule</span>
-                <span className={styles.perkCardBody}>
-                  Book a time that suits you rather than one that suits us.
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* ---- Purchase rail (desktop) --------------------------------- */}
@@ -1048,10 +1136,6 @@ export default async function PropertyDetailPage({
                 <p className={styles.railSplit}>No required fees on top of the rent</p>
               )}
 
-              <p className={styles.railAddress}>
-                {listing.addressLine}, {listing.city}, {listing.state}
-              </p>
-
               <div className={styles.railChipRow}>
                 <AvailabilityBadge
                   availability={listing.availability}
@@ -1059,26 +1143,43 @@ export default async function PropertyDetailPage({
                 />
               </div>
 
-              <div className={styles.railActions}>{applyCta}</div>
+              {canApply ? (
+                <>
+                  <div className={styles.railActions}>
+                    {applyButton(styles.button, 'apply_rail')}
+                    {tourButton(styles.buttonSecondary, 'tour_rail', (
+                      <>
+                        <CalendarIcon className={styles.buttonIcon} />
+                        Book a tour
+                      </>
+                    ))}
+                  </div>
+                  <p className={styles.applyFacts}>{applyFacts}</p>
 
-              <div className={styles.railPoints}>
-                <span className={styles.railPoint}>
-                  <CheckIcon />
-                  Anyone can apply. No minimum credit score cutoff.
-                </span>
-                <span className={styles.railPoint}>
-                  <CheckIcon />
-                  Questions and tours are free - ask us anything before you apply.
-                </span>
-                <span className={styles.railPoint}>
-                  <CheckIcon />A decision within 24 hours of a complete application.
-                </span>
-              </div>
+                  <div className={styles.railSection}>
+                    <TourDayPicker listingSlug={listing.slug} listingLabel={listing.addressLine} />
+                  </div>
 
-              <Link href={`/contact?home=${listing.slug}`} className={styles.railContactLink}>
-                <span>Not ready yet? Ask us a question</span>
-                <DocumentIcon />
-              </Link>
+                  <div className={styles.railPoints}>
+                    <span className={styles.railPoint}>
+                      <CheckIcon />
+                      Anyone can apply. No minimum credit score cutoff.
+                    </span>
+                    <span className={styles.railPoint}>
+                      <CheckIcon />
+                      Questions and tours are free - ask us anything before you apply.
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className={styles.railActions}>
+                  <Link href="/homes-for-rent" className={styles.buttonSecondary}>
+                    See available homes
+                  </Link>
+                </div>
+              )}
+
+              <div className={styles.railSection}>{contactLinks}</div>
             </div>
           </aside>
         </div>
@@ -1093,19 +1194,8 @@ export default async function PropertyDetailPage({
         <div className={styles.actionBarActions}>
           {canApply ? (
             <>
-              <BookTourButton
-                listingSlug={listing.slug}
-                listingLabel={listing.addressLine}
-                className={`${styles.buttonSecondary} ${styles.actionBarSecondaryCta}`}
-              >
-                Tour
-              </BookTourButton>
-              <Link
-                href={`/apply/start?home=${listing.slug}`}
-                className={`${styles.button} ${styles.actionBarCta}`}
-              >
-                Apply now
-              </Link>
+              {tourButton(`${styles.buttonSecondary} ${styles.actionBarSecondaryCta}`, 'tour_bar', 'Tour')}
+              {applyButton(`${styles.button} ${styles.actionBarCta}`, 'apply_bar')}
             </>
           ) : (
             <Link
