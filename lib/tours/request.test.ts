@@ -155,9 +155,10 @@ describe('timezone correctness', () => {
 });
 
 describe('time windows', () => {
-  test('hourly slots run 8am-9am through 6pm-7pm', () => {
-    assert.equal(HOUR_SLOTS.length, 11);
+  test('hourly slots run 8am-9am and 2pm-7pm (9am-2pm removed)', () => {
+    assert.equal(HOUR_SLOTS.length, 6);
     assert.equal(formatWindow(HOUR_SLOTS[0]), '8am – 9am');
+    assert.equal(formatWindow(HOUR_SLOTS[1]), '2pm – 3pm');
     assert.equal(formatWindow(HOUR_SLOTS[HOUR_SLOTS.length - 1]), '6pm – 7pm');
   });
 

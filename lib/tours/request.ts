@@ -25,7 +25,7 @@ export type TourKind = 'in-person' | 'video';
  */
 export type TimeWindow = { start: string; end: string; custom: boolean };
 
-/** First and last hourly slot start. Slots run 8am-9am through 6pm-7pm. */
+/** First and last hourly slot start. Slots run 8am-9am, then resume 2pm-7pm (9am-2pm removed). */
 const FIRST_SLOT_HOUR = 8;
 const LAST_SLOT_HOUR = 18;
 
@@ -70,7 +70,7 @@ export function formatWindow(window: Pick<TimeWindow, 'start' | 'end'>): string 
   return `${formatClock(window.start)} – ${formatClock(window.end)}`;
 }
 
-/** Every hourly slot, regardless of day. */
+/** Every hourly slot, regardless of day. Excludes 9am to 2pm (09:00 to 14:00). */
 export const HOUR_SLOTS: TimeWindow[] = Array.from(
   { length: LAST_SLOT_HOUR - FIRST_SLOT_HOUR + 1 },
   (_, i) => ({
@@ -78,7 +78,10 @@ export const HOUR_SLOTS: TimeWindow[] = Array.from(
     end: `${pad(FIRST_SLOT_HOUR + i + 1)}:00`,
     custom: false,
   }),
-);
+).filter((slot) => {
+  const hour = Number(slot.start.slice(0, 2));
+  return hour < 9 || hour >= 14;
+});
 
 /**
  * Hourly slots still open on `date`. On today, a slot that has already
