@@ -97,7 +97,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               var _smartsupp = _smartsupp || {};
-              _smartsupp.key = 'bbe43f29df9ecd87f441a7bd7cdd794e40037c31';
+              _smartsupp.key = '484e34528b48ef9324b39bd246ae27991345e838';
               // Below 1024px listing pages pin a Tour / Apply bar to the bottom
               // of the screen (~68px plus the iPhone home-indicator inset), and
               // the chat bubble sat on top of the Apply button. Lift it clear.
